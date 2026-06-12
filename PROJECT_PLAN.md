@@ -10,23 +10,7 @@
 
 **Portfolio goal:** Build a full-stack project strong enough for junior full-time software engineering applications. The project should demonstrate product thinking, full-stack architecture, database modeling, authentication, authorization, structured business logic, testing, deployment, and a polished user experience.
 
-## 2. Why This Is Different From Asking AI
-
-Directly asking AI gives a one-time text answer. TableSync is a product workflow.
-
-| Direct AI Prompt | TableSync |
-|---|---|
-| One person describes the whole situation | Each guest submits their own preferences |
-| Output is unstructured text | Data is saved as rooms, guests, preferences, votes, plans, and shopping items |
-| Hard to track changing constraints | Guests can update preferences and the plan can be regenerated |
-| No permissions | Host, guest, and public-view roles |
-| No voting | Built-in voting, veto, and comments |
-| No execution flow | Shopping list, assignments, budget split, activity timeline |
-| Weak portfolio value | Shows auth, DB, APIs, realtime, algorithms, tests, deployment |
-
-The important positioning: **TableSync is not an AI recipe generator. It is a collaborative decision and planning system for group meals.**
-
-## 3. Target Users
+## 2. Target Users
 
 ### Primary User
 
@@ -50,7 +34,7 @@ Group meal planning usually happens in messy group chats:
 
 TableSync turns that messy conversation into a structured workflow.
 
-## 4. MVP Scope
+## 3. MVP Scope
 
 The MVP must be complete enough to demo live.
 
@@ -90,7 +74,7 @@ These should be saved for later:
 - Chat system
 - Recipe image uploads
 
-## 5. Recommended Tech Stack
+## 4. Recommended Tech Stack
 
 ### Frontend and Backend
 
@@ -158,7 +142,7 @@ MVP can work without realtime if needed, but adding realtime room updates makes 
 - **Vercel** for Next.js app
 - **Supabase** or **Neon** for Postgres
 
-## 6. Core Product Workflow
+## 5. Core Product Workflow
 
 ### Workflow A: Host Creates Dinner Room
 
@@ -256,7 +240,7 @@ MVP can work without realtime if needed, but adding realtime room updates makes 
    - Cost per assigned guest
    - Remaining unassigned items
 
-## 7. User Roles and Permissions
+## 6. User Roles and Permissions
 
 ### Host
 
@@ -296,7 +280,7 @@ Cannot:
 - See private guest emails
 - Modify shopping items
 
-## 8. Database Design
+## 7. Database Design
 
 ### Prisma Model Draft
 
@@ -564,7 +548,7 @@ enum ActivityType {
 }
 ```
 
-## 9. Data Seeding
+## 8. Data Seeding
 
 Seed data is important because recruiters should be able to see a full demo immediately.
 
@@ -623,7 +607,7 @@ Example drinks:
 - Lemonade
 - Iced tea
 
-## 10. Recommendation Engine
+## 9. Recommendation Engine
 
 The recommendation engine is the most important non-CRUD part of the project.
 
@@ -728,7 +712,7 @@ Example message:
 
 This is excellent for interviews because it shows transparent algorithm behavior.
 
-## 11. Shopping List Engine
+## 10. Shopping List Engine
 
 ### Input
 
@@ -766,7 +750,7 @@ Greedy approach:
 
 This is simple, explainable, and good enough for MVP.
 
-## 12. App Routes and Pages
+## 11. App Routes and Pages
 
 ### `/`
 
@@ -915,7 +899,7 @@ Implementation:
 - Can redirect to seeded demo room in read-only or sandbox mode.
 - Best option: create a demo room page that uses seeded data and disabled mutation buttons.
 
-## 13. Component Plan
+## 12. Component Plan
 
 ### Layout Components
 
@@ -965,7 +949,7 @@ Implementation:
 - `SpiceLevelControl`
 - `BudgetInput`
 
-## 14. Server Actions and API Design
+## 13. Server Actions and API Design
 
 ### Server Actions
 
@@ -1003,7 +987,7 @@ Every mutation should:
 6. Revalidate affected paths.
 7. Trigger realtime event if implemented.
 
-## 15. Authorization Helpers
+## 14. Authorization Helpers
 
 Create `src/lib/permissions.ts`.
 
@@ -1024,7 +1008,7 @@ Rules:
 - Guest access is based on `Guest.editToken`.
 - Public share access is based on `DinnerRoom.isPublicShareable` and finalized status.
 
-## 16. Realtime Plan
+## 15. Realtime Plan
 
 Realtime is optional for MVP, but strong for portfolio value.
 
@@ -1049,7 +1033,7 @@ When event arrives:
 
 If realtime causes delays, use polling every 10-15 seconds on room pages. Mention in README that realtime is future work.
 
-## 17. UI/UX Direction
+## 16. UI/UX Direction
 
 ### Product Feel
 
@@ -1096,7 +1080,7 @@ Use:
 - Use tooltips for less obvious controls.
 - Use dialogs for destructive actions and finalization.
 
-## 18. Folder Structure
+## 17. Folder Structure
 
 ```txt
 TableSync/
@@ -1171,7 +1155,7 @@ TableSync/
       ci.yml
 ```
 
-## 19. Testing Plan
+## 18. Testing Plan
 
 ### Unit Tests
 
@@ -1226,7 +1210,7 @@ Optional:
 npm run test:e2e
 ```
 
-## 20. Deployment Plan
+## 19. Deployment Plan
 
 ### Environment Variables
 
@@ -1261,7 +1245,7 @@ npx prisma migrate deploy
 npx prisma db seed
 ```
 
-## 21. README Requirements
+## 20. README Requirements
 
 The README should be treated as part of the project, not an afterthought.
 
@@ -1288,7 +1272,7 @@ Required sections:
 
 > TableSync is a collaborative dinner planning app for friend groups. A host creates a dinner room, invites guests to submit dietary restrictions and preferences, generates menu plans, collects votes, finalizes a menu, and turns the result into a shared shopping list with assignments.
 
-## 22. Resume Bullets
+## 21. Resume Bullets
 
 Use bullets like these after the project is complete:
 
@@ -1298,7 +1282,7 @@ Use bullets like these after the project is complete:
 - Added automated unit tests for menu and shopping engines plus Playwright E2E coverage for the host-to-guest planning flow.
 - Deployed the app on Vercel with a managed PostgreSQL database and CI checks for linting, type safety, tests, and production builds.
 
-## 23. Interview Talking Points
+## 22. Interview Talking Points
 
 Be ready to explain:
 
@@ -1313,7 +1297,7 @@ Be ready to explain:
 9. How you would add realtime safely.
 10. How you tested the critical workflow.
 
-## 24. Stretch Features
+## 23. Stretch Features
 
 Only add these after the MVP is solid.
 
@@ -1351,7 +1335,7 @@ Let user manually set ingredient prices or integrate with a grocery API.
 
 Host enters ingredients they already have, reducing shopping list cost.
 
-## 25. Key Risks and Controls
+## 24. Key Risks and Controls
 
 ### Risk: Project becomes too large
 
@@ -1389,7 +1373,7 @@ Control:
 - Build dashboard and workflow UI.
 - Avoid long recipe article pages.
 
-## 26. Definition of Done
+## 25. Definition of Done
 
 The project is job-search ready when:
 
