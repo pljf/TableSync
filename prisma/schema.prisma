@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rooms DinnerRoom[] @relation("RoomHost")
+}
+
+model DinnerRoom {
+  id               String     @id @default(cuid())
+  hostId           String
+  title            String
+  description      String?
+  eventType        EventType
+  dateTime         DateTime?
+  location         String?
+  totalBudgetCents Int?
+  expectedGuests   Int?
+  status           RoomStatus @default(DRAFT)
+  inviteToken      String     @unique
+  inviteExpiresAt  DateTime?
+  isPublicShareable Boolean   @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  host       User            @relation("RoomHost", fields: [hostId], references: [id], onDelete: Cascade)
+  guests     Guest[]
+  plans      MenuPlan[]
+  shopping   ShoppingItem[]
+  activities ActivityEvent[]
+}
+
+model Guest {
+  id          String   @id @default(cuid())
+  roomId      String
+  name        String
+  email       String?
+  editToken   String   @unique
+  isHostGuest Boolean  @default(false)
+  canBring    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  room        DinnerRoom    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  preference  Preference?
+  votes       Vote[]
+  assignments ShoppingItem[] @relation("ShoppingAssignment")
+}
+
+model Preference {
+  id             String     @id @default(cuid())
+  guestId        String     @unique
+  dietType       DietType   @default(OMNIVORE)
+  allergies      String[]
+  dislikes       String[]
+  likes          String[]
+  spiceLevel     SpiceLevel @default(MEDIUM)
+  maxBudgetCents Int?
+  notes          String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+}
+
+model Dish {
+  id                 String       @id @default(cuid())
+  name               String
+  description        String?
+  category           DishCategory
+  cuisine            String
+  baseServings       Int          @default(4)
+  estimatedCostCents Int
+  prepTimeMinutes    Int
+  spiceLevel         SpiceLevel   @default(MEDIUM)
+  tags               String[]
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  ingredients DishIngredient[]
+  menuItems   MenuPlanDish[]
+}
+
+model Ingredient {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  category    IngredientCategory
+  defaultUnit String
+  tags        String[]
+
+  dishes   DishIngredient[]
+  shopping ShoppingItem[]
+}
+
+model DishIngredient {
+  id           String @id @default(cuid())
+  dishId       String
+  ingredientId String
+  quantity     Float
+  unit         String
+
+  dish       Dish       @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([dishId, ingredientId, unit])
+}
+
+model MenuPlan {
+  id                 String     @id @default(cuid())
+  roomId             String
+  title              String
+  summary            String?
+  score              Int
+  estimatedCostCents Int
+  status             PlanStatus @default(PROPOSED)
+  warnings           Json?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  room   DinnerRoom     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  dishes MenuPlanDish[]
+  votes  Vote[]
+}
+
+model MenuPlanDish {
+  id       String @id @default(cuid())
+  planId   String
+  dishId   String
+  servings Int
+
+  plan MenuPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  dish Dish     @relation(fields: [dishId], references: [id])
+
+  @@unique([planId, dishId])
+}
+
+model Vote {
+  id        String    @id @default(cuid())
+  planId    String
+  guestId   String
+  value     VoteValue
+  reason    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  plan  MenuPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  guest Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, guestId])
+}
+
+model ShoppingItem {
+  id                 String   @id @default(cuid())
+  roomId             String
+  ingredientId       String
+  quantity           Float
+  unit               String
+  estimatedCostCents Int?
+  assignedToGuestId  String?
+  checked            Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  room       DinnerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+  assignedTo Guest?     @relation("ShoppingAssignment", fields: [assignedToGuestId], references: [id])
+}
+
+model ActivityEvent {
+  id        String       @id @default(cuid())
+  roomId    String
+  actorName String
+  type      ActivityType
+  metadata  Json?
+  createdAt DateTime     @default(now())
+
+  room DinnerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+enum EventType {
+  DINNER
+  POTLUCK
+  HOTPOT
+  BBQ
+  PICNIC
+  BRUNCH
+  OTHER
+}
+
+enum RoomStatus {
+  DRAFT
+  COLLECTING_PREFERENCES
+  PLANNING
+  VOTING
+  FINALIZED
+  ARCHIVED
+}
+
+enum DietType {
+  OMNIVORE
+  VEGETARIAN
+  VEGAN
+  PESCATARIAN
+  HALAL
+  KOSHER
+  GLUTEN_FREE
+}
+
+enum SpiceLevel {
+  NONE
+  MILD
+  MEDIUM
+  HOT
+}
+
+enum DishCategory {
+  MAIN
+  SIDE
+  APPETIZER
+  DESSERT
+  DRINK
+  SAUCE
+}
+
+enum IngredientCategory {
+  PRODUCE
+  MEAT_SEAFOOD
+  DAIRY
+  PANTRY
+  FROZEN
+  DRINKS
+  SUPPLIES
+  OTHER
+}
+
+enum PlanStatus {
+  PROPOSED
+  FINALIZED
+  REJECTED
+}
+
+enum VoteValue {
+  LIKE
+  NEUTRAL
+  VETO
+}
+
+enum ActivityType {
+  ROOM_CREATED
+  GUEST_JOINED
+  PREFERENCE_UPDATED
+  PLANS_GENERATED
+  VOTE_CAST
+  PLAN_FINALIZED
+  SHOPPING_GENERATED
+  ITEM_ASSIGNED
+  ITEM_CHECKED
+}
+
