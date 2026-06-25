@@ -5,6 +5,7 @@ coverage
 playwright-report
 test-results
 screenshots
+src/generated/prisma
 .env
 .env*.local
 *.log

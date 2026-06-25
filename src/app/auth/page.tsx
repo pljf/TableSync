@@ -9,8 +9,8 @@ export default function AuthPage() {
         <p className="eyebrow">Host authentication</p>
         <h1>Sign in to manage rooms</h1>
         <p className="muted">
-          This build uses a demo host session so the workflow runs locally without OAuth credentials. The Prisma schema and
-          README keep the Auth.js target explicit.
+          This build stores rooms in PostgreSQL but still uses a demo host session so the workflow runs without OAuth
+          credentials. Auth.js remains the next authentication milestone.
         </p>
         <form action={signInDemoHostAction}>
           <button className="button full" type="submit">

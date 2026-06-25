@@ -7,7 +7,10 @@ const HOST_COOKIE = "tablesync_host";
 export async function getCurrentUser() {
   const cookieStore = await cookies();
   const hostId = cookieStore.get(HOST_COOKIE)?.value;
-  const demoHost = getDemoHost();
+  if (!hostId) {
+    return null;
+  }
+  const demoHost = await getDemoHost();
 
   return hostId === demoHost.id ? demoHost : null;
 }
@@ -23,7 +26,8 @@ export async function requireHost() {
 
 export async function setDemoHostSession() {
   const cookieStore = await cookies();
-  cookieStore.set(HOST_COOKIE, getDemoHost().id, {
+  const demoHost = await getDemoHost();
+  cookieStore.set(HOST_COOKIE, demoHost.id, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",

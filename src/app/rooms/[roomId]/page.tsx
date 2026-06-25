@@ -13,7 +13,7 @@ type PageProps = {
 
 export default async function RoomPage({ params }: PageProps) {
   const { roomId } = await params;
-  const bundle = getRoomBundle(roomId);
+  const bundle = await getRoomBundle(roomId);
   if (!bundle) {
     notFound();
   }

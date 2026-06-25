@@ -6,7 +6,8 @@ import { getRoomBundle, listRoomsForHost } from "@/lib/store";
 
 export default async function DashboardPage() {
   const host = await requireHost();
-  const rooms = listRoomsForHost(host.id);
+  const rooms = await listRoomsForHost(host.id);
+  const roomBundles = await Promise.all(rooms.map((room) => getRoomBundle(room.id)));
 
   return (
     <div className="page-stack">
@@ -21,8 +22,8 @@ export default async function DashboardPage() {
         </Link>
       </header>
       <section className="grid two">
-        {rooms.map((room) => {
-          const bundle = getRoomBundle(room.id);
+        {rooms.map((room, index) => {
+          const bundle = roomBundles[index];
           return (
             <RoomCard
               key={room.id}
