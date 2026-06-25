@@ -86,6 +86,13 @@ Verification:
 - Production build passed.
 - npm audit reported zero vulnerabilities.
 
+Delivery:
+
+- Branch: `feature/prisma-postgres-persistence`
+- Pull request: `#2`
+- Regenerated the cross-platform lockfile with npm 10.9.4 after the first CI run identified packages omitted by npm 11 on Windows.
+- Validated the corrected lockfile with an npm 10.9.4 clean-install dry run.
+
 ## Local Development
 
 Project directory:
