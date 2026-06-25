@@ -8,8 +8,10 @@ import { demoRoom } from "@/lib/seed-data";
 import { formatMoney } from "@/lib/format";
 import { getRoomBundle } from "@/lib/store";
 
-export default function HomePage() {
-  const bundle = getRoomBundle(demoRoom.id);
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const bundle = await getRoomBundle(demoRoom.id);
   if (!bundle) {
     return null;
   }

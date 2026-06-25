@@ -1,26 +1,24 @@
 import type {
   ActivityEvent,
   DinnerRoom,
+  Dish,
   EventType,
   Guest,
+  Ingredient,
   MenuPlan,
+  PlanWarning,
   Preference,
+  RoomBundle,
   ShoppingItem,
   User,
+  Vote,
   VoteValue
 } from "@/lib/domain";
 import { generateMenuPlans } from "@/lib/menu-engine/generate-menu-plans";
-import { demoGuests, demoHost, demoRoom, dishCatalog } from "@/lib/seed-data";
+import { prisma } from "@/lib/prisma";
+import { demoHost } from "@/lib/seed-data";
 import { generateShoppingList } from "@/lib/shopping-engine/generate-shopping-list";
-
-type StoreState = {
-  users: User[];
-  rooms: DinnerRoom[];
-  guests: Guest[];
-  plans: MenuPlan[];
-  shopping: ShoppingItem[];
-  activities: ActivityEvent[];
-};
+import type { Prisma } from "@/generated/prisma/client";
 
 type CreateRoomInput = {
   hostId: string;
@@ -42,303 +40,695 @@ type JoinRoomInput = {
   canBring: boolean;
 };
 
-function now(): string {
-  return new Date().toISOString();
+const roomBundleInclude = {
+  guests: {
+    include: {
+      preference: true
+    },
+    orderBy: {
+      createdAt: "asc"
+    }
+  },
+  plans: {
+    include: {
+      dishes: {
+        include: {
+          dish: {
+            include: {
+              ingredients: {
+                include: {
+                  ingredient: true
+                }
+              }
+            }
+          }
+        }
+      },
+      votes: true
+    },
+    orderBy: {
+      score: "desc"
+    }
+  },
+  shopping: {
+    include: {
+      ingredient: true
+    },
+    orderBy: {
+      createdAt: "asc"
+    }
+  },
+  activities: {
+    orderBy: {
+      createdAt: "desc"
+    }
+  }
+} satisfies Prisma.DinnerRoomInclude;
+
+const dishCatalogInclude = {
+  ingredients: {
+    include: {
+      ingredient: true
+    }
+  }
+} satisfies Prisma.DishInclude;
+
+type DbRoomBundle = Prisma.DinnerRoomGetPayload<{ include: typeof roomBundleInclude }>;
+type DbDish = Prisma.DishGetPayload<{ include: typeof dishCatalogInclude }>;
+type DbGuest = DbRoomBundle["guests"][number];
+type DbPlan = DbRoomBundle["plans"][number];
+type DbShoppingItem = DbRoomBundle["shopping"][number];
+type DbActivity = DbRoomBundle["activities"][number];
+
+function toIso(value: Date): string {
+  return value.toISOString();
 }
 
-function createId(prefix: string): string {
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+function optional<T>(value: T | null): T | undefined {
+  return value ?? undefined;
 }
 
-function createActivity(roomId: string, actorName: string, type: ActivityEvent["type"], message: string): ActivityEvent {
+function mapUser(user: {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+}): User {
   return {
-    id: createId("activity"),
-    roomId,
-    actorName,
-    type,
-    message,
-    createdAt: now()
+    id: user.id,
+    name: user.name ?? user.email,
+    email: user.email,
+    image: optional(user.image)
   };
 }
 
-function createVotes(planId: string, index: number) {
-  const voteValues: VoteValue[] = index === 0 ? ["LIKE", "LIKE", "NEUTRAL", "LIKE", "LIKE", "NEUTRAL"] : ["NEUTRAL", "LIKE", "NEUTRAL", "NEUTRAL", "LIKE", "VETO"];
-
-  return demoGuests.map((guest, voteIndex) => ({
-    id: `vote-${planId}-${guest.id}`,
-    planId,
-    guestId: guest.id,
-    value: voteValues[voteIndex] ?? "NEUTRAL",
-    reason: voteValues[voteIndex] === "VETO" ? "Not the best fit for my restriction." : undefined,
-    createdAt: demoRoom.createdAt,
-    updatedAt: demoRoom.createdAt
-  }));
+function mapRoom(room: DbRoomBundle | Prisma.DinnerRoomGetPayload<Record<string, never>>): DinnerRoom {
+  return {
+    id: room.id,
+    hostId: room.hostId,
+    title: room.title,
+    description: optional(room.description),
+    eventType: room.eventType,
+    dateTime: room.dateTime ? toIso(room.dateTime) : undefined,
+    location: optional(room.location),
+    totalBudgetCents: optional(room.totalBudgetCents),
+    expectedGuests: optional(room.expectedGuests),
+    status: room.status,
+    inviteToken: room.inviteToken,
+    isPublicShareable: room.isPublicShareable,
+    createdAt: toIso(room.createdAt),
+    updatedAt: toIso(room.updatedAt)
+  };
 }
 
-function createInitialState(): StoreState {
-  const generatedPlans = generateMenuPlans({ room: demoRoom, guests: demoGuests, dishes: dishCatalog });
-  const plans: MenuPlan[] = generatedPlans.map((plan, index) => {
-    const id = `plan-demo-${index + 1}`;
-    return {
-      ...plan,
-      id,
-      roomId: demoRoom.id,
-      status: index === 0 ? "FINALIZED" : "PROPOSED",
-      votes: createVotes(id, index),
-      createdAt: demoRoom.createdAt,
-      updatedAt: demoRoom.updatedAt
-    };
+function mapPreference(preference: NonNullable<DbGuest["preference"]>): Preference {
+  return {
+    id: preference.id,
+    guestId: preference.guestId,
+    dietType: preference.dietType,
+    allergies: preference.allergies,
+    dislikes: preference.dislikes,
+    likes: preference.likes,
+    spiceLevel: preference.spiceLevel,
+    maxBudgetCents: optional(preference.maxBudgetCents),
+    notes: optional(preference.notes)
+  };
+}
+
+function mapGuest(guest: DbGuest): Guest {
+  if (!guest.preference) {
+    throw new Error(`Guest ${guest.id} is missing a preference record.`);
+  }
+
+  return {
+    id: guest.id,
+    roomId: guest.roomId,
+    name: guest.name,
+    email: optional(guest.email),
+    editToken: guest.editToken,
+    isHostGuest: guest.isHostGuest,
+    canBring: guest.canBring,
+    createdAt: toIso(guest.createdAt),
+    updatedAt: toIso(guest.updatedAt),
+    preference: mapPreference(guest.preference)
+  };
+}
+
+function mapIngredient(ingredient: {
+  id: string;
+  name: string;
+  category: Ingredient["category"];
+  defaultUnit: string;
+  tags: string[];
+}): Ingredient {
+  return {
+    id: ingredient.id,
+    name: ingredient.name,
+    category: ingredient.category,
+    defaultUnit: ingredient.defaultUnit,
+    tags: ingredient.tags
+  };
+}
+
+function mapDish(dish: DbDish): Dish {
+  return {
+    id: dish.id,
+    name: dish.name,
+    description: optional(dish.description),
+    category: dish.category,
+    cuisine: dish.cuisine,
+    baseServings: dish.baseServings,
+    estimatedCostCents: dish.estimatedCostCents,
+    prepTimeMinutes: dish.prepTimeMinutes,
+    spiceLevel: dish.spiceLevel,
+    tags: dish.tags,
+    ingredients: dish.ingredients.map((item) => ({
+      ingredient: mapIngredient(item.ingredient),
+      quantity: item.quantity,
+      unit: item.unit
+    }))
+  };
+}
+
+function mapVote(vote: DbPlan["votes"][number]): Vote {
+  return {
+    id: vote.id,
+    planId: vote.planId,
+    guestId: vote.guestId,
+    value: vote.value,
+    reason: optional(vote.reason),
+    createdAt: toIso(vote.createdAt),
+    updatedAt: toIso(vote.updatedAt)
+  };
+}
+
+function mapWarnings(value: Prisma.JsonValue | null): PlanWarning[] {
+  return Array.isArray(value) ? (value as unknown as PlanWarning[]) : [];
+}
+
+function mapPlan(plan: DbPlan): MenuPlan {
+  return {
+    id: plan.id,
+    roomId: plan.roomId,
+    title: plan.title,
+    summary: plan.summary ?? "",
+    score: plan.score,
+    estimatedCostCents: plan.estimatedCostCents,
+    status: plan.status,
+    warnings: mapWarnings(plan.warnings),
+    dishes: plan.dishes.map((item) => ({
+      dish: mapDish(item.dish),
+      servings: item.servings
+    })),
+    votes: plan.votes.map(mapVote),
+    createdAt: toIso(plan.createdAt),
+    updatedAt: toIso(plan.updatedAt)
+  };
+}
+
+function mapShoppingItem(item: DbShoppingItem): ShoppingItem {
+  return {
+    id: item.id,
+    roomId: item.roomId,
+    ingredient: mapIngredient(item.ingredient),
+    quantity: item.quantity,
+    unit: item.unit,
+    estimatedCostCents: optional(item.estimatedCostCents),
+    assignedToGuestId: optional(item.assignedToGuestId),
+    checked: item.checked,
+    createdAt: toIso(item.createdAt),
+    updatedAt: toIso(item.updatedAt)
+  };
+}
+
+function mapMetadata(value: Prisma.JsonValue | null): Record<string, unknown> | undefined {
+  if (!value || Array.isArray(value) || typeof value !== "object") {
+    return undefined;
+  }
+  return value as Record<string, unknown>;
+}
+
+function mapActivity(activity: DbActivity): ActivityEvent {
+  return {
+    id: activity.id,
+    roomId: activity.roomId,
+    actorName: activity.actorName,
+    type: activity.type,
+    message: activity.message,
+    metadata: mapMetadata(activity.metadata),
+    createdAt: toIso(activity.createdAt)
+  };
+}
+
+function mapRoomBundle(room: DbRoomBundle): RoomBundle {
+  return {
+    room: mapRoom(room),
+    guests: room.guests.map(mapGuest),
+    plans: room.plans.map(mapPlan),
+    shopping: room.shopping.map(mapShoppingItem),
+    activities: room.activities.map(mapActivity)
+  };
+}
+
+async function getDishCatalog(): Promise<Dish[]> {
+  const dishes = await prisma.dish.findMany({
+    include: dishCatalogInclude,
+    orderBy: {
+      name: "asc"
+    }
   });
-  const finalPlan = plans[0];
-  const shopping: ShoppingItem[] = finalPlan
-    ? generateShoppingList({ room: demoRoom, guests: demoGuests, plan: finalPlan }).map((item, index) => ({
-        ...item,
-        id: `shopping-demo-${index + 1}`,
-        roomId: demoRoom.id,
-        checked: index < 3,
-        createdAt: demoRoom.createdAt,
-        updatedAt: demoRoom.updatedAt
-      }))
-    : [];
-
-  return {
-    users: [demoHost],
-    rooms: [structuredClone(demoRoom)],
-    guests: structuredClone(demoGuests),
-    plans,
-    shopping,
-    activities: [
-      createActivity(demoRoom.id, "Pat Host", "ROOM_CREATED", "Created Friday Hotpot Night."),
-      createActivity(demoRoom.id, "Guests", "GUEST_JOINED", "Six guests submitted preferences."),
-      createActivity(demoRoom.id, "TableSync", "PLANS_GENERATED", "Generated three safe menu plans."),
-      createActivity(demoRoom.id, "Pat Host", "PLAN_FINALIZED", "Finalized the top scoring plan."),
-      createActivity(demoRoom.id, "TableSync", "SHOPPING_GENERATED", "Generated and assigned the shopping list.")
-    ]
-  };
+  return dishes.map(mapDish);
 }
 
-let state: StoreState | null = null;
-
-function getState(): StoreState {
-  if (!state) {
-    state = createInitialState();
-  }
-
-  return state;
+export async function getDemoHost(): Promise<User> {
+  const user = await prisma.user.upsert({
+    where: {
+      email: demoHost.email
+    },
+    update: {
+      name: demoHost.name
+    },
+    create: demoHost
+  });
+  return mapUser(user);
 }
 
-export function getDemoHost(): User {
-  return demoHost;
+export async function listRoomsForHost(hostId: string): Promise<DinnerRoom[]> {
+  const rooms = await prisma.dinnerRoom.findMany({
+    where: {
+      hostId
+    },
+    orderBy: {
+      updatedAt: "desc"
+    }
+  });
+  return rooms.map(mapRoom);
 }
 
-export function listRoomsForHost(hostId: string): DinnerRoom[] {
-  return getState().rooms.filter((room) => room.hostId === hostId);
+export async function getRoomBundle(roomId: string): Promise<RoomBundle | null> {
+  const room = await prisma.dinnerRoom.findUnique({
+    where: {
+      id: roomId
+    },
+    include: roomBundleInclude
+  });
+  return room ? mapRoomBundle(room) : null;
 }
 
-export function getRoomBundle(roomId: string) {
-  const current = getState();
-  const room = current.rooms.find((item) => item.id === roomId);
-  if (!room) {
-    return null;
-  }
-
-  return {
-    room,
-    guests: current.guests.filter((guest) => guest.roomId === roomId),
-    plans: current.plans.filter((plan) => plan.roomId === roomId),
-    shopping: current.shopping.filter((item) => item.roomId === roomId),
-    activities: current.activities.filter((event) => event.roomId === roomId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  };
-}
-
-export function getRoomByInviteToken(token: string) {
-  const room = getState().rooms.find((item) => item.inviteToken === token);
+export async function getRoomByInviteToken(token: string): Promise<RoomBundle | null> {
+  const room = await prisma.dinnerRoom.findUnique({
+    where: {
+      inviteToken: token
+    },
+    select: {
+      id: true
+    }
+  });
   return room ? getRoomBundle(room.id) : null;
 }
 
-export function getPublicRoom(roomId: string) {
-  const bundle = getRoomBundle(roomId);
+export async function getPublicRoom(roomId: string): Promise<RoomBundle | null> {
+  const bundle = await getRoomBundle(roomId);
   if (!bundle || !bundle.room.isPublicShareable || bundle.room.status !== "FINALIZED") {
     return null;
   }
-
   return bundle;
 }
 
-export function createRoom(input: CreateRoomInput): DinnerRoom {
-  const current = getState();
-  const timestamp = now();
-  const room: DinnerRoom = {
-    id: createId("room"),
-    hostId: input.hostId,
-    title: input.title,
-    description: input.description,
-    eventType: input.eventType,
-    dateTime: input.dateTime ? new Date(input.dateTime).toISOString() : undefined,
-    location: input.location,
-    totalBudgetCents: input.totalBudgetCents,
-    expectedGuests: input.expectedGuests,
-    status: "COLLECTING_PREFERENCES",
-    inviteToken: createId("invite"),
-    isPublicShareable: input.isPublicShareable ?? false,
-    createdAt: timestamp,
-    updatedAt: timestamp
-  };
-
-  current.rooms.push(room);
-  current.activities.push(createActivity(room.id, "Host", "ROOM_CREATED", `Created ${room.title}.`));
-  return room;
-}
-
-export function joinRoom(input: JoinRoomInput): Guest {
-  const current = getState();
-  const room = current.rooms.find((item) => item.inviteToken === input.token);
-  if (!room) {
-    throw new Error("Invite link is invalid.");
-  }
-
-  const timestamp = now();
-  const guestId = createId("guest");
-  const guest: Guest = {
-    id: guestId,
-    roomId: room.id,
-    name: input.name,
-    email: input.email || undefined,
-    editToken: createId("edit"),
-    isHostGuest: false,
-    canBring: input.canBring,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    preference: {
-      ...input.preference,
-      id: createId("preference"),
-      guestId
+export async function createRoom(input: CreateRoomInput): Promise<DinnerRoom> {
+  const room = await prisma.dinnerRoom.create({
+    data: {
+      hostId: input.hostId,
+      title: input.title,
+      description: input.description,
+      eventType: input.eventType,
+      dateTime: input.dateTime ? new Date(input.dateTime) : undefined,
+      location: input.location,
+      totalBudgetCents: input.totalBudgetCents,
+      expectedGuests: input.expectedGuests,
+      status: "COLLECTING_PREFERENCES",
+      inviteToken: crypto.randomUUID(),
+      isPublicShareable: input.isPublicShareable ?? false,
+      activities: {
+        create: {
+          actorName: "Host",
+          type: "ROOM_CREATED",
+          message: `Created ${input.title}.`
+        }
+      }
     }
-  };
-
-  current.guests.push(guest);
-  room.status = "COLLECTING_PREFERENCES";
-  room.updatedAt = timestamp;
-  current.activities.push(createActivity(room.id, guest.name, "GUEST_JOINED", `${guest.name} submitted preferences.`));
-  return guest;
+  });
+  return mapRoom(room);
 }
 
-export function generatePlansForRoom(roomId: string): MenuPlan[] {
-  const current = getState();
-  const room = current.rooms.find((item) => item.id === roomId);
-  if (!room) {
+export async function joinRoom(input: JoinRoomInput): Promise<Guest> {
+  return prisma.$transaction(async (tx) => {
+    const room = await tx.dinnerRoom.findUnique({
+      where: {
+        inviteToken: input.token
+      },
+      select: {
+        id: true
+      }
+    });
+    if (!room) {
+      throw new Error("Invite link is invalid.");
+    }
+
+    const guest = await tx.guest.create({
+      data: {
+        roomId: room.id,
+        name: input.name,
+        email: input.email,
+        editToken: crypto.randomUUID(),
+        canBring: input.canBring,
+        preference: {
+          create: input.preference
+        }
+      },
+      include: {
+        preference: true
+      }
+    });
+
+    await tx.dinnerRoom.update({
+      where: {
+        id: room.id
+      },
+      data: {
+        status: "COLLECTING_PREFERENCES"
+      }
+    });
+    await tx.activityEvent.create({
+      data: {
+        roomId: room.id,
+        actorName: guest.name,
+        type: "GUEST_JOINED",
+        message: `${guest.name} submitted preferences.`
+      }
+    });
+
+    return mapGuest(guest);
+  });
+}
+
+export async function generatePlansForRoom(roomId: string): Promise<MenuPlan[]> {
+  const bundle = await getRoomBundle(roomId);
+  if (!bundle) {
     throw new Error("Room not found.");
   }
 
-  const guests = current.guests.filter((guest) => guest.roomId === roomId);
-  const generated = generateMenuPlans({ room, guests, dishes: dishCatalog });
-  const timestamp = now();
-  const plans = generated.map<MenuPlan>((plan, index) => ({
-    ...plan,
-    id: createId(`plan-${index + 1}`),
-    roomId,
-    status: "PROPOSED",
-    votes: [],
-    createdAt: timestamp,
-    updatedAt: timestamp
-  }));
-
-  current.plans = current.plans.filter((plan) => plan.roomId !== roomId || plan.status === "FINALIZED").concat(plans);
-  room.status = "VOTING";
-  room.updatedAt = timestamp;
-  current.activities.push(createActivity(roomId, "TableSync", "PLANS_GENERATED", `Generated ${plans.length} menu plans.`));
-  return plans;
-}
-
-export function castVote(planId: string, guestId: string, value: VoteValue, reason?: string): void {
-  const current = getState();
-  const plan = current.plans.find((item) => item.id === planId);
-  const guest = current.guests.find((item) => item.id === guestId);
-  if (!plan || !guest) {
-    throw new Error("Plan or guest was not found.");
+  const dishes = await getDishCatalog();
+  if (dishes.length === 0) {
+    throw new Error("Dish catalog is empty. Run npm run db:seed.");
   }
 
-  const timestamp = now();
-  const existing = plan.votes.find((vote) => vote.guestId === guestId);
-  if (existing) {
-    existing.value = value;
-    existing.reason = reason;
-    existing.updatedAt = timestamp;
-  } else {
-    plan.votes.push({
-      id: createId("vote"),
-      planId,
-      guestId,
-      value,
-      reason,
-      createdAt: timestamp,
-      updatedAt: timestamp
+  const generated = generateMenuPlans({
+    room: bundle.room,
+    guests: bundle.guests,
+    dishes
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.menuPlan.deleteMany({
+      where: {
+        roomId,
+        status: {
+          not: "FINALIZED"
+        }
+      }
     });
-  }
 
-  plan.updatedAt = timestamp;
-  current.activities.push(createActivity(plan.roomId, guest.name, "VOTE_CAST", `${guest.name} voted ${value.toLowerCase()} on ${plan.title}.`));
+    for (const plan of generated) {
+      await tx.menuPlan.create({
+        data: {
+          roomId,
+          title: plan.title,
+          summary: plan.summary,
+          score: plan.score,
+          estimatedCostCents: plan.estimatedCostCents,
+          warnings: plan.warnings as unknown as Prisma.InputJsonValue,
+          dishes: {
+            create: plan.dishes.map((item) => ({
+              dishId: item.dish.id,
+              servings: item.servings
+            }))
+          }
+        }
+      });
+    }
+
+    await tx.dinnerRoom.update({
+      where: {
+        id: roomId
+      },
+      data: {
+        status: "VOTING"
+      }
+    });
+    await tx.activityEvent.create({
+      data: {
+        roomId,
+        actorName: "TableSync",
+        type: "PLANS_GENERATED",
+        message: `Generated ${generated.length} menu plans.`
+      }
+    });
+  });
+
+  const updated = await getRoomBundle(roomId);
+  return updated?.plans.filter((plan) => plan.status === "PROPOSED") ?? [];
 }
 
-export function finalizePlan(planId: string): void {
-  const current = getState();
-  const plan = current.plans.find((item) => item.id === planId);
+export async function castVote(planId: string, guestId: string, value: VoteValue, reason?: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const [plan, guest] = await Promise.all([
+      tx.menuPlan.findUnique({
+        where: {
+          id: planId
+        },
+        select: {
+          roomId: true,
+          title: true
+        }
+      }),
+      tx.guest.findUnique({
+        where: {
+          id: guestId
+        },
+        select: {
+          roomId: true,
+          name: true
+        }
+      })
+    ]);
+
+    if (!plan || !guest || plan.roomId !== guest.roomId) {
+      throw new Error("Plan or guest was not found.");
+    }
+
+    await tx.vote.upsert({
+      where: {
+        planId_guestId: {
+          planId,
+          guestId
+        }
+      },
+      update: {
+        value,
+        reason
+      },
+      create: {
+        planId,
+        guestId,
+        value,
+        reason
+      }
+    });
+    await tx.menuPlan.update({
+      where: {
+        id: planId
+      },
+      data: {
+        updatedAt: new Date()
+      }
+    });
+    await tx.activityEvent.create({
+      data: {
+        roomId: plan.roomId,
+        actorName: guest.name,
+        type: "VOTE_CAST",
+        message: `${guest.name} voted ${value.toLowerCase()} on ${plan.title}.`
+      }
+    });
+  });
+}
+
+export async function finalizePlan(planId: string): Promise<void> {
+  const plan = await prisma.menuPlan.findUnique({
+    where: {
+      id: planId
+    },
+    select: {
+      roomId: true
+    }
+  });
   if (!plan) {
     throw new Error("Plan not found.");
   }
 
-  const room = current.rooms.find((item) => item.id === plan.roomId);
-  if (!room) {
+  const bundle = await getRoomBundle(plan.roomId);
+  if (!bundle) {
     throw new Error("Room not found.");
   }
+  const selectedPlan = bundle.plans.find((item) => item.id === planId);
+  if (!selectedPlan) {
+    throw new Error("Plan not found.");
+  }
 
-  const guests = current.guests.filter((guest) => guest.roomId === room.id);
-  const timestamp = now();
-  current.plans
-    .filter((item) => item.roomId === room.id)
-    .forEach((item) => {
-      item.status = item.id === planId ? "FINALIZED" : "PROPOSED";
-      item.updatedAt = timestamp;
+  const shopping = generateShoppingList({
+    room: bundle.room,
+    guests: bundle.guests,
+    plan: selectedPlan
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.menuPlan.updateMany({
+      where: {
+        roomId: bundle.room.id
+      },
+      data: {
+        status: "PROPOSED"
+      }
     });
-  room.status = "FINALIZED";
-  room.updatedAt = timestamp;
-  current.shopping = current.shopping.filter((item) => item.roomId !== room.id);
-  current.shopping.push(
-    ...generateShoppingList({ room, guests, plan }).map((item) => ({
-      ...item,
-      id: createId("shopping"),
-      roomId: room.id,
-      checked: false,
-      createdAt: timestamp,
-      updatedAt: timestamp
-    }))
-  );
-  current.activities.push(createActivity(room.id, "Host", "PLAN_FINALIZED", `Finalized ${plan.title}.`));
-  current.activities.push(createActivity(room.id, "TableSync", "SHOPPING_GENERATED", "Generated and assigned the shopping list."));
+    await tx.menuPlan.update({
+      where: {
+        id: planId
+      },
+      data: {
+        status: "FINALIZED"
+      }
+    });
+    await tx.dinnerRoom.update({
+      where: {
+        id: bundle.room.id
+      },
+      data: {
+        status: "FINALIZED"
+      }
+    });
+    await tx.shoppingItem.deleteMany({
+      where: {
+        roomId: bundle.room.id
+      }
+    });
+    await tx.shoppingItem.createMany({
+      data: shopping.map((item) => ({
+        roomId: bundle.room.id,
+        ingredientId: item.ingredient.id,
+        quantity: item.quantity,
+        unit: item.unit,
+        estimatedCostCents: item.estimatedCostCents,
+        assignedToGuestId: item.assignedToGuestId
+      }))
+    });
+    await tx.activityEvent.createMany({
+      data: [
+        {
+          roomId: bundle.room.id,
+          actorName: "Host",
+          type: "PLAN_FINALIZED",
+          message: `Finalized ${selectedPlan.title}.`
+        },
+        {
+          roomId: bundle.room.id,
+          actorName: "TableSync",
+          type: "SHOPPING_GENERATED",
+          message: "Generated and assigned the shopping list."
+        }
+      ]
+    });
+  });
 }
 
-export function claimShoppingItem(itemId: string, guestId?: string): void {
-  const current = getState();
-  const item = current.shopping.find((entry) => entry.id === itemId);
-  if (!item) {
-    throw new Error("Shopping item not found.");
-  }
+export async function claimShoppingItem(itemId: string, guestId?: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const item = await tx.shoppingItem.findUnique({
+      where: {
+        id: itemId
+      },
+      include: {
+        ingredient: true
+      }
+    });
+    if (!item) {
+      throw new Error("Shopping item not found.");
+    }
 
-  const guest = guestId ? current.guests.find((entry) => entry.id === guestId) : undefined;
-  item.assignedToGuestId = guest?.id;
-  item.updatedAt = now();
-  current.activities.push(createActivity(item.roomId, guest?.name ?? "Host", "ITEM_ASSIGNED", `${item.ingredient.name} was ${guest ? `assigned to ${guest.name}` : "unassigned"}.`));
+    const guest = guestId
+      ? await tx.guest.findUnique({
+          where: {
+            id: guestId
+          },
+          select: {
+            id: true,
+            roomId: true,
+            name: true
+          }
+        })
+      : null;
+    if (guestId && (!guest || guest.roomId !== item.roomId)) {
+      throw new Error("Guest was not found in this room.");
+    }
+
+    await tx.shoppingItem.update({
+      where: {
+        id: itemId
+      },
+      data: {
+        assignedToGuestId: guest?.id ?? null
+      }
+    });
+    await tx.activityEvent.create({
+      data: {
+        roomId: item.roomId,
+        actorName: guest?.name ?? "Host",
+        type: "ITEM_ASSIGNED",
+        message: `${item.ingredient.name} was ${guest ? `assigned to ${guest.name}` : "unassigned"}.`
+      }
+    });
+  });
 }
 
-export function toggleShoppingItem(itemId: string, checked: boolean): void {
-  const current = getState();
-  const item = current.shopping.find((entry) => entry.id === itemId);
-  if (!item) {
-    throw new Error("Shopping item not found.");
-  }
+export async function toggleShoppingItem(itemId: string, checked: boolean): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const item = await tx.shoppingItem.findUnique({
+      where: {
+        id: itemId
+      },
+      include: {
+        ingredient: true
+      }
+    });
+    if (!item) {
+      throw new Error("Shopping item not found.");
+    }
 
-  item.checked = checked;
-  item.updatedAt = now();
-  current.activities.push(createActivity(item.roomId, "Shopper", "ITEM_CHECKED", `${item.ingredient.name} was marked ${checked ? "purchased" : "not purchased"}.`));
+    await tx.shoppingItem.update({
+      where: {
+        id: itemId
+      },
+      data: {
+        checked
+      }
+    });
+    await tx.activityEvent.create({
+      data: {
+        roomId: item.roomId,
+        actorName: "Shopper",
+        type: "ITEM_CHECKED",
+        message: `${item.ingredient.name} was marked ${checked ? "purchased" : "not purchased"}.`
+      }
+    });
+  });
 }
-

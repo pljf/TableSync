@@ -9,7 +9,7 @@ type PageProps = {
 
 export default async function JoinPage({ params }: PageProps) {
   const { token } = await params;
-  const bundle = getRoomByInviteToken(token);
+  const bundle = await getRoomByInviteToken(token);
   if (!bundle) {
     notFound();
   }

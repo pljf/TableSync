@@ -42,7 +42,7 @@ export async function createRoomAction(formData: FormData) {
     isPublicShareable: formData.has("isPublicShareable")
   });
 
-  const room = createRoom({
+  const room = await createRoom({
     hostId: host.id,
     title: parsed.title,
     description: parsed.description,
@@ -72,7 +72,7 @@ export async function joinRoomAction(token: string, formData: FormData) {
     notes: optionalValue(formData, "notes")
   });
 
-  const guest = joinRoom({
+  const guest = await joinRoom({
     token,
     name: parsed.name,
     email: parsed.email || undefined,
@@ -94,7 +94,7 @@ export async function joinRoomAction(token: string, formData: FormData) {
 
 export async function generatePlansAction(roomId: string) {
   await requireHost();
-  generatePlansForRoom(roomId);
+  await generatePlansForRoom(roomId);
   revalidatePath(`/rooms/${roomId}`);
   revalidatePath(`/rooms/${roomId}/plans`);
 }
@@ -107,13 +107,13 @@ export async function castVoteAction(formData: FormData) {
     reason: optionalValue(formData, "reason")
   });
 
-  castVote(parsed.planId, parsed.guestId, parsed.value, parsed.reason);
+  await castVote(parsed.planId, parsed.guestId, parsed.value, parsed.reason);
   revalidatePath("/");
 }
 
 export async function finalizePlanAction(planId: string) {
   await requireHost();
-  finalizePlan(planId);
+  await finalizePlan(planId);
   revalidatePath("/");
 }
 
@@ -122,7 +122,7 @@ export async function claimShoppingAction(formData: FormData) {
     itemId: formData.get("itemId"),
     guestId: optionalValue(formData, "guestId")
   });
-  claimShoppingItem(parsed.itemId, parsed.guestId);
+  await claimShoppingItem(parsed.itemId, parsed.guestId);
   revalidatePath("/");
 }
 
@@ -132,7 +132,7 @@ export async function toggleShoppingAction(formData: FormData) {
     throw new Error("Missing shopping item.");
   }
 
-  toggleShoppingItem(itemId, formData.has("checked"));
+  await toggleShoppingItem(itemId, formData.has("checked"));
   revalidatePath("/");
 }
 

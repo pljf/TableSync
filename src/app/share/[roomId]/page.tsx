@@ -10,7 +10,7 @@ type PageProps = {
 
 export default async function SharePage({ params }: PageProps) {
   const { roomId } = await params;
-  const bundle = getPublicRoom(roomId);
+  const bundle = await getPublicRoom(roomId);
   if (!bundle) {
     notFound();
   }

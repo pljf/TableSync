@@ -2,6 +2,8 @@
 
 TableSync is a collaborative dinner planning app for friend groups. A host creates a dinner room, guests submit dietary restrictions and preferences, the app generates safe menu plans, collects votes, finalizes a menu, and turns it into an assigned shopping list.
 
+Development progress and technical decisions are recorded in [`docs/DEVELOPMENT_LOG.md`](docs/DEVELOPMENT_LOG.md).
+
 ## Current Build
 
 This repository now contains a working Next.js vertical slice:
@@ -15,11 +17,13 @@ This repository now contains a working Next.js vertical slice:
 - Plan finalization
 - Shopping list generation, assignment, and purchased state
 - Public read-only share page
+- PostgreSQL persistence through Prisma Client
+- Idempotent catalog and demo-room database seed
+- Initial Prisma migration
 - Unit tests for menu and shopping logic
 - Playwright smoke test for the demo flow
-- Prisma schema matching the planned relational model
 
-The app currently uses an in-memory demo store so it can run immediately without provisioning Postgres. The Prisma schema is included as the target database model for the next persistence milestone.
+All room, guest, plan, vote, shopping, and activity data is stored in PostgreSQL. Authentication still uses a demo host cookie and is the next major production milestone.
 
 ## Tech Stack
 
@@ -36,18 +40,28 @@ The app currently uses an in-memory demo store so it can run immediately without
 
 ```bash
 npm install
+npm run db:dev
+copy .env.example .env
+npm run db:deploy
+npm run db:seed
 npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+After `npm run db:dev`, run `npx prisma dev ls` and copy the displayed TCP PostgreSQL URL into `DATABASE_URL` in `.env`. `SHADOW_DATABASE_URL` is only required when creating new migrations with `npm run db:migrate`.
+
+If the experimental local server drops reused connections, set `DATABASE_POOL_MAX_USES="1"` in `.env`. Leave it empty for a normal hosted PostgreSQL database.
 
 Useful commands:
 
 ```bash
 npm run typecheck
 npm run test
+npm run test:db
 npm run build
 npm run test:e2e
+npm run db:studio
 ```
 
 ## Demo Flow
@@ -72,10 +86,13 @@ src/
     menu-engine/        Constraint filtering, dish scoring, plan generation
     shopping-engine/    Ingredient scaling, merging, and assignment
     seed-data.ts        Demo room, guests, ingredients, and dish catalog
-    store.ts            In-memory workflow store
+    prisma.ts           Prisma Client singleton and PostgreSQL adapter
+    store.ts            Prisma-backed workflow queries and transactions
     validations/        Zod form schemas
 prisma/
-  schema.prisma         Target PostgreSQL model
+  migrations/           Versioned PostgreSQL schema migrations
+  schema.prisma         PostgreSQL relational model
+  seed.ts               Idempotent catalog and demo data seed
 tests/
   unit/                 Deterministic domain logic tests
   e2e/                  Playwright smoke flow
@@ -97,6 +114,9 @@ The shopping engine scales ingredient quantities by servings, merges identical i
 
 ```env
 DATABASE_URL=
+SHADOW_DATABASE_URL=
+DATABASE_POOL_SIZE=
+DATABASE_POOL_MAX_USES=
 AUTH_SECRET=
 AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
@@ -111,7 +131,6 @@ PUSHER_CLUSTER=
 
 ## Next Milestones
 
-- Replace the in-memory store with Prisma Client queries and migrations.
 - Add Auth.js OAuth for GitHub and Google.
 - Store guest edit tokens in cookies and enforce guest-scoped mutations.
 - Add route-level authorization helpers.
