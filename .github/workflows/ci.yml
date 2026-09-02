@@ -33,8 +33,15 @@ jobs:
       - run: npx prisma validate
       - run: npm run db:deploy
       - run: npm run db:seed
+      - run: npm run db:seed
+      - run: npx prisma migrate status
+      - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
       - run: npm run test:db
+      - run: npm run security:secrets
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run build
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:e2e
 

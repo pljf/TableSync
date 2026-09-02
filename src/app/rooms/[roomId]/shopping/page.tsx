@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { ShoppingList } from "@/components/shopping/shopping-list";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/format";
+import { getRequestActors } from "@/lib/request-actors";
 import { getRoomBundle } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ roomId: string }> | { roomId: string };
@@ -12,7 +15,8 @@ type PageProps = {
 
 export default async function ShoppingPage({ params }: PageProps) {
   const { roomId } = await params;
-  const bundle = await getRoomBundle(roomId);
+  const actors = await getRequestActors();
+  const bundle = await getRoomBundle(roomId, actors, { allowPublicDemo: true });
   if (!bundle) {
     notFound();
   }
@@ -31,10 +35,10 @@ export default async function ShoppingPage({ params }: PageProps) {
         <Badge tone={unassigned === 0 ? "success" : "warning"}>{unassigned} unassigned</Badge>
       </header>
       <nav className="tab-nav" aria-label="Room sections">
-        <Link href={`/rooms/${bundle.room.id}`}>Overview</Link>
-        <Link href={`/rooms/${bundle.room.id}/plans`}>Plans</Link>
-        <Link href={`/rooms/${bundle.room.id}/shopping`}>Shopping</Link>
-        <Link href={`/share/${bundle.room.id}`}>Share</Link>
+        <Link href={`/rooms/${bundle.room.id}`} prefetch={false}>Overview</Link>
+        <Link href={`/rooms/${bundle.room.id}/plans`} prefetch={false}>Plans</Link>
+        <Link href={`/rooms/${bundle.room.id}/shopping`} prefetch={false}>Shopping</Link>
+        <Link href={`/share/${bundle.room.id}`} prefetch={false}>Share</Link>
       </nav>
       <section className="metric-grid">
         <article className="metric-card">
@@ -56,12 +60,17 @@ export default async function ShoppingPage({ params }: PageProps) {
         </article>
       </section>
       {bundle.shopping.length > 0 ? (
-        <ShoppingList items={bundle.shopping} guests={bundle.guests} />
+        <ShoppingList
+          guests={bundle.guests}
+          guestId={actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined}
+          hostCanManage={actors.host?.userId === bundle.room.hostId}
+          items={bundle.shopping}
+        />
       ) : (
         <article className="card empty-state">
           <h2>No shopping list yet</h2>
           <p className="muted">Finalize a menu plan to generate grouped groceries and assignments.</p>
-          <Link className="button" href={`/rooms/${bundle.room.id}/plans`}>
+          <Link className="button" href={`/rooms/${bundle.room.id}/plans`} prefetch={false}>
             Open plans
           </Link>
         </article>

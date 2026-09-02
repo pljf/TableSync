@@ -1,18 +1,30 @@
 import { Ban, CheckCircle2, CircleMinus, Heart, Trophy, Utensils } from "lucide-react";
-import type { Guest, MenuPlan } from "@/lib/domain";
-import { castVoteAction, finalizePlanAction } from "@/app/actions";
+import type { MenuPlan } from "@/lib/domain";
+import { finalizePlanAction } from "@/app/actions";
 import { formatMoney, humanize } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { VoteForm } from "@/components/menu/vote-form";
+import { MutationForm } from "@/components/ui/mutation-form";
 
 function voteCount(plan: MenuPlan, value: "LIKE" | "NEUTRAL" | "VETO") {
   return plan.votes.filter((vote) => vote.value === value).length;
 }
 
-export function MenuPlanCard({ plan, guests, canFinalize = false }: { plan: MenuPlan; guests: Guest[]; canFinalize?: boolean }) {
+export function MenuPlanCard({
+  plan,
+  canFinalize = false,
+  canVote = false
+}: {
+  plan: MenuPlan;
+  canFinalize?: boolean;
+  canVote?: boolean;
+}) {
   const finalized = plan.status === "FINALIZED";
+  const isHotpot = plan.dishes.some(({ dish }) => dish.hotpotRole === "BROTH");
 
   return (
-    <article className={`card plan-card ${finalized ? "selected" : ""}`}>
+    <article className={`card plan-card ${finalized ? "selected" : ""}`} data-plan-id={plan.id}>
       <div className="card-heading">
         <div>
           <p className="eyebrow">Score {plan.score}</p>
@@ -39,6 +51,10 @@ export function MenuPlanCard({ plan, guests, canFinalize = false }: { plan: Menu
           {voteCount(plan, "LIKE")} likes
         </span>
         <span>
+          <CircleMinus size={16} />
+          {voteCount(plan, "NEUTRAL")} neutral
+        </span>
+        <span>
           <Ban size={16} />
           {voteCount(plan, "VETO")} vetoes
         </span>
@@ -49,7 +65,7 @@ export function MenuPlanCard({ plan, guests, canFinalize = false }: { plan: Menu
           <li key={dish.id}>
             <span>{dish.name}</span>
             <small>
-              {humanize(dish.category)} - {servings} servings
+              {humanize(isHotpot ? (dish.hotpotRole ?? dish.category) : dish.category)} - {servings} servings
             </small>
           </li>
         ))}
@@ -61,44 +77,18 @@ export function MenuPlanCard({ plan, guests, canFinalize = false }: { plan: Menu
           ))}
         </div>
       ) : null}
-      <form action={castVoteAction} className="vote-form">
-        <input type="hidden" name="planId" value={plan.id} />
-        <label>
-          Guest
-          <select name="guestId" defaultValue={guests[0]?.id}>
-            {guests.map((guest) => (
-              <option key={guest.id} value={guest.id}>
-                {guest.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Veto reason
-          <input name="reason" placeholder="Required only for veto" />
-        </label>
-        <div className="button-row">
-          <button className="button secondary" name="value" value="LIKE" type="submit">
-            <Heart size={16} />
-            Like
-          </button>
-          <button className="button secondary" name="value" value="NEUTRAL" type="submit">
-            <CircleMinus size={16} />
-            Neutral
-          </button>
-          <button className="button danger" name="value" value="VETO" type="submit">
-            <Ban size={16} />
-            Veto
-          </button>
-        </div>
-      </form>
+      {canVote ? (
+        <VoteForm planId={plan.id} />
+      ) : (
+        <p className="muted">Voting is closed while the room is not in the voting stage.</p>
+      )}
       {canFinalize && !finalized ? (
-        <form action={finalizePlanAction.bind(null, plan.id)}>
-          <button className="button full" type="submit">
+        <MutationForm action={finalizePlanAction.bind(null, plan.id)}>
+          <SubmitButton className="button full" pendingLabel="Finalizing plan...">
             <CheckCircle2 size={16} />
             Finalize plan
-          </button>
-        </form>
+          </SubmitButton>
+        </MutationForm>
       ) : null}
     </article>
   );

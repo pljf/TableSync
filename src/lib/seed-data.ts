@@ -1,4 +1,15 @@
-import type { DinnerRoom, Dish, DishCategory, EventType, Guest, Ingredient, IngredientCategory, SpiceLevel, User } from "@/lib/domain";
+import type {
+  DinnerRoom,
+  Dish,
+  DishCategory,
+  EventType,
+  Guest,
+  HotpotRole,
+  Ingredient,
+  IngredientCategory,
+  SpiceLevel,
+  User
+} from "@/lib/domain";
 
 const now = new Date("2026-06-15T18:00:00.000Z").toISOString();
 
@@ -90,11 +101,16 @@ function dish(input: {
   estimatedCostCents: number;
   prepTimeMinutes: number;
   spiceLevel: SpiceLevel;
+  spiceAdjustable?: boolean;
+  supportedEventTypes?: EventType[];
+  hotpotRole?: HotpotRole;
   tags: string[];
   ingredients: Array<ReturnType<typeof item>>;
 }): Dish {
   return {
     baseServings: 4,
+    spiceAdjustable: false,
+    supportedEventTypes: ["DINNER"],
     ...input
   };
 }
@@ -109,8 +125,123 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 2200,
     prepTimeMinutes: 45,
     spiceLevel: "MILD",
+    spiceAdjustable: true,
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "BROTH",
     tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "mushroom"],
     ingredients: [item("broth", 2), item("mushrooms", 2), item("tofu", 3), item("bok-choy", 3), item("cabbage", 1), item("tamari", 1)]
+  }),
+  dish({
+    id: "tomato-hotpot-broth",
+    name: "Tomato hotpot broth",
+    description: "A mild tomato and vegetable broth designed for shared hotpot.",
+    category: "MAIN",
+    cuisine: "Chinese",
+    estimatedCostCents: 1200,
+    prepTimeMinutes: 30,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "BROTH",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "broth"],
+    ingredients: [item("broth", 2), item("tomato", 2), item("onion", 1), item("garlic", 1)]
+  }),
+  dish({
+    id: "hotpot-tofu",
+    name: "Hotpot tofu platter",
+    description: "Firm tofu portions ready to cook in a shared broth.",
+    category: "MAIN",
+    cuisine: "Chinese",
+    estimatedCostCents: 800,
+    prepTimeMinutes: 10,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "PROTEIN",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "protein", "tofu"],
+    ingredients: [item("tofu", 4)]
+  }),
+  dish({
+    id: "hotpot-beef-slices",
+    name: "Thin-sliced hotpot beef",
+    description: "Thin beef slices portioned for quick hotpot cooking.",
+    category: "MAIN",
+    cuisine: "Chinese",
+    estimatedCostCents: 1600,
+    prepTimeMinutes: 10,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "PROTEIN",
+    tags: ["beef", "meat", "gluten-free", "hotpot", "protein"],
+    ingredients: [item("beef", 3)]
+  }),
+  dish({
+    id: "hotpot-chicken-slices",
+    name: "Hotpot chicken slices",
+    description: "Chicken slices portioned for cooking safely in hotpot broth.",
+    category: "MAIN",
+    cuisine: "Chinese",
+    estimatedCostCents: 1300,
+    prepTimeMinutes: 15,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "PROTEIN",
+    tags: ["chicken", "meat", "gluten-free", "hotpot", "protein"],
+    ingredients: [item("chicken", 3)]
+  }),
+  dish({
+    id: "hotpot-mushroom-platter",
+    name: "Hotpot mushroom platter",
+    description: "A mixed mushroom platter for the shared pot.",
+    category: "SIDE",
+    cuisine: "Chinese",
+    estimatedCostCents: 700,
+    prepTimeMinutes: 10,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "VEGETABLE",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "vegetable", "mushroom"],
+    ingredients: [item("mushrooms", 4)]
+  }),
+  dish({
+    id: "hotpot-leafy-greens",
+    name: "Hotpot leafy greens",
+    description: "Bok choy and cabbage prepared for quick cooking.",
+    category: "SIDE",
+    cuisine: "Chinese",
+    estimatedCostCents: 650,
+    prepTimeMinutes: 12,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "VEGETABLE",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "vegetable"],
+    ingredients: [item("bok-choy", 4), item("cabbage", 2)]
+  }),
+  dish({
+    id: "hotpot-garlic-tamari-sauce",
+    name: "Garlic tamari dipping sauce",
+    description: "A gluten-free garlic, tamari, and sesame oil dipping sauce.",
+    category: "SAUCE",
+    cuisine: "Chinese",
+    estimatedCostCents: 350,
+    prepTimeMinutes: 5,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "SAUCE",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "sauce"],
+    ingredients: [item("tamari", 2), item("garlic", 1), item("sesame-oil", 1)]
+  }),
+  dish({
+    id: "hotpot-ginger-sesame-sauce",
+    name: "Ginger sesame dipping sauce",
+    description: "A mild ginger and sesame oil dipping sauce with tamari.",
+    category: "SAUCE",
+    cuisine: "Chinese",
+    estimatedCostCents: 350,
+    prepTimeMinutes: 5,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "SAUCE",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "sauce"],
+    ingredients: [item("ginger", 2), item("sesame-oil", 1), item("tamari", 2)]
   }),
   dish({
     id: "chicken-taco-bowl",
@@ -121,6 +252,7 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 2600,
     prepTimeMinutes: 40,
     spiceLevel: "MEDIUM",
+    spiceAdjustable: true,
     tags: ["chicken", "gluten-free", "taco", "rice"],
     ingredients: [item("rice", 2), item("chicken", 2), item("black-beans", 3), item("bell-pepper", 4), item("avocado", 3), item("tomato", 1)]
   }),
@@ -157,6 +289,7 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 3100,
     prepTimeMinutes: 50,
     spiceLevel: "MEDIUM",
+    spiceAdjustable: true,
     tags: ["beef", "meat", "rice"],
     ingredients: [item("rice", 2), item("beef", 2), item("cucumber", 3), item("kimchi", 1), item("soy-sauce", 1), item("sesame-oil", 1)]
   }),
@@ -193,6 +326,7 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 2800,
     prepTimeMinutes: 45,
     spiceLevel: "MILD",
+    spiceAdjustable: true,
     tags: ["gluten-free", "taco", "flexible", "chicken-optional"],
     ingredients: [item("corn-tortillas", 2), item("black-beans", 4), item("bell-pepper", 4), item("cheese", 1), item("chicken", 1), item("avocado", 3)]
   }),
@@ -205,6 +339,7 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 2000,
     prepTimeMinutes: 30,
     spiceLevel: "MILD",
+    spiceAdjustable: true,
     tags: ["vegan", "vegetarian", "gluten-free", "tofu"],
     ingredients: [item("tofu", 3), item("broccoli", 2), item("carrot", 1), item("mushrooms", 1), item("rice", 2), item("tamari", 1)]
   }),
@@ -301,6 +436,8 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 400,
     prepTimeMinutes: 25,
     spiceLevel: "NONE",
+    supportedEventTypes: ["DINNER", "HOTPOT"],
+    hotpotRole: "STAPLE",
     tags: ["vegan", "gluten-free", "rice"],
     ingredients: [item("rice", 3)]
   }),
@@ -421,6 +558,8 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 900,
     prepTimeMinutes: 1,
     spiceLevel: "NONE",
+    supportedEventTypes: ["DINNER", "HOTPOT"],
+    hotpotRole: "DRINK",
     tags: ["vegan", "gluten-free"],
     ingredients: [item("sparkling-water", 2)]
   }),
@@ -433,6 +572,8 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 700,
     prepTimeMinutes: 1,
     spiceLevel: "NONE",
+    supportedEventTypes: ["DINNER", "HOTPOT"],
+    hotpotRole: "DRINK",
     tags: ["vegan", "gluten-free"],
     ingredients: [item("lemonade", 2)]
   }),
@@ -445,6 +586,8 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 700,
     prepTimeMinutes: 1,
     spiceLevel: "NONE",
+    supportedEventTypes: ["DINNER", "HOTPOT"],
+    hotpotRole: "DRINK",
     tags: ["vegan", "gluten-free"],
     ingredients: [item("iced-tea", 2)]
   })
@@ -482,7 +625,6 @@ function guest(input: {
     id: input.id,
     roomId: demoRoom.id,
     name: input.name,
-    editToken: `${input.id}-edit-token`,
     isHostGuest: false,
     canBring: input.canBring ?? false,
     createdAt: now,
@@ -509,5 +651,5 @@ export const demoGuests: Guest[] = [
   guest({ id: "guest-taylor", name: "Taylor", dietType: "OMNIVORE", dislikes: ["seafood"], likes: ["drinks"], spiceLevel: "MILD", canBring: true })
 ];
 
-export const eventTypes: EventType[] = ["DINNER", "POTLUCK", "HOTPOT", "BBQ", "PICNIC", "BRUNCH", "OTHER"];
+export const eventTypes: EventType[] = ["DINNER", "HOTPOT"];
 

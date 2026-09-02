@@ -5,7 +5,10 @@ import { ActivityTimeline } from "@/components/rooms/activity-timeline";
 import { ConstraintSummary } from "@/components/rooms/constraint-summary";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { eventTypeLabels, formatDate, formatMoney } from "@/lib/format";
+import { getRequestActors } from "@/lib/request-actors";
 import { getRoomBundle } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ roomId: string }> | { roomId: string };
@@ -13,13 +16,15 @@ type PageProps = {
 
 export default async function RoomPage({ params }: PageProps) {
   const { roomId } = await params;
-  const bundle = await getRoomBundle(roomId);
+  const actors = await getRequestActors();
+  const bundle = await getRoomBundle(roomId, actors, { allowPublicDemo: true });
   if (!bundle) {
     notFound();
   }
 
   const finalPlan = bundle.plans.find((plan) => plan.status === "FINALIZED");
-  const invitePath = `/join/${bundle.room.inviteToken}`;
+  const isHost = actors.host?.userId === bundle.room.hostId;
+  const invitePath = bundle.room.inviteToken ? `/join/${bundle.room.inviteToken}` : undefined;
 
   return (
     <div className="page-stack">
@@ -33,10 +38,10 @@ export default async function RoomPage({ params }: PageProps) {
       </header>
 
       <nav className="tab-nav" aria-label="Room sections">
-        <Link href={`/rooms/${bundle.room.id}`}>Overview</Link>
-        <Link href={`/rooms/${bundle.room.id}/plans`}>Plans</Link>
-        <Link href={`/rooms/${bundle.room.id}/shopping`}>Shopping</Link>
-        <Link href={`/share/${bundle.room.id}`}>Share</Link>
+        <Link href={`/rooms/${bundle.room.id}`} prefetch={false}>Overview</Link>
+        <Link href={`/rooms/${bundle.room.id}/plans`} prefetch={false}>Plans</Link>
+        <Link href={`/rooms/${bundle.room.id}/shopping`} prefetch={false}>Shopping</Link>
+        <Link href={`/share/${bundle.room.id}`} prefetch={false}>Share</Link>
       </nav>
 
       <section className="metric-grid">
@@ -63,16 +68,18 @@ export default async function RoomPage({ params }: PageProps) {
       </section>
 
       <section className="grid two">
-        <article className="card">
-          <div className="section-title">
-            <ClipboardCopy size={18} />
-            <h2>Invite link</h2>
-          </div>
-          <code className="invite-code">{invitePath}</code>
-          <Link className="button secondary" href={invitePath}>
-            Open guest form
-          </Link>
-        </article>
+        {isHost && invitePath ? (
+          <article className="card">
+            <div className="section-title">
+              <ClipboardCopy size={18} />
+              <h2>Invite link</h2>
+            </div>
+            <code className="invite-code">{invitePath}</code>
+            <Link className="button secondary" href={invitePath} prefetch={false}>
+              Open guest form
+            </Link>
+          </article>
+        ) : null}
         <article className="card">
           <div className="section-title">
             <Vote size={18} />
@@ -84,10 +91,10 @@ export default async function RoomPage({ params }: PageProps) {
               : `${bundle.plans.length} plans are ready for voting.`}
           </p>
           <div className="button-row">
-            <Link className="button secondary" href={`/rooms/${bundle.room.id}/plans`}>
+            <Link className="button secondary" href={`/rooms/${bundle.room.id}/plans`} prefetch={false}>
               Review plans
             </Link>
-            <Link className="button secondary" href={`/rooms/${bundle.room.id}/shopping`}>
+            <Link className="button secondary" href={`/rooms/${bundle.room.id}/shopping`} prefetch={false}>
               Open shopping
             </Link>
           </div>

@@ -1,9 +1,15 @@
 import { spawn } from "node:child_process";
+import { randomBytes, randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
 import { setTimeout as delay } from "node:timers/promises";
 
-const isWindows = process.platform === "win32";
-const npxCommand = "npx";
-const appUrl = "http://localhost:3000";
+const appPort = process.env.TABLESYNC_E2E_PORT ?? "3107";
+const appUrl = `http://localhost:${appPort}`;
+const nextCli = "node_modules/next/dist/bin/next";
+const playwrightCli = "node_modules/@playwright/test/cli.js";
+const e2eRunId = randomUUID();
+const e2eAuthKey = randomBytes(32).toString("base64url");
+const requestedPlaywrightArgs = process.argv.slice(2);
 
 function spawnCommand(command: string, args: string[], inherit = false, extraEnv: Record<string, string> = {}) {
   return spawn(command, args, {
@@ -14,8 +20,15 @@ function spawnCommand(command: string, args: string[], inherit = false, extraEnv
       NEXT_TELEMETRY_DISABLED: "1"
     },
     stdio: inherit ? "inherit" : ["ignore", "pipe", "pipe"],
-    shell: isWindows,
+    shell: false,
     windowsHide: true
+  });
+}
+
+function waitForExit(process: ReturnType<typeof spawnCommand>) {
+  return new Promise<number>((resolve) => {
+    process.on("exit", (code) => resolve(code ?? 1));
+    process.on("error", () => resolve(1));
   });
 }
 
@@ -40,51 +53,85 @@ async function isServerReady() {
   }
 }
 
-async function stopProcessTree(pid?: number) {
+async function stopProcess(pid?: number) {
   if (!pid) {
     return;
   }
 
-  if (isWindows) {
-    await new Promise<void>((resolve) => {
-      const killer = spawn("taskkill", ["/pid", String(pid), "/T", "/F"], {
-        stdio: "ignore",
-        windowsHide: true
-      });
-      killer.on("exit", () => resolve());
-      killer.on("error", () => resolve());
-    });
+  try {
+    process.kill(pid, "SIGTERM");
+  } catch {
     return;
   }
 
-  process.kill(pid, "SIGTERM");
+  await delay(500);
+
+  try {
+    process.kill(pid, 0);
+    process.kill(pid, "SIGKILL");
+  } catch {
+    // The server exited after SIGTERM.
+  }
+}
+
+async function cleanupE2ERooms() {
+  const { prisma } = await import("../src/lib/prisma");
+  try {
+    await prisma.dinnerRoom.deleteMany({
+      where: {
+        description: `TableSync E2E ${e2eRunId}`
+      }
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 async function main() {
-  const serverAlreadyRunning = await isServerReady();
-  const server = serverAlreadyRunning
-    ? null
-    : spawnCommand(npxCommand, ["next", "dev", "--hostname", "localhost", "--port", "3000"]);
+  let server: ReturnType<typeof spawnCommand> | null = null;
   let exitCode = 1;
 
-  server?.stdout?.on("data", (chunk) => process.stdout.write(chunk));
-  server?.stderr?.on("data", (chunk) => process.stderr.write(chunk));
-
   try {
+    if (await isServerReady()) {
+      throw new Error(`E2E port ${appPort} is already in use; refusing to test an unattributed server.`);
+    }
+    if (!existsSync(".next/BUILD_ID")) {
+      throw new Error("E2E requires a production build. Run npm run build before npm run test:e2e.");
+    }
+
+    server = spawnCommand(process.execPath, [nextCli, "start", "--hostname", "localhost", "--port", appPort], false, {
+      TABLESYNC_E2E_RUN_ID: e2eRunId,
+      TABLESYNC_E2E_AUTH: "1",
+      TABLESYNC_E2E_AUTH_KEY: e2eAuthKey,
+      BETTER_AUTH_SECRET: e2eAuthKey,
+      BETTER_AUTH_URL: appUrl,
+      DATABASE_POOL_SIZE: "1",
+      DATABASE_POOL_MAX_USES: "0"
+    });
+    server.stdout?.on("data", (chunk) => process.stdout.write(chunk));
+    server.stderr?.on("data", (chunk) => process.stderr.write(chunk));
+
     await waitForServer();
-    const testProcess = spawnCommand(npxCommand, ["playwright", "test", "--reporter=list"], true, {
-      PLAYWRIGHT_EXTERNAL_SERVER: "1"
-    });
-    const testExitCode = await new Promise<number>((resolve) => {
-      testProcess.on("exit", (code) => resolve(code ?? 1));
-      testProcess.on("error", () => resolve(1));
-    });
+    const testProcess = spawnCommand(
+      process.execPath,
+      [playwrightCli, "test", "--reporter=list", ...requestedPlaywrightArgs],
+      true,
+      {
+        PLAYWRIGHT_EXTERNAL_SERVER: "1",
+        TABLESYNC_E2E_BASE_URL: appUrl,
+        TABLESYNC_E2E_RUN_ID: e2eRunId,
+        TABLESYNC_E2E_AUTH_KEY: e2eAuthKey,
+        ...(process.platform === "win32" ? { MOZ_DISABLE_CONTENT_SANDBOX: "1" } : {})
+      }
+    );
+    const testExitCode = await waitForExit(testProcess);
 
     exitCode = testExitCode;
   } finally {
     if (server) {
-      await stopProcessTree(server.pid);
+      await stopProcess(server.pid);
     }
+    await cleanupE2ERooms();
   }
 
   process.exit(exitCode);

@@ -11,7 +11,7 @@ import { getRoomBundle } from "@/lib/store";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const bundle = await getRoomBundle(demoRoom.id);
+  const bundle = await getRoomBundle(demoRoom.id, {}, { allowPublicDemo: true });
   if (!bundle) {
     return null;
   }
@@ -30,11 +30,11 @@ export default async function HomePage() {
             pick becomes an assigned grocery list.
           </p>
           <div className="button-row">
-            <Link className="button" href="/demo">
+            <Link className="button" href="/demo" prefetch={false}>
               Open demo
               <ArrowRight size={16} />
             </Link>
-            <Link className="button secondary" href="/auth">
+            <Link className="button secondary" href="/auth" prefetch={false}>
               Sign in as host
             </Link>
           </div>
@@ -93,7 +93,7 @@ export default async function HomePage() {
 
       <RoomCard room={bundle.room} guestCount={bundle.guests.length} shoppingCount={bundle.shopping.length} />
       <ConstraintSummary guests={bundle.guests} />
-      {finalPlan ? <MenuPlanCard plan={finalPlan} guests={bundle.guests} /> : null}
+      {finalPlan ? <MenuPlanCard plan={finalPlan} /> : null}
     </div>
   );
 }

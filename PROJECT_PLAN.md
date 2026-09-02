@@ -1,5 +1,7 @@
 # TableSync Project Plan
 
+> **Execution note (2026-08-01):** This file remains the long-term product vision and feature inventory. The completed core-MVP contract is maintained in [`docs/CORE_MVP_EXECUTION_PLAN.md`](docs/CORE_MVP_EXECUTION_PLAN.md). The active production-authentication, authorization, managed-database, staging-deployment, and re-acceptance contract is [`docs/PRODUCTION_READINESS_PLAN.md`](docs/PRODUCTION_READINESS_PLAN.md); it is authoritative where milestone ordering conflicts.
+
 ## 1. Project Summary
 
 **Project name:** TableSync
@@ -110,10 +112,10 @@ Reason: PostgreSQL shows real relational data modeling skill. Prisma keeps devel
 
 ### Auth
 
-- **Auth.js**
+- **Better Auth 1.6 with Prisma-backed sessions**
 - OAuth providers:
   - GitHub
-  - Google
+  - Google remains deferred until a product need justifies a second provider
 
 Reason: OAuth login is useful for a portfolio project and avoids storing passwords.
 

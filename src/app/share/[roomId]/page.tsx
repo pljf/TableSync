@@ -4,29 +4,27 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate, formatMoney, humanize } from "@/lib/format";
 import { getPublicRoom } from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: Promise<{ roomId: string }> | { roomId: string };
 };
 
 export default async function SharePage({ params }: PageProps) {
   const { roomId } = await params;
-  const bundle = await getPublicRoom(roomId);
-  if (!bundle) {
+  const view = await getPublicRoom(roomId);
+  if (!view) {
     notFound();
   }
 
-  const finalPlan = bundle.plans.find((plan) => plan.status === "FINALIZED");
-  const groupedShopping = bundle.shopping.reduce<Record<string, number>>((acc, item) => {
-    acc[item.ingredient.category] = (acc[item.ingredient.category] ?? 0) + 1;
-    return acc;
-  }, {});
+  const finalPlan = view.finalPlan;
 
   return (
     <div className="page-stack public-share">
       <header className="page-header">
         <div>
           <p className="eyebrow">Public dinner plan</p>
-          <h1>{bundle.room.title}</h1>
+          <h1>{view.room.title}</h1>
         </div>
         <Badge tone="success">Finalized</Badge>
       </header>
@@ -34,17 +32,17 @@ export default async function SharePage({ params }: PageProps) {
         <article className="metric-card">
           <CalendarDays size={20} />
           <span>Date</span>
-          <strong>{formatDate(bundle.room.dateTime)}</strong>
+          <strong>{formatDate(view.room.dateTime)}</strong>
         </article>
         <article className="metric-card">
           <MapPin size={20} />
           <span>Location</span>
-          <strong>{bundle.room.location || "TBD"}</strong>
+          <strong>{view.room.location || "TBD"}</strong>
         </article>
         <article className="metric-card">
           <ShoppingCart size={20} />
           <span>Budget</span>
-          <strong>{formatMoney(bundle.room.totalBudgetCents)}</strong>
+          <strong>{formatMoney(view.room.totalBudgetCents)}</strong>
         </article>
       </section>
       {finalPlan ? (
@@ -55,11 +53,11 @@ export default async function SharePage({ params }: PageProps) {
               <h2>Final menu</h2>
             </div>
             <ul className="dish-list">
-              {finalPlan.dishes.map(({ dish, servings }) => (
+              {finalPlan.dishes.map((dish) => (
                 <li key={dish.id}>
                   <span>{dish.name}</span>
                   <small>
-                    {humanize(dish.category)} - {servings} servings
+                    {humanize(dish.category)} - {dish.servings} servings
                   </small>
                 </li>
               ))}
@@ -68,7 +66,7 @@ export default async function SharePage({ params }: PageProps) {
           <article className="card">
             <h2>Shopping summary</h2>
             <div className="tag-list">
-              {Object.entries(groupedShopping).map(([category, count]) => (
+              {view.shoppingCategories.map(({ category, count }) => (
                 <Badge key={category} tone="info">
                   {humanize(category)}: {count}
                 </Badge>

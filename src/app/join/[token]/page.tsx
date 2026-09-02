@@ -2,6 +2,11 @@ import { notFound } from "next/navigation";
 import { joinRoomAction } from "@/app/actions";
 import { dietLabels, eventTypeLabels, spiceLabels } from "@/lib/format";
 import { getRoomByInviteToken } from "@/lib/store";
+import { canPerformWorkflowAction } from "@/lib/workflow/state-machine";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { MutationForm } from "@/components/ui/mutation-form";
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ token: string }> | { token: string };
@@ -9,24 +14,36 @@ type PageProps = {
 
 export default async function JoinPage({ params }: PageProps) {
   const { token } = await params;
-  const bundle = await getRoomByInviteToken(token);
-  if (!bundle) {
+  const submissionKey = crypto.randomUUID();
+  const room = await getRoomByInviteToken(token);
+  if (!room) {
     notFound();
+  }
+  if (!canPerformWorkflowAction(room.status, "JOIN_ROOM")) {
+    return (
+      <section className="narrow-page">
+        <article className="card empty-state">
+          <p className="eyebrow">Guest preferences closed</p>
+          <h1>{room.title} is no longer accepting responses</h1>
+          <p className="muted">The host has moved this room to voting or finalized the menu.</p>
+        </article>
+      </section>
+    );
   }
 
   return (
     <section className="narrow-page wide">
-      <form action={joinRoomAction.bind(null, token)} className="card form-card">
+      <MutationForm action={joinRoomAction.bind(null, token, submissionKey)} className="card form-card">
         <div>
           <p className="eyebrow">
-            Join {eventTypeLabels[bundle.room.eventType].toLowerCase()} - {bundle.room.title}
+            Join {eventTypeLabels[room.eventType].toLowerCase()} - {room.title}
           </p>
           <h1>Share your meal preferences</h1>
         </div>
         <div className="form-grid">
           <label>
             Name
-            <input name="name" placeholder="Maya" required />
+            <input minLength={2} name="name" placeholder="Maya" required />
           </label>
           <label>
             Email optional
@@ -77,10 +94,10 @@ export default async function JoinPage({ params }: PageProps) {
           <input name="canBring" type="checkbox" />
           I can bring groceries or food
         </label>
-        <button className="button full" type="submit">
+        <SubmitButton className="button full" pendingLabel="Saving preferences...">
           Join room
-        </button>
-      </form>
+        </SubmitButton>
+      </MutationForm>
     </section>
   );
 }

@@ -2,28 +2,32 @@
 
 TableSync is a collaborative dinner planning app for friend groups. A host creates a dinner room, guests submit dietary restrictions and preferences, the app generates safe menu plans, collects votes, finalizes a menu, and turns it into an assigned shopping list.
 
-Development progress and technical decisions are recorded in [`docs/DEVELOPMENT_LOG.md`](docs/DEVELOPMENT_LOG.md).
+The completed core-MVP acceptance contract is maintained in [`docs/CORE_MVP_EXECUTION_PLAN.md`](docs/CORE_MVP_EXECUTION_PLAN.md). The active production-readiness goal, permission matrix, threat model, phases, and evidence ledger are maintained in [`docs/PRODUCTION_READINESS_PLAN.md`](docs/PRODUCTION_READINESS_PLAN.md). Development progress and technical decisions are recorded in [`docs/DEVELOPMENT_LOG.md`](docs/DEVELOPMENT_LOG.md).
 
 ## Current Build
 
-This repository now contains a working Next.js vertical slice:
+This repository now contains a production-hardened local vertical slice:
 
-- Demo host sign-in
+- Better Auth GitHub OAuth with database-backed, revocable host sessions
+- Strictly isolated CI-local test identity; no deployable demo-login bypass
+- Deny-by-default host/guest authorization and tokenless hashed guest sessions
 - Seeded Friday Hotpot Night room
 - Guest join form
 - Constraint summary for diets, allergies, likes, budget, and spice
-- Deterministic menu recommendation engine
-- Voting and veto controls
+- Strict deterministic Dinner and Hotpot recommendation engines
+- Like, Neutral, and required-reason Veto controls
 - Plan finalization
 - Shopping list generation, assignment, and purchased state
 - Public read-only share page
 - PostgreSQL persistence through Prisma Client
 - Idempotent catalog and demo-room database seed
-- Initial Prisma migration
-- Unit tests for menu and shopping logic
-- Playwright smoke test for the demo flow
+- Ten versioned Prisma migrations
+- 37 unit tests and 8 PostgreSQL integration tests for domain, auth, permissions, health/deployment boundaries, concurrency, rate limiting, and audit behavior
+- 18 production-build Playwright tests across Chromium, Firefox, and WebKit (16 pass plus 2 intentional protocol-only engine skips)
+- Automated Axe, responsive screenshot, touch-target, and Lighthouse quality gates
+- Managed-database TLS/role validation, attributable health checks, and a protected remote staging acceptance workflow
 
-All room, guest, plan, vote, shopping, and activity data is stored in PostgreSQL. Authentication still uses a demo host cookie and is the next major production milestone.
+All application, authentication, guest-session, rate-limit, and security-audit data is stored in PostgreSQL. The core MVP and provider-independent production hardening pass locally. Real GitHub callback evidence, a managed PostgreSQL restore rehearsal, non-local deployment, production dependency audit, and the complete staging rerun remain required; no remote completion is claimed.
 
 ## Tech Stack
 
@@ -51,7 +55,7 @@ Open `http://localhost:3000`.
 
 After `npm run db:dev`, run `npx prisma dev ls` and copy the displayed TCP PostgreSQL URL into `DATABASE_URL` in `.env`. `SHADOW_DATABASE_URL` is only required when creating new migrations with `npm run db:migrate`.
 
-If the experimental local server drops reused connections, set `DATABASE_POOL_MAX_USES="1"` in `.env`. Leave it empty for a normal hosted PostgreSQL database.
+For the experimental local server, use `DATABASE_POOL_SIZE="1"` and leave `DATABASE_POOL_MAX_USES` empty or set it to `0`. Recycling the TCP connection after every checkout can exhaust the local proxy and corrupt prepared-statement session state. Normal hosted PostgreSQL can use a larger pool.
 
 Useful commands:
 
@@ -61,8 +65,12 @@ npm run test
 npm run test:db
 npm run build
 npm run test:e2e
+npm run audit:performance
+npm run security:secrets
 npm run db:studio
 ```
+
+Managed staging setup, recovery, and remote acceptance are defined in [`docs/STAGING_OPERATIONS_RUNBOOK.md`](docs/STAGING_OPERATIONS_RUNBOOK.md). The final evidence template is [`docs/STAGING_ACCEPTANCE_REPORT.md`](docs/STAGING_ACCEPTANCE_REPORT.md).
 
 ## Demo Flow
 
@@ -71,10 +79,10 @@ npm run db:studio
 3. Review the seeded room dashboard.
 4. Open the guest invite path from the room page.
 5. Submit a guest preference form.
-6. Sign in as demo host from `/auth`.
-7. Generate or review menu plans.
-8. Vote, finalize, and open the shopping workflow.
-9. Open `/share/room-friday-hotpot` for the public final plan.
+6. Review the plans and shopping workflow in the explicitly seeded read-only demo surface.
+7. Open `/share/room-friday-hotpot` for the public final plan.
+
+Creating and managing private rooms requires a configured GitHub OAuth provider. The deterministic local E2E identity is intentionally unavailable during normal development and in every managed deployment.
 
 ## Architecture
 
@@ -114,14 +122,21 @@ The shopping engine scales ingredient quantities by servings, merges identical i
 
 ```env
 DATABASE_URL=
+DIRECT_URL=
 SHADOW_DATABASE_URL=
 DATABASE_POOL_SIZE=
 DATABASE_POOL_MAX_USES=
-AUTH_SECRET=
+DATABASE_RUNTIME_MODE=
+TABLESYNC_DATABASE_SCOPE=
+TABLESYNC_DEPLOYMENT_ENV=
+TABLESYNC_DEPLOYMENT_ID=
+TABLESYNC_GIT_SHA=
+TABLESYNC_EXPECTED_MIGRATION=
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=
 AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
-AUTH_GOOGLE_ID=
-AUTH_GOOGLE_SECRET=
+AUTH_TRUSTED_ORIGINS=
 NEXT_PUBLIC_APP_URL=
 PUSHER_APP_ID=
 PUSHER_KEY=
@@ -129,12 +144,13 @@ PUSHER_SECRET=
 PUSHER_CLUSTER=
 ```
 
+In a managed Web runtime, set `TABLESYNC_DATABASE_SCOPE=runtime` and do not expose `DIRECT_URL`. The protected staging migration/acceptance job sets `TABLESYNC_DATABASE_SCOPE=acceptance` and receives both pooled and direct URLs.
+
 ## Next Milestones
 
-- Add Auth.js OAuth for GitHub and Google.
-- Store guest edit tokens in cookies and enforce guest-scoped mutations.
-- Add route-level authorization helpers.
-- Add realtime invalidation or polling for room updates.
-- Expand Playwright coverage for create room, join, vote, finalize, and shopping mutation flows.
-- Add screenshots and a deployed Vercel link.
+- Authorize and review the production dependency audit.
+- Provision the separate-role, TLS managed PostgreSQL staging targets and execute the fresh/upgrade/backup/restore rehearsal.
+- Configure the staging GitHub OAuth app and prove deny/success/reload/logout/revocation with real callbacks.
+- Deploy one attributable HTTPS staging build and run the protected browser, accessibility, responsive, Lighthouse, security, and rollback gate.
+- Consider realtime updates or additional product scope only after this production-readiness goal is accepted.
 

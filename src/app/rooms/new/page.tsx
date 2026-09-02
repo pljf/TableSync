@@ -2,6 +2,9 @@ import { createRoomAction } from "@/app/actions";
 import { requireHost } from "@/lib/auth";
 import { eventTypeLabels } from "@/lib/format";
 import { eventTypes } from "@/lib/seed-data";
+import { SubmitButton } from "@/components/ui/submit-button";
+
+export const dynamic = "force-dynamic";
 
 export default async function NewRoomPage() {
   await requireHost();
@@ -15,7 +18,7 @@ export default async function NewRoomPage() {
         </div>
         <label>
           Title
-          <input name="title" placeholder="Friday Hotpot Night" required />
+          <input minLength={2} name="title" placeholder="Friday Hotpot Night" required />
         </label>
         <label>
           Description
@@ -53,9 +56,9 @@ export default async function NewRoomPage() {
             Public share page
           </label>
         </div>
-        <button className="button full" type="submit">
+        <SubmitButton className="button full" pendingLabel="Creating room...">
           Create room
-        </button>
+        </SubmitButton>
       </form>
     </section>
   );

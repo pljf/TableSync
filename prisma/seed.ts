@@ -37,6 +37,9 @@ async function seedCatalog() {
       estimatedCostCents: dish.estimatedCostCents,
       prepTimeMinutes: dish.prepTimeMinutes,
       spiceLevel: dish.spiceLevel,
+      spiceAdjustable: dish.spiceAdjustable,
+      supportedEventTypes: dish.supportedEventTypes,
+      hotpotRole: dish.hotpotRole,
       tags: dish.tags
     };
     const ingredientRows = dish.ingredients.map((item) => ({
@@ -96,7 +99,7 @@ async function seedDemoRoom() {
       totalBudgetCents: demoRoom.totalBudgetCents,
       expectedGuests: demoRoom.expectedGuests,
       status: demoRoom.status,
-      inviteToken: demoRoom.inviteToken,
+      inviteToken: demoRoom.inviteToken!,
       isPublicShareable: demoRoom.isPublicShareable,
       createdAt: new Date(demoRoom.createdAt),
       updatedAt: new Date(demoRoom.updatedAt)
@@ -110,7 +113,6 @@ async function seedDemoRoom() {
         roomId: guest.roomId,
         name: guest.name,
         email: guest.email,
-        editToken: guest.editToken,
         isHostGuest: guest.isHostGuest,
         canBring: guest.canBring,
         createdAt: new Date(guest.createdAt),
@@ -131,11 +133,15 @@ async function seedDemoRoom() {
     });
   }
 
-  const generated = generateMenuPlans({
+  const generation = generateMenuPlans({
     room: demoRoom,
     guests: demoGuests,
     dishes: dishCatalog
   });
+  if (generation.kind !== "success") {
+    throw new Error(`Demo data must produce accepted plans: ${generation.report.summary}`);
+  }
+  const generated = generation.plans;
   const plans: MenuPlan[] = [];
 
   for (const [index, generatedPlan] of generated.entries()) {
@@ -203,6 +209,7 @@ async function seedDemoRoom() {
         estimatedCostCents: item.estimatedCostCents,
         assignedToGuestId: item.assignedToGuestId,
         checked: index < 3,
+        sortOrder: index,
         createdAt: new Date(demoRoom.createdAt),
         updatedAt: new Date(demoRoom.updatedAt)
       }))

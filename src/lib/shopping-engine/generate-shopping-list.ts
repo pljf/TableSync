@@ -9,8 +9,7 @@ type MergeRecord = {
 };
 
 export function generateShoppingList(input: GenerateShoppingInput): GeneratedShoppingItem[] {
-  const { room, guests, plan } = input;
-  const guestCount = Math.max(room.expectedGuests ?? guests.length, guests.length, 1);
+  const { guests, plan } = input;
   const merged = new Map<string, MergeRecord>();
 
   for (const planDish of plan.dishes) {
@@ -40,8 +39,7 @@ export function generateShoppingList(input: GenerateShoppingInput): GeneratedSho
 
   const items = [...merged.values()]
     .map<GeneratedShoppingItem>((item) => ({
-      ...item,
-      estimatedCostCents: Math.round(item.estimatedCostCents * Math.max(1, guestCount / Math.max(room.expectedGuests ?? guestCount, 1)))
+      ...item
     }))
     .sort((a, b) => {
       const category = a.ingredient.category.localeCompare(b.ingredient.category);

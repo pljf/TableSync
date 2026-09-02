@@ -41,6 +41,39 @@ a {
   text-decoration: none;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--text);
+  color: white;
+  transform: translateY(-150%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 72%, white);
+  outline-offset: 3px;
+}
+
 button,
 input,
 select,
@@ -136,7 +169,7 @@ h3 {
 .nav-links a,
 .icon-text-button {
   gap: 8px;
-  min-height: 38px;
+  min-height: 44px;
   padding: 8px 10px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -179,6 +212,11 @@ h3 {
 
 .page-stack > * + * {
   margin-top: 20px;
+}
+
+.page-stack.compact-stack {
+  width: 100%;
+  padding-top: 0;
 }
 
 .hero-grid {
@@ -333,7 +371,7 @@ h3 {
 .button {
   justify-content: center;
   gap: 8px;
-  min-height: 42px;
+  min-height: 44px;
   padding: 10px 14px;
   border-radius: 8px;
   background: var(--primary);
@@ -364,15 +402,17 @@ h3 {
 }
 
 .button.small {
-  min-height: 34px;
+  min-height: 44px;
   padding: 6px 10px;
   font-size: 0.9rem;
 }
 
 .icon-button {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
   place-items: center;
   border-radius: 8px;
   background: var(--primary);
@@ -459,7 +499,7 @@ h3 {
 }
 
 .tab-nav a {
-  min-height: 36px;
+  min-height: 44px;
   padding: 8px 12px;
   border-radius: 8px;
   color: var(--muted);
@@ -553,7 +593,7 @@ input,
 select,
 textarea {
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   padding: 9px 11px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -572,8 +612,43 @@ textarea {
 }
 
 .checkbox-label input {
+  width: 20px;
+  min-height: 20px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+button[aria-busy="true"] {
+  cursor: wait;
+}
+
+.button-spinner {
   width: 16px;
-  min-height: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: button-spin 700ms linear infinite;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .checkbox-label.standalone {
@@ -584,6 +659,30 @@ textarea {
   display: grid;
   gap: 14px;
   text-align: left;
+}
+
+.auth-action-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.compact-auth-action {
+  position: relative;
+  display: block;
+}
+
+.compact-auth-error {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(300px, 80vw);
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .auth-card h1,
@@ -632,6 +731,74 @@ textarea {
   border-radius: 8px;
   background: var(--warning-soft);
   color: var(--warning);
+}
+
+.no-solution-panel {
+  border-color: color-mix(in srgb, var(--warning) 32%, var(--border));
+  background: linear-gradient(145deg, var(--surface) 0%, var(--warning-soft) 145%);
+}
+
+.no-solution-list {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.no-solution-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--warning) 22%, var(--border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--warning-soft) 55%, white);
+}
+
+.no-solution-list svg {
+  margin-top: 2px;
+  color: var(--warning);
+}
+
+.no-solution-list p,
+.no-solution-list small,
+.closest-plan-reference p {
+  margin: 4px 0 0;
+}
+
+.no-solution-list small {
+  display: block;
+  color: var(--muted);
+}
+
+.closest-plan-reference {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px dashed var(--warning);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.closest-plan-reference > p {
+  grid-column: 1 / -1;
+}
+
+.destructive-control summary {
+  cursor: pointer;
+  font-weight: 750;
+  color: var(--danger);
+}
+
+.destructive-control form {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .vote-form {
@@ -688,6 +855,82 @@ textarea {
   gap: 10px;
 }
 
+.feedback {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.success-feedback {
+  border-color: color-mix(in srgb, var(--success) 32%, var(--border));
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.form-actions {
+  align-items: stretch;
+}
+
+.field-error {
+  margin: -4px 0 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.form-feedback {
+  flex: 1 0 100%;
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.success-text {
+  margin: 0;
+  color: var(--success);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+[aria-invalid="true"] {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 1px var(--danger);
+}
+
+.error-state > svg {
+  color: var(--danger);
+}
+
+.skeleton,
+.skeleton-card {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e7ebe6 25%, #f6f8f5 50%, #e7ebe6 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shift 1.4s ease-in-out infinite;
+}
+
+.skeleton-title {
+  width: min(480px, 80%);
+  height: 72px;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.skeleton-card {
+  min-height: 260px;
+}
+
+@keyframes skeleton-shift {
+  to {
+    background-position: -200% 0;
+  }
+}
+
 @media (max-width: 980px) {
   .topbar {
     grid-template-columns: 1fr;
@@ -702,7 +945,8 @@ textarea {
   .hero-grid,
   .grid.two,
   .grid.three,
-  .metric-grid {
+  .metric-grid,
+  .skeleton-grid {
     grid-template-columns: 1fr;
   }
 

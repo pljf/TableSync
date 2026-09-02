@@ -69,5 +69,63 @@ describe("shopping engine", () => {
 
     expect(new Set(assigned.map((item) => item.assignedToGuestId)).size).toBeGreaterThan(1);
   });
+
+  it("keeps the displayed category and ingredient ordering after cost-balanced assignment", () => {
+    const items = generateShoppingList({ room: demoRoom, guests: demoGuests, plan: testPlan() });
+    const keys = items.map((item) => `${item.ingredient.category}:${item.ingredient.name}`);
+
+    expect(keys).toEqual([...keys].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it("does not double-scale cost when actual attendance exceeds the original estimate", () => {
+    const plan = testPlan();
+    const items = generateShoppingList({
+      room: { ...demoRoom, expectedGuests: 2 },
+      guests: demoGuests,
+      plan
+    });
+    const expectedDishCost = plan.dishes.reduce(
+      (sum, item) => sum + Math.round(item.dish.estimatedCostCents * (item.servings / item.dish.baseServings)),
+      0
+    );
+    const shoppingCost = items.reduce((sum, item) => sum + (item.estimatedCostCents ?? 0), 0);
+    const ingredientRows = plan.dishes.reduce((sum, item) => sum + item.dish.ingredients.length, 0);
+
+    expect(Math.abs(shoppingCost - expectedDishCost)).toBeLessThanOrEqual(ingredientRows);
+  });
+
+  it("does not merge the same ingredient when the purchase units differ", () => {
+    const riceDish = dish("steamed-rice");
+    const riceIngredient = riceDish.ingredients.find((item) => item.ingredient.id === "rice");
+    expect(riceIngredient).toBeDefined();
+    if (!riceIngredient) {
+      return;
+    }
+    const plan = {
+      ...testPlan(),
+      dishes: [
+        {
+          dish: { ...riceDish, id: "rice-by-bag", ingredients: [{ ...riceIngredient, unit: "bag" }] },
+          servings: 4
+        },
+        {
+          dish: { ...riceDish, id: "rice-by-cup", ingredients: [{ ...riceIngredient, unit: "cup" }] },
+          servings: 4
+        }
+      ]
+    };
+
+    const riceItems = generateShoppingList({ room: demoRoom, guests: demoGuests, plan }).filter(
+      (item) => item.ingredient.id === "rice"
+    );
+    expect(riceItems.map((item) => item.unit)).toEqual(["bag", "cup"]);
+  });
+
+  it("leaves every item unassigned when nobody opted in to bring groceries", () => {
+    const guests = demoGuests.map((guest) => ({ ...guest, canBring: false }));
+    const items = generateShoppingList({ room: demoRoom, guests, plan: testPlan() });
+
+    expect(items.every((item) => item.assignedToGuestId === undefined)).toBe(true);
+  });
 });
 

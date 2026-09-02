@@ -1,10 +1,20 @@
-import { CheckCircle2, Circle, PackageCheck, UserPlus } from "lucide-react";
+import { CheckCircle2, Circle } from "lucide-react";
 import type { Guest, ShoppingItem } from "@/lib/domain";
-import { claimShoppingAction, toggleShoppingAction } from "@/app/actions";
 import { formatMoney, humanize } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { ShoppingItemControls } from "@/components/shopping/shopping-item-controls";
 
-export function ShoppingList({ items, guests }: { items: ShoppingItem[]; guests: Guest[] }) {
+export function ShoppingList({
+  items,
+  guests,
+  guestId,
+  hostCanManage
+}: {
+  items: ShoppingItem[];
+  guests: Guest[];
+  guestId?: string;
+  hostCanManage: boolean;
+}) {
   const guestsById = new Map(guests.map((guest) => [guest.id, guest]));
   const grouped = items.reduce<Record<string, ShoppingItem[]>>((acc, item) => {
     const key = item.ingredient.category;
@@ -38,31 +48,15 @@ export function ShoppingList({ items, guests }: { items: ShoppingItem[]; guests:
                       </span>
                     </div>
                   </div>
-                  <form action={claimShoppingAction} className="inline-form">
-                    <input type="hidden" name="itemId" value={item.id} />
-                    <UserPlus size={16} />
-                    <select name="guestId" defaultValue={item.assignedToGuestId ?? ""} aria-label={`Assign ${item.ingredient.name}`}>
-                      <option value="">Unassigned</option>
-                      {guests.map((guest) => (
-                        <option key={guest.id} value={guest.id}>
-                          {guest.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button className="icon-button" type="submit" aria-label={`Save assignment for ${item.ingredient.name}`}>
-                      <PackageCheck size={16} />
-                    </button>
-                  </form>
-                  <form action={toggleShoppingAction} className="inline-form">
-                    <input type="hidden" name="itemId" value={item.id} />
-                    <label className="checkbox-label">
-                      <input name="checked" type="checkbox" defaultChecked={item.checked} />
-                      Purchased
-                    </label>
-                    <button className="button secondary small" type="submit">
-                      Save
-                    </button>
-                  </form>
+                  <ShoppingItemControls
+                    assignedToGuestId={item.assignedToGuestId}
+                    checked={item.checked}
+                    guests={guests}
+                    guestId={guestId}
+                    hostCanManage={hostCanManage}
+                    itemId={item.id}
+                    itemName={item.ingredient.name}
+                  />
                   <span className="assignee">{assignedGuest ? assignedGuest.name : "Unassigned"}</span>
                 </article>
               );

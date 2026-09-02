@@ -35,7 +35,7 @@ export function RoomCard({ room, guestCount, shoppingCount }: { room: DinnerRoom
       </div>
       <div className="card-footer-row">
         <strong>{formatMoney(room.totalBudgetCents)}</strong>
-        <Link className="button secondary" href={`/rooms/${room.id}`}>
+        <Link className="button secondary" href={`/rooms/${room.id}`} prefetch={false}>
           Open
         </Link>
       </div>

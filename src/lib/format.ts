@@ -84,8 +84,11 @@ export const activityLabels: Record<ActivityType, string> = {
   GUEST_JOINED: "Guest joined",
   PREFERENCE_UPDATED: "Preference updated",
   PLANS_GENERATED: "Plans generated",
+  PLAN_GENERATION_FAILED: "Plan generation needs attention",
+  PREFERENCES_REOPENED: "Preferences reopened",
   VOTE_CAST: "Vote cast",
   PLAN_FINALIZED: "Plan finalized",
+  FINALIZATION_UNDONE: "Finalization undone",
   SHOPPING_GENERATED: "Shopping generated",
   ITEM_ASSIGNED: "Item assigned",
   ITEM_CHECKED: "Item checked"
