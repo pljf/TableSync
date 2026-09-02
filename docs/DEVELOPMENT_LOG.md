@@ -244,6 +244,10 @@ Minimum resume input: select/connect a hosting and managed PostgreSQL provider (
 - `git diff --check` reported no whitespace error; only the existing Windows LF/CRLF conversion notices remain.
 - Created the local `codex/production-staging` candidate branch. No push, cloud resource creation, OAuth registration, production dependency audit, or staging evidence has been claimed.
 - Plugin discovery found no currently callable GitHub, Neon, or Vercel connection. Those external connections and approval to transmit dependency metadata to npm remain the next gates.
+- Pushed `f78c8fb` on `codex/production-staging`; the local branch and `origin/codex/production-staging` matched exactly after the push.
+- Automatic installation suggestions for the catalog GitHub, Vercel, and Neon Postgres plugins were rejected by the current plugin directory despite using the supplied exact identifiers. No plugin is claimed installed.
+- Opened the official GitHub developer settings, Vercel dashboard, and Neon console login pages as user handoffs. All three require interactive user sign-in; no password, one-time code, token, or account data was entered or inspected.
+- The production audit remains unexecuted because the execution policy requires a second, specific confirmation that production package names and versions may be sent to the public npm audit service. No audit payload was transmitted.
 
 ## Local Development
 

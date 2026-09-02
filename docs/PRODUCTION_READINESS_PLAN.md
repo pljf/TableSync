@@ -1,6 +1,6 @@
 # TableSync Production Readiness Plan
 
-> **Status:** Resumed; the reviewed local candidate is being fixed on `codex/production-staging`, while provider connections, npm-audit egress, and remote publication remain pending (2026-09-02)
+> **Status:** Candidate branch pushed; waiting for GitHub, Vercel, and Neon browser sign-in plus explicit npm package-name/version egress consent (2026-09-02)
 > **Started:** 2026-08-01
 > **Scope:** Production authentication, deny-by-default authorization, managed PostgreSQL staging, real staging deployment, and complete re-acceptance of the existing core MVP in that environment.
 
@@ -250,6 +250,8 @@ Tests must prove at minimum:
 | 2026-08-02 | Phases 1/3 | Added fail-safe sign-in/sign-out error recovery, generic OAuth rejection UI, attacker callback ignoring, and automated health failure/migration mismatch redaction checks | 37/37 unit tests; Chromium authentication/security targeted pass; Firefox/WebKit authentication-error and Axe pass | Local pass | Prove the actual GitHub provider denial/success/reload/logout lifecycle on staging |
 | 2026-08-02 | Phases 4-6 | Third consecutive external-decision audit found no Vercel/Neon/Supabase deployment variables, no `vercel`, `neonctl`, or `gh` command, no installed provider connector, no staging URL/database/OAuth credential, and no permission to publish the dirty `main` worktree or send lockfile dependency metadata to npm | Read-only command/environment inventory; Git `main` at `bbea289184127e3a321775abc82083af529cce12`; acceptance report remains wholly pending | Blocked | User selects/provides provider access and authorizes audit plus Git branch/commit/push |
 | 2026-09-02 | Phases 1-3 | Work resumed and the provider-independent candidate gate was repeated before source-control fixation | Secret scan 123 files/history; evidence scan 44 files; lint; typecheck; 37/37 unit tests; production build; Prisma validation; 10 migrations current; seed twice; 8/8 database tests; `git diff --check` clean apart from line-ending notices | Local pass; candidate branch created | Commit the reviewed candidate, then connect protected GitHub OAuth, Neon, and Vercel environments before any remote acceptance claim |
+| 2026-09-02 | Phases 4-5 | Fixed the reviewed implementation as `f78c8fb` and pushed `codex/production-staging` to `origin`; automatic plugin suggestions rejected all three catalog IDs, and direct console checks showed GitHub, Vercel, and Neon require user sign-in | Local/remote branch equality at `f78c8fb`; official login pages opened as browser handoffs; no credential entered or captured | Branch published; provider access pending | User signs in to all three consoles, then provisioning and OAuth registration can begin |
+| 2026-09-02 | Phase 3 | Production audit execution was requested after general approval, but the policy gate requires explicit consent to transmit production dependency package names and versions to the public npm audit service | Audit command was not executed and no dependency metadata was transmitted | Pending consent | Run `npm audit --omit=dev --audit-level=high` only after the precise payload/destination is approved |
 
 ## 10. External dependencies and decision log
 
