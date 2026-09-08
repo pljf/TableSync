@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createRoomSyncController, RoomSyncAccessError, type RoomSyncStatus } from "@/lib/room-sync";
 import { hasUnsavedFormControls } from "@/lib/form-drafts";
+import { documentLifecycle } from "@/lib/document-lifecycle";
 
 export function RoomSync({ roomId, initialRevision }: { roomId: string; initialRevision?: string }) {
   const router = useRouter();
@@ -75,6 +76,13 @@ export function RoomSync({ roomId, initialRevision }: { roomId: string; initialR
       onStatus: setStatus
     });
     sync.current = controller;
+    let startFrame = 0;
+    const unsubscribeLifecycle = documentLifecycle.subscribe((active) => {
+      window.cancelAnimationFrame(startFrame);
+      // A departing document must not start I/O from a late passive effect.
+      if (active) startFrame = window.requestAnimationFrame(controller.showPage);
+      else controller.hidePage();
+    });
 
     function onEdit(event: Event) {
       const form = event.target instanceof HTMLElement ? event.target.closest("form") : null;
@@ -103,16 +111,15 @@ export function RoomSync({ roomId, initialRevision }: { roomId: string; initialR
     window.addEventListener("focus", controller.resume);
     window.addEventListener("online", controller.resume);
     window.addEventListener("offline", controller.resume);
-    window.addEventListener("pagehide", controller.hidePage);
-    window.addEventListener("pageshow", controller.showPage);
     document.addEventListener("input", onEdit, true);
     document.addEventListener("change", onEdit, true);
     document.addEventListener("submit", onSubmit, true);
     document.addEventListener("reset", onReset, true);
     document.addEventListener("focusout", onFocusOut);
-    controller.start();
 
     return () => {
+      window.cancelAnimationFrame(startFrame);
+      unsubscribeLifecycle();
       controller.stop();
       sync.current = null;
       observer.disconnect();
@@ -120,8 +127,6 @@ export function RoomSync({ roomId, initialRevision }: { roomId: string; initialR
       window.removeEventListener("focus", controller.resume);
       window.removeEventListener("online", controller.resume);
       window.removeEventListener("offline", controller.resume);
-      window.removeEventListener("pagehide", controller.hidePage);
-      window.removeEventListener("pageshow", controller.showPage);
       document.removeEventListener("input", onEdit, true);
       document.removeEventListener("change", onEdit, true);
       document.removeEventListener("submit", onSubmit, true);

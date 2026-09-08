@@ -3,6 +3,7 @@
 import { LayoutDashboard, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import "@/lib/document-lifecycle";
 
 const destinations = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },

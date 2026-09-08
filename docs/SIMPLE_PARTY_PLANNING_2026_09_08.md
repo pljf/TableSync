@@ -42,6 +42,12 @@ Local acceptance recorded before pull-request submission:
 
 Representative evidence: [preparation on a phone](evidence/ui/simple-menu-preparation-mobile.png) and [menu comparison on desktop](evidence/ui/simple-menu-comparison-desktop.png). Final additional browser and GitHub Actions outcomes are recorded in the pull request; earlier PR #4 results are historical evidence, not a claim that its failed Safari run passed.
 
+### Safari navigation follow-up
+
+The initial PR #5 head reproduced the native Safari diagnostic despite per-component pagehide cleanup. A temporary diagnostic run showed a newly mounted room trying to fetch after navigation had begun, before an HTTP request could be created. WebKit can [reclassify that synchronous cancellation as an access-control error](https://github.com/WebKit/WebKit/blob/main/Source/WebCore/loader/cache/CachedResourceLoader.cpp#L1337-L1347), and [Playwright reports the native JavaScript diagnostic as a page error](https://github.com/microsoft/playwright/blob/v1.62.1/packages/playwright-core/src/server/webkit/wkPage.ts#L499-L523).
+
+The follow-up keeps departure state for the entire document, established by the persistent navigation before room effects mount. A non-cancelling beforeunload listener stops new work early; pagehide retains the state; pageshow resumes it. Late room mounts inherit the departure state, and live starts are scheduled for the next frame. No browser-error filter or cross-origin policy relaxation was introduced. The full unit suite now passes **357 tests across 36 files**, including late-mount and history-return lifecycle regressions. Final browser and CI outcomes are recorded in PR #5.
+
 ## Release boundary
 
 Real GitHub callback acceptance requires the deployed OAuth configuration. Guests can use the local application without it. Linking saves hosted rooms; participant responses remain browser-specific. Deployment and managed PostgreSQL validation remain with the project owner.
