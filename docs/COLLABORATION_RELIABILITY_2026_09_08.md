@@ -54,6 +54,7 @@ After finalization, the selected menu is prominent and other options are collaps
 - All 32 database tests passed across five files, including grocery reconciliation, stale-row rejection, authorization, concurrent claims, and transaction rollback.
 - Lint and the production build, including TypeScript, passed.
 - Secret scanning and evidence-redaction checks passed. The production dependency audit reported zero vulnerabilities.
+- An isolated clean-install dry run passed after restoring missing optional dependency entries in the lockfile. Application dependency versions remain unchanged.
 - All 27 local browser tests passed: 21 in the full Chromium suite, plus the three collaboration regression tests in both Firefox and WebKit. The remote-deployment health check was skipped in local mode.
 
 The Chromium suite covers all seven meal formats, voting, finalization and reopening, Potluck contributions and shopping, guest access, interaction feedback, accessibility, and security boundaries. The cross-browser collaboration tests cover retained room identities, shared updates with draft protection, and the anonymous host account-upgrade entry point.
