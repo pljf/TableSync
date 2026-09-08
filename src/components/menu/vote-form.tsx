@@ -19,12 +19,24 @@ const subscribeToHydration = () => () => {};
 const hydratedSnapshot = () => true;
 const serverHydratedSnapshot = () => false;
 
+type VoteReasonDraft = { saved: string; value: string };
+
+export function syncVoteReasonDraft(draft: VoteReasonDraft, saved: string): VoteReasonDraft {
+  if (draft.saved === saved) return draft;
+  return { saved, value: draft.value === draft.saved ? saved : draft.value };
+}
+
 export function VoteForm({ currentVote, planId }: { currentVote?: Vote; planId: string }) {
   const router = useRouter();
   // A streamed form can be visible before its controlled input handler exists.
   // Keep it unavailable until hydration can retain every typed draft.
   const hydrated = useSyncExternalStore(subscribeToHydration, hydratedSnapshot, serverHydratedSnapshot);
-  const [reason, setReason] = useState(currentVote?.reason ?? "");
+  const savedReason = currentVote?.reason ?? "";
+  const [reasonDraft, setReasonDraft] = useState({ saved: savedReason, value: savedReason });
+  // Refresh clean inputs with another tab's vote while retaining local edits.
+  const currentReasonDraft = syncVoteReasonDraft(reasonDraft, savedReason);
+  if (currentReasonDraft !== reasonDraft) setReasonDraft(currentReasonDraft);
+  const reason = currentReasonDraft.value;
   const submitting = useRef(false);
   const [confirmedVote, setConfirmedVote] = useState<{ baseline?: Vote; value: Vote["value"] }>();
   const [edited, setEdited] = useState(false);
@@ -35,7 +47,7 @@ export function VoteForm({ currentVote, planId }: { currentVote?: Vote; planId: 
         const submittedReason = String(formData.get("reason") ?? "");
         const savedValue = formData.get("value") as Vote["value"];
         const savedReason = savedValue === "VETO" ? submittedReason.trim() : "";
-        setReason((current) => current === submittedReason ? savedReason : current);
+        setReasonDraft((current) => ({ ...current, value: current.value === submittedReason ? savedReason : current.value }));
         setConfirmedVote({ baseline: currentVote, value: savedValue });
       }
       return result;
@@ -96,7 +108,7 @@ export function VoteForm({ currentVote, planId }: { currentVote?: Vote; planId: 
           name="reason"
           maxLength={1000}
           onChange={(event) => {
-            setReason(event.target.value);
+            setReasonDraft({ saved: savedReason, value: event.target.value });
             setEdited(true);
             if (error) {
               setError(undefined);

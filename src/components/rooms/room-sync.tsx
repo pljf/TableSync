@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createRoomSyncController, RoomSyncAccessError, type RoomSyncStatus } from "@/lib/room-sync";
+import { hasUnsavedFormControls } from "@/lib/form-drafts";
 
 export function RoomSync({ roomId, initialRevision }: { roomId: string; initialRevision?: string }) {
   const router = useRouter();
   const [status, setStatus] = useState<RoomSyncStatus>("connected");
   const [refreshing, startTransition] = useTransition();
   const refreshPending = useRef(false);
+  const renderedRevision = useRef(initialRevision);
   const sync = useRef<ReturnType<typeof createRoomSyncController> | null>(null);
   const draftState = useRef({
     dirtyForms: new Map<HTMLFormElement, number>(),
@@ -17,8 +19,9 @@ export function RoomSync({ roomId, initialRevision }: { roomId: string; initialR
   });
 
   useEffect(() => {
+    renderedRevision.current = initialRevision;
     refreshPending.current = refreshing;
-    if (!refreshing) sync.current?.flush();
+    if (!refreshing) sync.current?.acknowledge(initialRevision);
   }, [initialRevision, refreshing]);
 
   useEffect(() => {
@@ -39,15 +42,14 @@ export function RoomSync({ roomId, initialRevision }: { roomId: string; initialR
         }
       }
       for (const form of dirtyForms.keys()) {
-        const markedControls = form.querySelectorAll<HTMLElement>("[data-dirty]");
-        if (!form.isConnected || (markedControls.length > 0 && Array.from(markedControls).every((control) => control.dataset.dirty === "false"))) {
+        if (!form.isConnected || !hasUnsavedFormControls(form.elements)) {
           dirtyForms.delete(form);
         }
       }
     }
 
     const controller = createRoomSyncController({
-      initialRevision,
+      initialRevision: renderedRevision.current,
       async readRevision(signal) {
         const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/revision`, { cache: "no-store", credentials: "same-origin", signal });
         if (response.status === 401 || response.status === 403 || response.status === 404) throw new RoomSyncAccessError();
@@ -101,6 +103,8 @@ export function RoomSync({ roomId, initialRevision }: { roomId: string; initialR
     window.addEventListener("focus", controller.resume);
     window.addEventListener("online", controller.resume);
     window.addEventListener("offline", controller.resume);
+    window.addEventListener("pagehide", controller.hidePage);
+    window.addEventListener("pageshow", controller.showPage);
     document.addEventListener("input", onEdit, true);
     document.addEventListener("change", onEdit, true);
     document.addEventListener("submit", onSubmit, true);
@@ -116,21 +120,23 @@ export function RoomSync({ roomId, initialRevision }: { roomId: string; initialR
       window.removeEventListener("focus", controller.resume);
       window.removeEventListener("online", controller.resume);
       window.removeEventListener("offline", controller.resume);
+      window.removeEventListener("pagehide", controller.hidePage);
+      window.removeEventListener("pageshow", controller.showPage);
       document.removeEventListener("input", onEdit, true);
       document.removeEventListener("change", onEdit, true);
       document.removeEventListener("submit", onSubmit, true);
       document.removeEventListener("reset", onReset, true);
       document.removeEventListener("focusout", onFocusOut);
     };
-  }, [initialRevision, roomId, router]);
+  }, [roomId, router]);
 
   if (status === "connected") return null;
   return (
     <div className="button-row" style={{ alignItems: "center", flexBasis: "100%" }}>
       <span aria-live="polite" aria-atomic="true" className="muted" role="status" style={{ fontSize: "0.8rem" }}>
-        {status === "offline" ? "You’re offline. Room updates will resume when you reconnect." : status === "unavailable" ? "Room updates are unavailable. Retry to check your access." : "Room updates are paused. Retrying automatically…"}
+        {status === "waiting" ? "Updates are waiting. Finish your changes to see them." : status === "offline" ? "You’re offline. Room updates will resume when you reconnect." : status === "unavailable" ? "Room updates are unavailable. Retry to check your access." : "Room updates are paused. Retrying automatically…"}
       </span>
-      {status !== "offline" ? <button className="button secondary small" onClick={() => sync.current?.resume()} type="button">Retry updates</button> : null}
+      {status !== "offline" && status !== "waiting" ? <button className="button secondary small" onClick={() => sync.current?.resume()} type="button">Retry updates</button> : null}
     </div>
   );
 }

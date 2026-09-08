@@ -1,11 +1,15 @@
 "use client";
 
-import { useActionState, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useActionState, useEffect, useId, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { ActionFeedback } from "@/components/ui/action-feedback";
 import { initialMutationState, type MutationState } from "@/lib/mutation-state";
 
 type MutationAction = (state: MutationState, formData: FormData) => Promise<MutationState>;
+
+const subscribeToHydration = () => () => {};
+const hydratedSnapshot = () => true;
+const serverHydratedSnapshot = () => false;
 
 type ControlSnapshot =
   | { checked: boolean; index: number; kind: "checked"; name: string }
@@ -59,13 +63,17 @@ function restoreControls(form: HTMLFormElement, snapshots: ControlSnapshot[]): v
 export function MutationForm({
   action,
   children,
-  className
+  className,
+  waitForHydration = false
 }: {
   action: MutationAction;
   children: ReactNode;
   className?: string;
+  waitForHydration?: boolean;
 }) {
   const router = useRouter();
+  const hydrated = useSyncExternalStore(subscribeToHydration, hydratedSnapshot, serverHydratedSnapshot);
+  const ready = !waitForHydration || hydrated;
   const submitting = useRef(false);
   const formRef = useRef<HTMLFormElement>(null);
   const submittedControls = useRef<ControlSnapshot[]>([]);
@@ -117,7 +125,7 @@ export function MutationForm({
   }, [state.mutationId, state.status]);
 
   function preserveSubmittedControls(event: FormEvent<HTMLFormElement>) {
-    if (pending || submitting.current) {
+    if (!ready || pending || submitting.current) {
       event.preventDefault();
       return;
     }
@@ -133,6 +141,7 @@ export function MutationForm({
   return (
     <form
       action={formAction}
+      aria-busy={waitForHydration ? !ready || pending : undefined}
       aria-describedby={feedbackState !== "idle" ? feedbackId : undefined}
       className={className}
       data-state={feedbackState}
@@ -140,7 +149,11 @@ export function MutationForm({
       onSubmit={preserveSubmittedControls}
       ref={formRef}
     >
-      {children}
+      {waitForHydration ? (
+        <fieldset aria-label="Meal preferences" disabled={!ready} style={{ display: "contents" }}>
+          {children}
+        </fieldset>
+      ) : children}
       <ActionFeedback id={feedbackId} message={pending ? pendingMessage : state.message} state={feedbackState} />
     </form>
   );

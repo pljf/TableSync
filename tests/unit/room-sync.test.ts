@@ -44,7 +44,7 @@ describe("room update polling", () => {
   });
 
   it("keeps a missed change while editing or saving and applies it when safe", async () => {
-    const { sync, state, readRevision, refresh } = fixture();
+    const { sync, state, readRevision, refresh, onStatus } = fixture();
     sync.start();
     await vi.advanceTimersByTimeAsync(0);
     state.canRefresh = false;
@@ -53,11 +53,78 @@ describe("room update polling", () => {
     readRevision.mockResolvedValue("third");
     await vi.advanceTimersByTimeAsync(8_000);
     expect(refresh).not.toHaveBeenCalled();
+    expect(onStatus).toHaveBeenLastCalledWith("waiting");
     state.canRefresh = true;
     sync.flush();
     expect(refresh).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(8_000);
     expect(refresh).toHaveBeenCalledTimes(1);
+    sync.stop();
+  });
+
+  it("retries the same revision when a refresh ends without committing server content", async () => {
+    const { sync, refresh, onStatus } = fixture("rendered");
+    sync.start();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    sync.acknowledge("rendered");
+    expect(onStatus).toHaveBeenLastCalledWith("retrying");
+    sync.flush();
+    await vi.advanceTimersByTimeAsync(8_000);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(8_000);
+    expect(refresh).toHaveBeenCalledTimes(2);
+    sync.acknowledge("first");
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(onStatus).toHaveBeenLastCalledWith("connected");
+    sync.stop();
+  });
+
+  it("does not overlap an uncommitted refresh and still sees a newer change afterward", async () => {
+    const { sync, refresh, readRevision } = fixture("rendered");
+    sync.start();
+    await vi.advanceTimersByTimeAsync(0);
+    readRevision.mockResolvedValue("second");
+    await vi.advanceTimersByTimeAsync(24_000);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    sync.acknowledge("first");
+    await vi.advanceTimersByTimeAsync(8_000);
+    expect(refresh).toHaveBeenCalledTimes(2);
+    sync.acknowledge("second");
+    await vi.advanceTimersByTimeAsync(24_000);
+    expect(refresh).toHaveBeenCalledTimes(2);
+    sync.stop();
+  });
+
+  it("ignores polling responses begun before a newer server render commits", async () => {
+    const { sync, refresh, readRevision } = fixture("rendered");
+    sync.start();
+    await vi.advanceTimersByTimeAsync(0);
+    let finishRead!: (revision: string) => void;
+    readRevision.mockImplementationOnce(() => new Promise((resolve) => { finishRead = resolve; }));
+    await vi.advanceTimersByTimeAsync(8_000);
+    sync.acknowledge("newer rendered content");
+    finishRead("first");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    readRevision.mockResolvedValue("newer rendered content");
+    await vi.advanceTimersByTimeAsync(8_000);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    sync.stop();
+  });
+
+  it("backs off synchronous refresh failures and permits an explicit retry", async () => {
+    const { sync, refresh, onStatus } = fixture("rendered");
+    refresh.mockImplementationOnce(() => { throw new Error("Refresh could not start"); });
+    sync.start();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(onStatus).toHaveBeenLastCalledWith("retrying");
+    sync.flush();
+    expect(refresh).toHaveBeenCalledTimes(1);
+    sync.resume();
+    expect(refresh).toHaveBeenCalledTimes(2);
+    sync.acknowledge("first");
     sync.stop();
   });
 
@@ -73,6 +140,60 @@ describe("room update polling", () => {
     state.visible = true;
     sync.resume();
     await vi.advanceTimersByTimeAsync(0);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    sync.stop();
+  });
+
+  it("stops departing-page polling before document visibility changes", async () => {
+    const { sync, state, readRevision, refresh } = fixture();
+    sync.start();
+    await vi.advanceTimersByTimeAsync(0);
+    sync.hidePage();
+    expect(state.visible).toBe(true);
+    // Late focus/online events cannot reactivate the departing document.
+    sync.resume();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(readRevision).toHaveBeenCalledTimes(1);
+    expect(refresh).not.toHaveBeenCalled();
+    readRevision.mockResolvedValue("changed while away");
+    sync.showPage();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(readRevision).toHaveBeenCalledTimes(2);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    sync.stop();
+  });
+
+  it("aborts a pagehide request and checks promptly after a quick pageshow", async () => {
+    const { sync, readRevision, refresh, onStatus } = fixture("rendered");
+    readRevision.mockImplementationOnce((signal) => new Promise((_resolve, reject) => {
+      signal.addEventListener("abort", () => reject(new Error("Aborted during navigation")), { once: true });
+    }));
+    sync.start();
+    const signal = readRevision.mock.calls[0][0];
+    sync.hidePage();
+    expect(signal.aborted).toBe(true);
+    sync.showPage();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(readRevision).toHaveBeenCalledTimes(2);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(onStatus).not.toHaveBeenCalledWith("retrying");
+    sync.stop();
+  });
+
+  it("discards a late departed-page response and waits for pageshow to fetch again", async () => {
+    const { sync, readRevision, refresh } = fixture("rendered");
+    let finishRead!: (revision: string) => void;
+    readRevision.mockImplementationOnce(() => new Promise((resolve) => { finishRead = resolve; }));
+    sync.start();
+    sync.hidePage();
+    finishRead("late old document result");
+    await vi.advanceTimersByTimeAsync(60_000);
+    sync.flush();
+    expect(readRevision).toHaveBeenCalledTimes(1);
+    expect(refresh).not.toHaveBeenCalled();
+    sync.showPage();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(readRevision).toHaveBeenCalledTimes(2);
     expect(refresh).toHaveBeenCalledTimes(1);
     sync.stop();
   });
