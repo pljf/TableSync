@@ -1,42 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { KeyRound } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { ActionFeedback } from "@/components/ui/action-feedback";
+import { ButtonContent } from "@/components/ui/button-content";
 
-export function GitHubSignInButton({ enabled }: { enabled: boolean }) {
+export function GitHubSignInButton({ enabled, upgrade = false }: { enabled: boolean; upgrade?: boolean }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string>();
+  const started = useRef(false);
+  const feedbackId = useId();
 
   async function signIn() {
-    if (!enabled || pending) {
+    if (!enabled || started.current) {
       return;
     }
+    started.current = true;
     setPending(true);
     setError(undefined);
     try {
+      const { authClient } = await import("@/lib/auth-client");
       const result = await authClient.signIn.social({
         provider: "github",
-        callbackURL: "/dashboard",
-        errorCallbackURL: "/auth?error=provider"
+        callbackURL: upgrade ? "/dashboard?saved=1" : "/dashboard",
+        errorCallbackURL: upgrade ? "/auth?upgrade=1&error=provider" : "/auth?error=provider"
       });
-      if (result.error) {
-        setError("GitHub sign-in could not start. Please try again.");
-      }
+      if (result.error || !result.data?.url) throw new Error("The provider did not return a sign-in destination.");
     } catch {
       setError("GitHub sign-in could not start. Please try again.");
-    } finally {
+      started.current = false;
       setPending(false);
     }
   }
 
   return (
     <div className="auth-action-stack">
-      <button className="button full" disabled={!enabled || pending} onClick={signIn} type="button">
-        <KeyRound size={16} />
-        {pending ? "Opening GitHub..." : "Continue with GitHub"}
+      <button aria-busy={pending} aria-describedby={pending || error ? feedbackId : undefined} className="button full" data-state={pending ? "pending" : error ? "error" : "idle"} disabled={!enabled || pending} onClick={signIn} type="button">
+        <ButtonContent pending={pending} pendingLabel="Opening GitHub…">
+          <KeyRound aria-hidden="true" size={16} />
+          {upgrade ? "Save my rooms with GitHub" : "Continue with GitHub"}
+        </ButtonContent>
       </button>
-      {error ? <p className="field-error" role="alert">{error}</p> : null}
+      <ActionFeedback id={feedbackId} message={pending ? "Opening GitHub to continue sign-in…" : error} state={pending ? "pending" : error ? "error" : "idle"} />
     </div>
   );
 }

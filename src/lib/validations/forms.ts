@@ -4,20 +4,20 @@ const csvSchema = z
   .string()
   .max(2_000, "Use at most 2,000 characters")
   .optional()
-  .transform((value) =>
-    (value ?? "")
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean)
-  );
+  .transform((value) => {
+    const terms = (value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
+    return [...new Map(terms.map((term) => [term.toLowerCase(), term])).values()];
+  });
+
+const optionalBudgetSchema = z.coerce.number().min(0.01).max(1_000_000).multipleOf(0.01).optional();
 
 export const createRoomSchema = z.object({
   title: z.string().trim().min(2, "Title is required").max(120, "Use at most 120 characters"),
   description: z.string().trim().max(2_000, "Use at most 2,000 characters").optional(),
-  eventType: z.enum(["DINNER", "HOTPOT"]),
-  dateTime: z.string().max(40).optional(),
+  eventType: z.enum(["DINNER", "HOTPOT", "POTLUCK", "BBQ", "PICNIC", "BRUNCH", "OTHER"]),
+  dateTime: z.iso.datetime({ local: true, offset: true, error: "Enter a valid date and time" }).max(40).optional(),
   location: z.string().trim().max(200, "Use at most 200 characters").optional(),
-  totalBudgetDollars: z.coerce.number().positive().max(1_000_000).optional(),
+  totalBudgetDollars: optionalBudgetSchema,
   expectedGuests: z.coerce.number().int().min(2).max(50),
   isPublicShareable: z.coerce.boolean().optional()
 });
@@ -30,7 +30,7 @@ export const joinRoomSchema = z.object({
   dislikes: csvSchema,
   likes: csvSchema,
   spiceLevel: z.enum(["NONE", "MILD", "MEDIUM", "HOT"]),
-  maxBudgetDollars: z.coerce.number().positive().max(1_000_000).optional(),
+  maxBudgetDollars: optionalBudgetSchema,
   canBring: z.coerce.boolean().optional(),
   notes: z.string().trim().max(2_000, "Use at most 2,000 characters").optional()
 });

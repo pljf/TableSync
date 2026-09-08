@@ -35,6 +35,40 @@ function testPlan(): MenuPlan {
 }
 
 describe("shopping engine", () => {
+  it("excludes whole claimed Potluck dishes before merging shared ingredients and preserves their menu cost", () => {
+    const plan = testPlan();
+    plan.dishes[0].contributionGuestId = demoGuests[0].id;
+    const potluck = { ...demoRoom, eventType: "POTLUCK" as const };
+    const before = structuredClone(plan);
+    const items = generateShoppingList({ room: potluck, guests: demoGuests, plan });
+    const remaining = generateShoppingList({ room: potluck, guests: demoGuests, plan: { ...plan, dishes: plan.dishes.slice(1) } });
+    expect(items).toEqual(remaining);
+    expect(items.find((item) => item.ingredient.id === "rice")?.quantity).toBe(4.5);
+    const expectedSharedCost = plan.dishes.slice(1).reduce((sum, item) =>
+      sum + Math.round(item.dish.estimatedCostCents * item.servings / item.dish.baseServings), 0);
+    expect(items.reduce((sum, item) => sum + (item.estimatedCostCents ?? 0), 0)).toBe(expectedSharedCost);
+    expect(plan).toEqual(before);
+  });
+
+  it("does not treat dish contributions as free food in Dinner or Hotpot shopping", () => {
+    const plan = testPlan();
+    const original = structuredClone(plan);
+    plan.dishes.forEach((item) => { item.contributionGuestId = demoGuests[0].id; });
+    for (const eventType of ["DINNER", "HOTPOT"] as const) {
+      expect(generateShoppingList({ room: { ...demoRoom, eventType }, guests: demoGuests, plan }))
+        .toEqual(generateShoppingList({ room: { ...demoRoom, eventType }, guests: demoGuests, plan: original }));
+    }
+  });
+
+  it("needs no shared groceries when every Potluck dish is claimed, regardless of readiness", () => {
+    const plan = testPlan();
+    plan.dishes.forEach((item, index) => {
+      item.contributionGuestId = demoGuests[0].id;
+      item.contributionReady = index % 2 === 0;
+    });
+    expect(generateShoppingList({ room: { ...demoRoom, eventType: "POTLUCK" }, guests: demoGuests, plan })).toEqual([]);
+  });
+
   it("scales and merges identical ingredients by unit", () => {
     const items = generateShoppingList({ room: demoRoom, guests: demoGuests, plan: testPlan() });
     const rice = items.find((item) => item.ingredient.id === "rice");
@@ -89,9 +123,17 @@ describe("shopping engine", () => {
       0
     );
     const shoppingCost = items.reduce((sum, item) => sum + (item.estimatedCostCents ?? 0), 0);
-    const ingredientRows = plan.dishes.reduce((sum, item) => sum + item.dish.ingredients.length, 0);
+    expect(shoppingCost).toBe(expectedDishCost);
+  });
 
-    expect(Math.abs(shoppingCost - expectedDishCost)).toBeLessThanOrEqual(ingredientRows);
+  it("rounds merged quantities once after combining fractional ingredient portions", () => {
+    const riceDish = dish("steamed-rice");
+    const plan = { ...testPlan(), dishes: Array.from({ length: 3 }, (_, index) => ({
+      dish: { ...riceDish, id: `rice-${index}`, ingredients: [{ ingredient: ingredients.rice, quantity: 0.05, unit: "cup" }] },
+      servings: 1
+    })) };
+    const rice = generateShoppingList({ room: demoRoom, guests: [], plan }).find((item) => item.ingredient.id === "rice");
+    expect(rice?.quantity).toBe(0.04);
   });
 
   it("does not merge the same ingredient when the purchase units differ", () => {

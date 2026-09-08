@@ -10,3 +10,5 @@ src/generated/prisma
 .env*.local
 *.log
 *.tsbuildinfo
+# Keep detailed local audits on disk; commit their compact summaries.
+docs/evidence/lighthouse/local*/*-run-*.json

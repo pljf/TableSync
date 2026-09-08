@@ -1,21 +1,24 @@
 import { AlertTriangle, WalletCards } from "lucide-react";
+import Link from "next/link";
 import type { NoSolutionReport } from "@/lib/domain";
-import { formatMoney, humanize } from "@/lib/format";
+import { eventTypeLabels, formatMoney, humanize } from "@/lib/format";
+import { eventFormats } from "@/lib/event-formats";
 import { Badge } from "@/components/ui/badge";
 
-export function NoSolutionPanel({ report }: { report: NoSolutionReport }) {
+export function NoSolutionPanel({ report, editRoomHref }: { report: NoSolutionReport; editRoomHref?: string }) {
   const closest = report.closestOverBudgetPlan;
 
   return (
     <article className="card no-solution-panel" aria-labelledby="no-solution-title">
       <div className="card-heading">
         <div>
-          <p className="eyebrow">Generation report</p>
+          <p className="eyebrow">{eventTypeLabels[report.eventType]} generation report</p>
           <h2 id="no-solution-title">No safe plan is ready yet</h2>
         </div>
         <Badge tone="warning">Action needed</Badge>
       </div>
       <p className="muted">{report.summary}</p>
+      <p className="muted">{eventFormats[report.eventType].coverage}</p>
       <ul className="no-solution-list">
         {report.issues.map((issue) => (
           <li key={`${issue.code}-${issue.message}`}>
@@ -43,6 +46,11 @@ export function NoSolutionPanel({ report }: { report: NoSolutionReport }) {
           </p>
           <p className="muted">{closest.dishNames.join(" · ")}</p>
         </section>
+      ) : null}
+      {editRoomHref ? (
+        <div className="button-row form-actions">
+          <Link className="button secondary" href={editRoomHref} prefetch={false}>Edit room details or budget</Link>
+        </div>
       ) : null}
     </article>
   );

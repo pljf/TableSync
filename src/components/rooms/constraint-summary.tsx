@@ -1,5 +1,6 @@
 import { AlertTriangle, BadgeDollarSign, Leaf, Sparkles } from "lucide-react";
-import type { Guest, SpiceLevel } from "@/lib/domain";
+import type { EventType, Guest, SpiceLevel } from "@/lib/domain";
+import { eventFormats } from "@/lib/event-formats";
 import { dietLabels, formatMoney, spiceLabels } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 
@@ -10,7 +11,7 @@ const spiceRank: Record<SpiceLevel, number> = {
   HOT: 3
 };
 
-export function ConstraintSummary({ guests }: { guests: Guest[] }) {
+export function ConstraintSummary({ guests, eventType = "DINNER" }: { guests: Guest[]; eventType?: EventType }) {
   const allergies = [...new Set(guests.flatMap((guest) => guest.preference.allergies))];
   const likes = [...new Set(guests.flatMap((guest) => guest.preference.likes))].slice(0, 8);
   const diets = guests.reduce<Record<string, number>>((acc, guest) => {
@@ -24,18 +25,23 @@ export function ConstraintSummary({ guests }: { guests: Guest[] }) {
   );
 
   return (
-    <section className="grid two">
+    <section className="grid two constraint-summary" aria-label="Guest food preferences">
       <article className="card">
         <div className="section-title">
           <Leaf size={18} />
           <h2>Diet coverage</h2>
         </div>
+        <p className="muted">{eventFormats[eventType].coverage}</p>
         <div className="tag-list">
-          {Object.entries(diets).map(([diet, count]) => (
-            <Badge key={diet} tone={diet === "OMNIVORE" ? "neutral" : "success"}>
-              {dietLabels[diet as keyof typeof dietLabels]}: {count}
-            </Badge>
-          ))}
+          {guests.length > 0 ? (
+            Object.entries(diets).map(([diet, count]) => (
+              <Badge key={diet} tone={diet === "OMNIVORE" ? "neutral" : "success"}>
+                {dietLabels[diet as keyof typeof dietLabels]}: {count}
+              </Badge>
+            ))
+          ) : (
+            <span className="muted">No diet preferences submitted</span>
+          )}
         </div>
       </article>
       <article className="card">
@@ -64,7 +70,9 @@ export function ConstraintSummary({ guests }: { guests: Guest[] }) {
         <p className="muted">
           {budgets.length > 0 ? `Lowest guest budget: ${formatMoney(Math.min(...budgets))}` : "No guest budget limits submitted"}
         </p>
-        <p className="muted">Lowest spice tolerance: {spiceLabels[lowestSpice]}</p>
+        <p className="muted">
+          {guests.length > 0 ? `Lowest spice tolerance: ${spiceLabels[lowestSpice]}` : "No spice preferences submitted"}
+        </p>
       </article>
     </section>
   );

@@ -14,7 +14,7 @@ on:
       expected_migration:
         description: Reviewed Prisma migration head
         required: true
-        default: 20260802023000_security_audit
+        default: 20260908010000_correct_tofu_shopping_category
         type: string
 
 concurrency:
@@ -49,7 +49,7 @@ jobs:
       TABLESYNC_GIT_SHA: ${{ github.sha }}
       TABLESYNC_LIGHTHOUSE_BASE_URL: ${{ inputs.staging_url }}
       TABLESYNC_STAGING_SESSION_COOKIE: ${{ secrets.TABLESYNC_STAGING_SESSION_COOKIE }}
-      TABLESYNC_STAGING_SESSION_COOKIE_NAME: tablesync-auth.session_token
+      TABLESYNC_STAGING_SESSION_COOKIE_NAME: __Secure-tablesync-auth.session_token
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

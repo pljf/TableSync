@@ -6,7 +6,7 @@ const requestedPlaywrightArgs = process.argv.slice(2);
 const e2eRunId = randomUUID();
 const baseUrlValue = process.env.TABLESYNC_E2E_BASE_URL?.trim();
 const sessionCookie = process.env.TABLESYNC_STAGING_SESSION_COOKIE?.trim();
-const sessionCookieName = process.env.TABLESYNC_STAGING_SESSION_COOKIE_NAME?.trim() || "tablesync-auth.session_token";
+const sessionCookieName = process.env.TABLESYNC_STAGING_SESSION_COOKIE_NAME?.trim() || "__Secure-tablesync-auth.session_token";
 
 function fail(message: string): never {
   throw new Error(message);

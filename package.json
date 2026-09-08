@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -21,7 +24,8 @@
     "deployment:validate": "tsx scripts/validate-deployment-environment.ts",
     "db:verify-security": "tsx scripts/verify-database-security.ts",
     "ops:cleanup": "tsx scripts/cleanup-operational-data.ts",
-    "db:dev": "prisma dev --name tablesync --detach",
+    "db:dev": "tsx scripts/local-database.ts",
+    "db:verify-local": "tsx scripts/verify-local-database.ts",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
@@ -29,34 +33,42 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "better-auth": "^1.6.25",
     "dotenv": "^17.4.2",
     "lucide-react": "^1.18.0",
-    "next": "^16.2.9",
+    "next": "^16.3.4",
     "pg": "^8.22.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@electric-sql/pglite-socket": "0.1.3",
     "@axe-core/playwright": "^4.12.1",
     "@eslint/eslintrc": "^3.3.5",
     "@playwright/test": "^1.62.1",
+    "@prisma/dev": "0.24.17",
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.9",
+    "eslint-config-next": "^16.3.4",
     "lighthouse": "^13.4.1",
-    "prisma": "^7.8.0",
+    "prisma": "^7.10.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"
   },
   "overrides": {
-    "@hono/node-server": "^1.19.13",
-    "postcss": "^8.5.15"
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.2"
+    },
+    "fast-uri@^3.0.0": "^3.1.7",
+    "postcss": "^8.5.28",
+    "prisma": {
+      "mysql2": "^3.24.3"
+    }
   }
 }

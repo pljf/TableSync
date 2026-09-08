@@ -3,6 +3,7 @@ import type { RoomStatus } from "@/lib/domain";
 export type WorkflowAction =
   | "JOIN_ROOM"
   | "UPDATE_PREFERENCES"
+  | "UPDATE_ROOM_DETAILS"
   | "GENERATE_PLANS"
   | "CAST_VOTE"
   | "FINALIZE_PLAN"
@@ -13,6 +14,7 @@ export type WorkflowAction =
 const allowedStatuses: Record<WorkflowAction, readonly RoomStatus[]> = {
   JOIN_ROOM: ["COLLECTING_PREFERENCES", "PLANNING"],
   UPDATE_PREFERENCES: ["COLLECTING_PREFERENCES", "PLANNING"],
+  UPDATE_ROOM_DETAILS: ["COLLECTING_PREFERENCES", "PLANNING"],
   GENERATE_PLANS: ["COLLECTING_PREFERENCES", "PLANNING"],
   CAST_VOTE: ["VOTING"],
   FINALIZE_PLAN: ["VOTING"],
@@ -24,6 +26,7 @@ const allowedStatuses: Record<WorkflowAction, readonly RoomStatus[]> = {
 const actionLabels: Record<WorkflowAction, string> = {
   JOIN_ROOM: "join the room",
   UPDATE_PREFERENCES: "update preferences",
+  UPDATE_ROOM_DETAILS: "update room details",
   GENERATE_PLANS: "generate menu plans",
   CAST_VOTE: "vote",
   FINALIZE_PLAN: "finalize a plan",

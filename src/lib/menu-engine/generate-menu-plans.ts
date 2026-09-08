@@ -10,7 +10,8 @@ import type {
   NoSolutionIssue,
   PlanWarning
 } from "@/lib/domain";
-import { dishMatchesTerms, evaluateDishConstraints, evaluateDishForGuest } from "@/lib/menu-engine/constraints";
+import { eventFormatLabel, eventFormats } from "@/lib/event-formats";
+import { dietViolation, dishMatchesTerms, evaluateDishConstraints, evaluateDishForGuest } from "@/lib/menu-engine/constraints";
 import { scoreDish } from "@/lib/menu-engine/score-dish";
 
 type Candidate = GeneratedPlan & {
@@ -21,11 +22,7 @@ function scaledCost(dish: Dish, servings: number): number {
   return Math.round(dish.estimatedCostCents * (servings / dish.baseServings));
 }
 
-function servingsForDish(dish: Dish, guestCount: number, mainCount: number): number {
-  if (dish.category === "MAIN") {
-    return Math.max(2, Math.ceil(guestCount / mainCount));
-  }
-
+function servingsForDish(dish: Dish, guestCount: number): number {
   if (dish.category === "DRINK" || dish.category === "DESSERT") {
     return guestCount;
   }
@@ -33,12 +30,21 @@ function servingsForDish(dish: Dish, guestCount: number, mainCount: number): num
   return Math.max(guestCount, 4);
 }
 
-function servingsForHotpotDish(dish: Dish, guestCount: number, proteinCount: number): number {
-  if (dish.hotpotRole === "PROTEIN") {
-    return Math.max(1, Math.ceil(guestCount / proteinCount));
+function mainServings(
+  dishes: Dish[],
+  guests: Guest[],
+  guestCount: number,
+  safeGuestIdsByDishId: Map<string, Set<string>>,
+  minimum: number
+): Map<string, number> {
+  const portions = new Map(dishes.map((dish) => [dish.id, (guestCount - guests.length) / dishes.length]));
+  for (const guest of guests) {
+    const safeDishes = dishes.filter((dish) => safeGuestIdsByDishId.get(dish.id)?.has(guest.id));
+    for (const dish of safeDishes) {
+      portions.set(dish.id, (portions.get(dish.id) ?? 0) + 1 / safeDishes.length);
+    }
   }
-
-  return Math.max(guestCount, 1);
+  return new Map([...portions].map(([dishId, servings]) => [dishId, Math.max(minimum, Math.ceil(servings))]));
 }
 
 function combinations<T>(items: T[], size: number): T[][] {
@@ -51,26 +57,51 @@ function combinations<T>(items: T[], size: number): T[][] {
   );
 }
 
-function adjustmentWarnings(dishes: Dish[], guests: Guest[]): PlanWarning[] {
-  const warnings = dishes.flatMap((dish) =>
-    evaluateDishConstraints(dish, guests).warnings.filter((warning) => warning.type === "SPICE_ADJUSTMENT")
-  );
+function adjustmentWarnings(dishes: Dish[], warningsByDishId: Map<string, PlanWarning[]>): PlanWarning[] {
+  const warnings = dishes.flatMap((dish) => warningsByDishId.get(dish.id) ?? []);
   const unique = new Map(warnings.map((warning) => [warning.message, warning]));
   return [...unique.values()];
 }
 
+function candidateFamilyKey(candidate: Candidate): string {
+  return candidate.dishes
+    .map(({ dish }) => dish)
+    .filter((dish) => dish.category !== "DRINK" && dish.hotpotRole !== "SAUCE")
+    .map((dish) => dish.id)
+    .sort()
+    .join("|");
+}
+
 function selectTopCandidates(candidates: Candidate[]): GeneratedPlan[] {
-  const unique = new Map<string, Candidate>();
-  for (const candidate of candidates.sort((a, b) => b.score - a.score || a.key.localeCompare(b.key))) {
-    if (!unique.has(candidate.key)) {
-      unique.set(candidate.key, candidate);
+  const ranked = candidates.sort((a, b) => b.score - a.score || a.key.localeCompare(b.key));
+  const selected = new Map<string, Candidate>();
+  const selectedFamilies = new Set<string>();
+  const diversityFloor = (ranked[0]?.score ?? 0) - 10;
+
+  for (const candidate of ranked) {
+    if (candidate.score < diversityFloor) {
+      break;
     }
-    if (unique.size >= 3) {
+    const familyKey = candidateFamilyKey(candidate);
+    if (!selectedFamilies.has(familyKey)) {
+      selected.set(candidate.key, candidate);
+      selectedFamilies.add(familyKey);
+    }
+    if (selected.size >= 3) {
       break;
     }
   }
 
-  return [...unique.values()].map((candidate) => ({
+  for (const candidate of ranked) {
+    if (!selected.has(candidate.key)) {
+      selected.set(candidate.key, candidate);
+    }
+    if (selected.size >= 3) {
+      break;
+    }
+  }
+
+  return [...selected.values()].map((candidate) => ({
     title: candidate.title,
     summary: candidate.summary,
     score: candidate.score,
@@ -78,6 +109,18 @@ function selectTopCandidates(candidates: Candidate[]): GeneratedPlan[] {
     warnings: candidate.warnings,
     dishes: candidate.dishes
   }));
+}
+
+function hotpotDishLabel(name: string): string {
+  return name
+    .replace(/^hotpot\s+/i, "")
+    .replace(/\s+hotpot broth$/i, " broth")
+    .replace(/\s+(platter|slices)$/i, "")
+    .toLowerCase();
+}
+
+function sentenceCase(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function rememberClosestOverBudget(current: Candidate | undefined, candidate: Candidate): Candidate {
@@ -113,7 +156,7 @@ function noSolutionResult(
     kind: "no-solution",
     report: {
       eventType: room.eventType,
-      summary: `No accepted ${room.eventType === "HOTPOT" ? "Hotpot" : "Dinner"} plan satisfies every hard rule yet.`,
+      summary: `No accepted ${eventFormatLabel(room.eventType)} plan satisfies every hard rule yet.`,
       issues,
       ...(closestOverBudgetPlan ? { closestOverBudgetPlan } : {})
     }
@@ -129,6 +172,10 @@ function generateDinnerPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
     .map((dish) => scoreDish(dish, guests, room))
     .sort((a, b) => b.score - a.score || a.dish.id.localeCompare(b.dish.id));
   const scoreByDishId = new Map(scored.map((item) => [item.dish.id, item.score]));
+  const warningsByDishId = new Map(eligible.map((dish) => [
+    dish.id,
+    evaluateDishConstraints(dish, guests).warnings.filter((warning) => warning.type === "SPICE_ADJUSTMENT")
+  ]));
   const safeGuestIdsByDishId = new Map(
     eligible.map((dish) => [
       dish.id,
@@ -145,16 +192,15 @@ function generateDinnerPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
       )
     ])
   );
-  const byCategory = (category: Dish["category"], limit: number) =>
+  const byCategory = (category: Dish["category"]) =>
     scored
       .filter(({ dish }) => dish.category === category)
-      .slice(0, limit)
       .map(({ dish }) => dish);
 
-  const mains = byCategory("MAIN", 6);
-  const sides = byCategory("SIDE", 6);
-  const desserts = byCategory("DESSERT", 3);
-  const drinks = byCategory("DRINK", 3);
+  const mains = byCategory("MAIN");
+  const sides = byCategory("SIDE");
+  const desserts = byCategory("DESSERT");
+  const drinks = byCategory("DRINK");
   const mainSets = [...combinations(mains, 1), ...combinations(mains, 2)];
   const sideSets = combinations(sides, 2);
   const dessertPool: Array<Dish | undefined> = [undefined, ...desserts];
@@ -185,6 +231,7 @@ function generateDinnerPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
   };
 
   for (const selectedMains of mainSets) {
+    const servingsByMain = mainServings(selectedMains, guests, guestCount, safeGuestIdsByDishId, 2);
     for (const selectedSides of sideSets) {
       for (const drink of drinks) {
         for (const dessert of dessertPool) {
@@ -195,7 +242,7 @@ function generateDinnerPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
 
           const planDishes: MenuPlanDish[] = dishesForPlan.map((dish) => ({
             dish,
-            servings: servingsForDish(dish, guestCount, selectedMains.length)
+            servings: servingsByMain.get(dish.id) ?? servingsForDish(dish, guestCount)
           }));
           const estimatedCostCents = planDishes.reduce((sum, item) => sum + scaledCost(item.dish, item.servings), 0);
           const key = dishesForPlan
@@ -210,7 +257,7 @@ function generateDinnerPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
             summary: `Pairs ${selectedMains.map((dish) => dish.name.toLowerCase()).join(" and ")} with two shared sides.`,
             score: scoreDinnerPlan(dishesForPlan),
             estimatedCostCents,
-            warnings: adjustmentWarnings(dishesForPlan, guests),
+            warnings: adjustmentWarnings(dishesForPlan, warningsByDishId),
             dishes: planDishes
           };
           if (estimatedCostCents > budget) {
@@ -286,6 +333,144 @@ function generateDinnerPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
   return noSolutionResult(room, issues, closestOverBudget);
 }
 
+function generateStructuredPlans(input: { room: DinnerRoom; guests: Guest[]; dishes: Dish[] }): MenuGenerationResult {
+  const { room, guests, dishes } = input;
+  const format = eventFormats[room.eventType];
+  const slots = format.slots ?? [];
+  const eligible = dishes.filter((dish) =>
+    dish.supportedEventTypes.includes(room.eventType) && evaluateDishConstraints(dish, guests).allowed
+  );
+  const scored = eligible.map((dish) => scoreDish(dish, guests, room));
+  const scoreByDishId = new Map(scored.map((item) => [item.dish.id, item.score]));
+  const warningsByDishId = new Map(eligible.map((dish) => [
+    dish.id,
+    evaluateDishConstraints(dish, guests).warnings.filter((warning) => warning.type === "SPICE_ADJUSTMENT")
+  ]));
+  const safeGuestIdsByDishId = new Map(eligible.map((dish) => [
+    dish.id,
+    new Set(guests.filter((guest) => evaluateDishForGuest(dish, guest).safe).map((guest) => guest.id))
+  ]));
+  const likedGuestIdsByDishId = new Map(eligible.map((dish) => [
+    dish.id,
+    guests.filter((guest) => dishMatchesTerms(dish, guest.preference.likes).length > 0).map((guest) => guest.id)
+  ]));
+  const pools = slots.map((slot) => eligible
+    .filter((dish) => dish.category === slot.category && (!slot.requiredTag || dish.tags.includes(slot.requiredTag)))
+    .sort((a, b) => a.id.localeCompare(b.id)));
+  const choices = slots.map((slot, index) => Array.from(
+    { length: slot.max - slot.min + 1 }, (_, offset) => combinations(pools[index], slot.min + offset)
+  ).flat());
+  const guestCount = Math.max(room.expectedGuests ?? guests.length, guests.length, 1);
+  const budget = room.totalBudgetCents ?? Number.POSITIVE_INFINITY;
+  const candidates: Candidate[] = [];
+  let closestOverBudget: Candidate | undefined;
+
+  const plantBased = (dish: Dish) => dish.tags.includes("vegan") && dietViolation(dish, "VEGAN") === null;
+  const coversEveryGuest = (selection: Dish[]) => guests.every((guest) =>
+    ["MAIN", "SIDE"].every((category) => selection.some((dish) =>
+      dish.category === category && safeGuestIdsByDishId.get(dish.id)?.has(guest.id)
+    ))
+  );
+
+  // Enumerate the actual format slots; never relax structure or guest coverage to fit a budget.
+  const assemble = (slotIndex: number, selection: Dish[]) => {
+    if (slotIndex < choices.length) {
+      for (const choice of choices[slotIndex]) {
+        if (choice.some((dish) => selection.some((selected) => selected.id === dish.id))) continue;
+        assemble(slotIndex + 1, [...selection, ...choice]);
+      }
+      return;
+    }
+    const mains = selection.filter((dish) => dish.category === "MAIN");
+    if (format.requiresPlantBasedMain && !mains.some(plantBased)) return;
+    if (!coversEveryGuest(selection)) return;
+
+    const servingsByMain = mainServings(mains, guests, guestCount, safeGuestIdsByDishId, 1);
+    const planDishes = selection.map((dish) => ({ dish, servings: servingsByMain.get(dish.id) ?? guestCount }));
+    const estimatedCostCents = planDishes.reduce((sum, item) => sum + scaledCost(item.dish, item.servings), 0);
+    const likedGuests = new Set(selection.flatMap((dish) => likedGuestIdsByDishId.get(dish.id) ?? []));
+    const averageScore = selection.reduce((sum, dish) => sum + (scoreByDishId.get(dish.id) ?? 0), 0) / selection.length;
+    const candidate: Candidate = {
+      key: selection.map((dish) => dish.id).sort().join("|"),
+      title: `${format.label === "Other" ? "Shared buffet" : format.label}: ${mains.map((dish) => dish.name.toLowerCase()).join(" + ")}`,
+      summary: `${format.structure} Features ${mains.map((dish) => dish.name.toLowerCase()).join(" and ")}.`,
+      score: Math.round(averageScore + 16 + likedGuests.size * 4),
+      estimatedCostCents,
+      warnings: adjustmentWarnings(selection, warningsByDishId),
+      dishes: planDishes
+    };
+    if (estimatedCostCents > budget) {
+      closestOverBudget = rememberClosestOverBudget(closestOverBudget, candidate);
+    } else {
+      candidates.push(candidate);
+    }
+  };
+  assemble(0, []);
+  const selected = selectTopCandidates(candidates);
+  if (selected.length > 0) {
+    // When the mains match, name the differing accompaniments so options remain easy to compare.
+    const titledPlans = selected.map((plan) => {
+      const peers = selected.filter((other) => other.title === plan.title);
+      if (peers.length === 1) return plan;
+      const differences = plan.dishes.filter(({ dish }) =>
+        !peers.every((peer) => peer.dishes.some((item) => item.dish.id === dish.id))
+      );
+      return {
+        ...plan,
+        title: `${format.label === "Other" ? "Shared buffet" : format.label}: ${differences.map(({ dish }) => dish.name.toLowerCase()).join(" + ")}`
+      };
+    });
+    return { kind: "success", plans: titledPlans };
+  }
+
+  const allGuestNames = guests.map((guest) => guest.name);
+  const issues: NoSolutionIssue[] = [];
+  slots.forEach((slot, index) => {
+    if (pools[index].length < slot.min) {
+      issues.push({
+        code: "MISSING_REQUIRED_DISH",
+        message: `The safe ${format.label} catalog needs ${slot.min} ${slot.label}${slot.min === 1 ? "" : "s"}.`,
+        affectedGuestNames: allGuestNames
+      });
+    }
+  });
+  const mains = pools.flat().filter((dish) => dish.category === "MAIN");
+  const sides = pools.flat().filter((dish) => dish.category === "SIDE");
+  if (format.requiresPlantBasedMain && !mains.some(plantBased)) {
+    issues.push({
+      code: "MISSING_REQUIRED_DISH",
+      message: `The safe ${format.label} catalog needs a plant-based grilled main.`,
+      affectedGuestNames: allGuestNames
+    });
+  }
+  const uncoveredGuests = guests.filter((guest) =>
+    !mains.some((dish) => safeGuestIdsByDishId.get(dish.id)?.has(guest.id)) ||
+    !sides.some((dish) => safeGuestIdsByDishId.get(dish.id)?.has(guest.id))
+  );
+  if (uncoveredGuests.length > 0) {
+    issues.push({
+      code: "GUEST_COVERAGE",
+      message: `At least one guest has no safe ${format.label} main or side in the current catalog.`,
+      affectedGuestNames: uncoveredGuests.map((guest) => guest.name)
+    });
+  }
+  if (closestOverBudget && room.totalBudgetCents !== undefined) {
+    issues.push({
+      code: "BUDGET_LIMIT",
+      message: `The least expensive complete ${format.label} plan is over budget by $${((closestOverBudget.estimatedCostCents - room.totalBudgetCents) / 100).toFixed(2)}.`,
+      affectedGuestNames: allGuestNames
+    });
+  }
+  if (issues.length === 0) {
+    issues.push({
+      code: "GUEST_COVERAGE",
+      message: `No ${format.label} combination satisfies every structural and guest coverage rule at the same time.`,
+      affectedGuestNames: allGuestNames
+    });
+  }
+  return noSolutionResult(room, issues, closestOverBudget);
+}
+
 function generateHotpotPlans(input: { room: DinnerRoom; guests: Guest[]; dishes: Dish[] }): MenuGenerationResult {
   const { room, guests, dishes } = input;
   const eligible = dishes.filter(
@@ -298,6 +483,10 @@ function generateHotpotPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
     .map((dish) => scoreDish(dish, guests, room))
     .sort((a, b) => b.score - a.score || a.dish.id.localeCompare(b.dish.id));
   const scoreByDishId = new Map(scored.map((item) => [item.dish.id, item.score]));
+  const warningsByDishId = new Map(eligible.map((dish) => [
+    dish.id,
+    evaluateDishConstraints(dish, guests).warnings.filter((warning) => warning.type === "SPICE_ADJUSTMENT")
+  ]));
   const safeGuestIdsByDishId = new Map(
     eligible.map((dish) => [
       dish.id,
@@ -314,24 +503,23 @@ function generateHotpotPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
       )
     ])
   );
-  const byRole = (role: HotpotRole, limit: number) =>
+  const byRole = (role: HotpotRole) =>
     scored
       .filter(({ dish }) => dish.hotpotRole === role)
-      .slice(0, limit)
       .map(({ dish }) => dish);
 
-  const brothPool = byRole("BROTH", 3);
-  const proteins = byRole("PROTEIN", 5);
-  const vegetables = byRole("VEGETABLE", 4);
+  const brothPool = byRole("BROTH");
+  const proteins = byRole("PROTEIN");
+  const vegetables = byRole("VEGETABLE");
   const broths = brothPool.filter((broth) =>
     guests.every((guest) => safeGuestIdsByDishId.get(broth.id)?.has(guest.id))
   );
   const proteinSets = combinations(proteins, 2);
   const vegetableSets = combinations(vegetables, 2);
-  const staples = byRole("STAPLE", 2);
-  const sauces = byRole("SAUCE", 4);
+  const staples = byRole("STAPLE");
+  const sauces = byRole("SAUCE");
   const sauceSets = combinations(sauces, 2);
-  const drinks = byRole("DRINK", 3);
+  const drinks = byRole("DRINK");
   const guestCount = Math.max(room.expectedGuests ?? guests.length, guests.length, 1);
   const budget = room.totalBudgetCents ?? Number.POSITIVE_INFINITY;
   const candidates: Candidate[] = [];
@@ -358,6 +546,7 @@ function generateHotpotPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
 
   for (const broth of broths) {
     for (const selectedProteins of proteinSets) {
+      const servingsByProtein = mainServings(selectedProteins, guests, guestCount, safeGuestIdsByDishId, 1);
       for (const selectedVegetables of vegetableSets) {
         for (const staple of staples) {
           for (const selectedSauces of sauceSets) {
@@ -376,7 +565,7 @@ function generateHotpotPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
 
               const planDishes: MenuPlanDish[] = dishesForPlan.map((dish) => ({
                 dish,
-                servings: servingsForHotpotDish(dish, guestCount, selectedProteins.length)
+                servings: servingsByProtein.get(dish.id) ?? guestCount
               }));
               const estimatedCostCents = planDishes.reduce(
                 (sum, item) => sum + scaledCost(item.dish, item.servings),
@@ -388,13 +577,19 @@ function generateHotpotPlans(input: { room: DinnerRoom; guests: Guest[]; dishes:
                 .join("|");
               const candidate: Candidate = {
                 key,
-                title: `${broth.name} Hotpot Plan`,
+                title: sentenceCase(
+                  `${hotpotDishLabel(broth.name)} · ${selectedProteins
+                    .map((dish) => hotpotDishLabel(dish.name))
+                    .join(" + ")} with ${selectedVegetables
+                    .map((dish) => hotpotDishLabel(dish.name))
+                    .join(" + ")}`
+                ),
                 summary: `Pairs ${selectedProteins
                   .map((dish) => dish.name.toLowerCase())
                   .join(" and ")} with two vegetables, a staple, and shared dipping sauces.`,
                 score: scoreHotpotPlan(dishesForPlan),
                 estimatedCostCents,
-                warnings: adjustmentWarnings(dishesForPlan, guests),
+                warnings: adjustmentWarnings(dishesForPlan, warningsByDishId),
                 dishes: planDishes
               };
               if (estimatedCostCents > budget) {
@@ -498,6 +693,10 @@ export function generateMenuPlans(input: { room: DinnerRoom; guests: Guest[]; di
     return generateHotpotPlans(input);
   }
 
+  if (eventFormats[room.eventType]?.slots) {
+    return generateStructuredPlans(input);
+  }
+
   return {
     kind: "no-solution",
     report: {
@@ -506,7 +705,7 @@ export function generateMenuPlans(input: { room: DinnerRoom; guests: Guest[]; di
       issues: [
         {
           code: "UNSUPPORTED_EVENT",
-          message: "Choose Dinner or Hotpot to use the current core planning workflow.",
+          message: "Choose Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, or Other to use the planning workflow.",
           affectedGuestNames: []
         }
       ]

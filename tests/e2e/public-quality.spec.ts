@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
 
 test.describe("public quality surfaces", () => {
-  test("home, authentication, and demo are accessible with keyboard-visible navigation", async ({ page }, testInfo) => {
+  test("home and guest entry are accessible with keyboard-visible navigation", async ({ page }, testInfo) => {
     const browserErrors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") {
@@ -35,6 +35,7 @@ test.describe("public quality surfaces", () => {
 
     await page.goto("/auth");
     await expectNoAccessibilityViolations(page, "authentication");
+    if (testInfo.project.name === "chromium") await captureResponsiveEvidence(page, "authentication");
 
     await page.goto("/auth?error=access_denied&callbackURL=https%3A%2F%2Fattacker.invalid");
     await expect(page.locator(".error-feedback[role='alert']")).toHaveText(
@@ -45,8 +46,8 @@ test.describe("public quality surfaces", () => {
     await expectNoAccessibilityViolations(page, "authentication-error-recovery");
 
     await page.goto("/demo");
-    await expect(page.getByRole("heading", { name: /friday hotpot night/i })).toBeVisible();
-    await expectNoAccessibilityViolations(page, "demo");
+    await expect(page.getByRole("heading", { name: "Come on in.", exact: true })).toBeVisible();
+    await expectNoAccessibilityViolations(page, "guest-entry");
 
     await page.emulateMedia({ reducedMotion: "reduce" });
     const reducedMotion = await page.evaluate(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);

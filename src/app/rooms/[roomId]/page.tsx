@@ -1,12 +1,22 @@
-import { CalendarDays, ClipboardCopy, MapPin, ShoppingCart, Users, Vote } from "lucide-react";
+import { CalendarDays, MapPin, ShoppingCart, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityTimeline } from "@/components/rooms/activity-timeline";
 import { ConstraintSummary } from "@/components/rooms/constraint-summary";
+import { RoomNavigation } from "@/components/rooms/room-navigation";
+import { RoomNextStep } from "@/components/rooms/room-next-step";
+import { RoomProgress } from "@/components/rooms/room-progress";
+import { GuestList } from "@/components/rooms/guest-list";
+import { InviteLink } from "@/components/rooms/invite-link";
+import { EventDateTime } from "@/components/ui/event-date-time";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { eventTypeLabels, formatDate, formatMoney } from "@/lib/format";
+import { eventTypeLabels, formatMoney } from "@/lib/format";
+import { eventFormats } from "@/lib/event-formats";
+import { contributionSummary } from "@/lib/menu-presentation";
 import { getRequestActors } from "@/lib/request-actors";
+import { getRoomRevision } from "@/lib/room-revision";
 import { getRoomBundle } from "@/lib/store";
+import { canPerformWorkflowAction } from "@/lib/workflow/state-machine";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +26,18 @@ type PageProps = {
 
 export default async function RoomPage({ params }: PageProps) {
   const { roomId } = await params;
-  const actors = await getRequestActors();
-  const bundle = await getRoomBundle(roomId, actors, { allowPublicDemo: true });
+  const actors = await getRequestActors(roomId);
+  const initialRevision = await getRoomRevision(roomId, actors);
+  const bundle = await getRoomBundle(roomId, actors);
   if (!bundle) {
     notFound();
   }
 
   const finalPlan = bundle.plans.find((plan) => plan.status === "FINALIZED");
+  const contributions = bundle.room.eventType === "POTLUCK" && finalPlan ? contributionSummary(finalPlan.dishes) : undefined;
   const isHost = actors.host?.userId === bundle.room.hostId;
   const invitePath = bundle.room.inviteToken ? `/join/${bundle.room.inviteToken}` : undefined;
+  const shareAvailable = bundle.room.isPublicShareable && bundle.room.status === "FINALIZED" && Boolean(finalPlan);
 
   return (
     <div className="page-stack">
@@ -32,23 +45,25 @@ export default async function RoomPage({ params }: PageProps) {
         <div>
           <p className="eyebrow">{eventTypeLabels[bundle.room.eventType]}</p>
           <h1>{bundle.room.title}</h1>
-          <p className="muted">{bundle.room.description}</p>
+          <p className="muted">{bundle.room.description || eventFormats[bundle.room.eventType].description}</p>
         </div>
-        <StatusBadge status={bundle.room.status} />
+        <div className="button-row">
+          <StatusBadge status={bundle.room.status} />
+          {isHost && canPerformWorkflowAction(bundle.room.status, "UPDATE_ROOM_DETAILS") ? (
+            <Link className="button secondary" href={`/rooms/${bundle.room.id}/edit`} prefetch={false}>Edit room</Link>
+          ) : null}
+        </div>
       </header>
 
-      <nav className="tab-nav" aria-label="Room sections">
-        <Link href={`/rooms/${bundle.room.id}`} prefetch={false}>Overview</Link>
-        <Link href={`/rooms/${bundle.room.id}/plans`} prefetch={false}>Plans</Link>
-        <Link href={`/rooms/${bundle.room.id}/shopping`} prefetch={false}>Shopping</Link>
-        <Link href={`/share/${bundle.room.id}`} prefetch={false}>Share</Link>
-      </nav>
+      <RoomProgress status={bundle.room.status} guestCount={bundle.guests.length} expectedGuests={bundle.room.expectedGuests} />
+      <RoomNavigation active="overview" guestCanViewPreferences={actors.guest?.roomId === bundle.room.id} initialRevision={initialRevision ?? undefined} roomId={bundle.room.id} shareAvailable={shareAvailable} />
+      <RoomNextStep room={bundle.room} guestCount={bundle.guests.length} planCount={bundle.plans.length} isHost={isHost} isRoomGuest={actors.guest?.roomId === bundle.room.id} finalPlanTitle={finalPlan?.title} shoppingCount={bundle.shopping.length} contributions={contributions} />
 
       <section className="metric-grid">
         <article className="metric-card">
           <CalendarDays size={20} />
           <span>Date</span>
-          <strong>{formatDate(bundle.room.dateTime)}</strong>
+          <strong><EventDateTime value={bundle.room.dateTime} /></strong>
         </article>
         <article className="metric-card">
           <MapPin size={20} />
@@ -67,59 +82,22 @@ export default async function RoomPage({ params }: PageProps) {
         </article>
       </section>
 
-      <section className="grid two">
-        {isHost && invitePath ? (
+      <div className="room-workspace">
+        <div className="room-main">
+          <ConstraintSummary guests={bundle.guests} eventType={bundle.room.eventType} />
           <article className="card">
-            <div className="section-title">
-              <ClipboardCopy size={18} />
-              <h2>Invite link</h2>
-            </div>
-            <code className="invite-code">{invitePath}</code>
-            <Link className="button secondary" href={invitePath} prefetch={false}>
-              Open guest form
-            </Link>
+            <h2>Guests</h2>
+            <GuestList guests={bundle.guests} hostCanManage={isHost} currentGuestId={actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined} />
           </article>
-        ) : null}
-        <article className="card">
-          <div className="section-title">
-            <Vote size={18} />
-            <h2>Decision state</h2>
-          </div>
-          <p className="muted">
-            {finalPlan
-              ? `${finalPlan.title} is finalized with ${bundle.shopping.length} shopping items.`
-              : `${bundle.plans.length} plans are ready for voting.`}
-          </p>
-          <div className="button-row">
-            <Link className="button secondary" href={`/rooms/${bundle.room.id}/plans`} prefetch={false}>
-              Review plans
-            </Link>
-            <Link className="button secondary" href={`/rooms/${bundle.room.id}/shopping`} prefetch={false}>
-              Open shopping
-            </Link>
-          </div>
-        </article>
-      </section>
-
-      <ConstraintSummary guests={bundle.guests} />
-
-      <section className="grid two">
-        <article className="card">
-          <h2>Guests</h2>
-          <div className="guest-list">
-            {bundle.guests.map((guest) => (
-              <div className="guest-row" key={guest.id}>
-                <strong>{guest.name}</strong>
-                <span>{guest.preference.dietType.replaceAll("_", " ").toLowerCase()}</span>
-              </div>
-            ))}
-          </div>
-        </article>
-        <article className="card">
-          <h2>Activity</h2>
-          <ActivityTimeline events={bundle.activities.slice(0, 6)} />
-        </article>
-      </section>
+        </div>
+        <aside className="room-sidebar" aria-label="Invitations and activity">
+          {isHost && invitePath ? <div id="room-invite"><InviteLink path={invitePath} /></div> : null}
+          <article className="card">
+            <h2>Activity</h2>
+            <ActivityTimeline events={bundle.activities.slice(0, 6)} />
+          </article>
+        </aside>
+      </div>
     </div>
   );
 }

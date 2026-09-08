@@ -91,6 +91,8 @@ export const activityLabels: Record<ActivityType, string> = {
   FINALIZATION_UNDONE: "Finalization undone",
   SHOPPING_GENERATED: "Shopping generated",
   ITEM_ASSIGNED: "Item assigned",
-  ITEM_CHECKED: "Item checked"
+  ITEM_CHECKED: "Item checked",
+  CONTRIBUTION_ASSIGNED: "Contribution updated",
+  CONTRIBUTION_READY: "Contribution readiness updated"
 };
 

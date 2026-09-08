@@ -34,9 +34,10 @@ import {
   hashGuestSessionToken
 } from "@/lib/guest-session";
 import { generateMenuPlans } from "@/lib/menu-engine/generate-menu-plans";
+import { eventFormats } from "@/lib/event-formats";
 import { prisma } from "@/lib/prisma";
-import { demoRoom } from "@/lib/seed-data";
 import { generateShoppingList } from "@/lib/shopping-engine/generate-shopping-list";
+import { reconcileShoppingList } from "@/lib/shopping-engine/reconcile-shopping-list";
 import { assertWorkflowActionAllowed } from "@/lib/workflow/state-machine";
 import { Prisma } from "@/generated/prisma/client";
 
@@ -178,7 +179,7 @@ function mapPreference(preference: NonNullable<DbGuest["preference"]>): Preferen
   };
 }
 
-function mapGuest(guest: DbGuest, includeEmail = true): Guest {
+function mapGuest(guest: DbGuest, includePrivateDetails = true): Guest {
   if (!guest.preference) {
     throw new Error(`Guest ${guest.id} is missing a preference record.`);
   }
@@ -187,12 +188,15 @@ function mapGuest(guest: DbGuest, includeEmail = true): Guest {
     id: guest.id,
     roomId: guest.roomId,
     name: guest.name,
-    email: includeEmail ? optional(guest.email) : undefined,
+    email: includePrivateDetails ? optional(guest.email) : undefined,
     isHostGuest: guest.isHostGuest,
     canBring: guest.canBring,
     createdAt: toIso(guest.createdAt),
     updatedAt: toIso(guest.updatedAt),
-    preference: mapPreference(guest.preference)
+    preference: {
+      ...mapPreference(guest.preference),
+      notes: includePrivateDetails ? optional(guest.preference.notes) : undefined
+    }
   };
 }
 
@@ -262,8 +266,11 @@ function mapPlan(plan: DbPlan): MenuPlan {
     status: plan.status,
     warnings: mapWarnings(plan.warnings),
     dishes: plan.dishes.map((item) => ({
+      id: item.id,
       dish: mapDish(item.dish),
-      servings: item.servings
+      servings: item.servings,
+      contributionGuestId: optional(item.contributionGuestId),
+      contributionReady: item.contributionReady
     })),
     votes: plan.votes.map(mapVote),
     createdAt: toIso(plan.createdAt),
@@ -305,7 +312,7 @@ function mapActivity(activity: DbActivity): ActivityEvent {
   };
 }
 
-function mapRoomBundle(room: DbRoomBundle, audience: "host" | "guest" | "demo" = "host"): RoomBundle {
+function mapRoomBundle(room: DbRoomBundle, audience: "host" | "guest" = "host"): RoomBundle {
   const isHostAudience = audience === "host";
   return {
     room: mapRoom(room, isHostAudience),
@@ -326,6 +333,12 @@ async function getDishCatalog(): Promise<Dish[]> {
   return dishes.map(mapDish);
 }
 
+async function lockRoom(tx: Prisma.TransactionClient, roomId: string): Promise<void> {
+  // Every room mutation takes this lock before reading workflow state or child records.
+  // Menu generation must use the same locked preference snapshot that it publishes.
+  await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
+}
+
 export async function listRoomsForHost(actor: HostActor): Promise<DinnerRoom[]> {
   const rooms = await prisma.dinnerRoom.findMany({
     where: {
@@ -338,20 +351,9 @@ export async function listRoomsForHost(actor: HostActor): Promise<DinnerRoom[]> 
   return rooms.map((room) => mapRoom(room));
 }
 
-async function getRoomBundleUnsafe(roomId: string): Promise<RoomBundle | null> {
-  const room = await prisma.dinnerRoom.findUnique({
-    where: {
-      id: roomId
-    },
-    include: roomBundleInclude
-  });
-  return room ? mapRoomBundle(room) : null;
-}
-
 export async function getRoomBundle(
   roomId: string,
-  actors: RequestActors,
-  options: { allowPublicDemo?: boolean } = {}
+  actors: RequestActors
 ): Promise<RoomBundle | null> {
   const room = await prisma.dinnerRoom.findUnique({
     where: { id: roomId },
@@ -360,7 +362,6 @@ export async function getRoomBundle(
   if (!room) return null;
   if (isOwningHost(actors, room.hostId)) return mapRoomBundle(room, "host");
   if (isRoomGuest(actors, room.id)) return mapRoomBundle(room, "guest");
-  if (options.allowPublicDemo && room.id === demoRoom.id) return mapRoomBundle(room, "demo");
   return null;
 }
 
@@ -400,6 +401,7 @@ export async function getPublicRoom(roomId: string): Promise<PublicRoomView | nu
       id: true,
       title: true,
       dateTime: true,
+      eventType: true,
       location: true,
       totalBudgetCents: true,
       plans: {
@@ -411,7 +413,9 @@ export async function getPublicRoom(roomId: string): Promise<PublicRoomView | nu
           dishes: {
             select: {
               servings: true,
-              dish: { select: { id: true, name: true, category: true, hotpotRole: true } }
+              contributionGuestId: true,
+              contributionReady: true,
+              dish: { select: { id: true, name: true, category: true, hotpotRole: true, spiceAdjustable: true, spiceLevel: true } }
             }
           }
         }
@@ -427,6 +431,7 @@ export async function getPublicRoom(roomId: string): Promise<PublicRoomView | nu
     room: {
       id: room.id,
       title: room.title,
+      eventType: room.eventType,
       dateTime: room.dateTime?.toISOString(),
       location: room.location ?? undefined,
       totalBudgetCents: room.totalBudgetCents ?? undefined
@@ -435,6 +440,19 @@ export async function getPublicRoom(roomId: string): Promise<PublicRoomView | nu
       ? {
           id: plan.id,
           title: plan.title,
+          contributionSummary: room.eventType === "POTLUCK"
+            ? {
+                claimedDishes: plan.dishes.filter((item) => item.contributionGuestId).length,
+                readyDishes: plan.dishes.filter((item) => item.contributionGuestId && item.contributionReady).length,
+                totalDishes: plan.dishes.length
+              }
+            : undefined,
+          preparationNotes: [...new Set([
+            ...eventFormats[room.eventType].preparationNotes,
+            ...plan.dishes
+              .filter(({ dish }) => dish.spiceAdjustable && dish.spiceLevel !== "NONE")
+              .map(({ dish }) => `${dish.name}: serve spicy components separately so each guest can adjust the heat.`)
+          ])],
           dishes: plan.dishes.map(({ dish, servings }) => ({
             id: dish.id,
             name: dish.name,
@@ -474,115 +492,105 @@ export async function createRoom(actor: HostActor, input: CreateRoomInput): Prom
   return mapRoom(room);
 }
 
-export async function joinRoom(input: JoinRoomInput): Promise<Guest & { sessionToken: string }> {
-  const existing = await prisma.guest.findUnique({
-    where: { submissionKey: input.submissionKey },
-    include: {
-      preference: true,
-      room: { select: { inviteToken: true, inviteExpiresAt: true, status: true } }
-    }
+export async function updateRoomDetails(roomId: string, actor: HostActor, input: CreateRoomInput): Promise<DinnerRoom> {
+  return prisma.$transaction(async (tx) => {
+    await lockRoom(tx, roomId);
+    const current = await tx.dinnerRoom.findUnique({ where: { id: roomId } });
+    if (!current) throw new Error("Room not found.");
+    assertHostOwnsResource(actor, current.hostId);
+    assertWorkflowActionAllowed(current.status, "UPDATE_ROOM_DETAILS");
+    const updated = await tx.dinnerRoom.update({
+      where: { id: roomId },
+      data: {
+        title: input.title,
+        description: input.description ?? null,
+        eventType: input.eventType,
+        dateTime: input.dateTime ? new Date(input.dateTime) : null,
+        location: input.location ?? null,
+        totalBudgetCents: input.totalBudgetCents ?? null,
+        expectedGuests: input.expectedGuests,
+        isPublicShareable: input.isPublicShareable ?? false,
+        status: "COLLECTING_PREFERENCES",
+        generationReport: Prisma.DbNull,
+        generationAttemptedAt: null
+      }
+    });
+    return mapRoom(updated);
   });
-  if (existing) {
-    if (
-      existing.room.inviteToken !== input.token ||
-      (existing.room.inviteExpiresAt && existing.room.inviteExpiresAt <= new Date())
-    ) {
+}
+
+export async function joinRoom(input: JoinRoomInput): Promise<Guest & { sessionToken: string }> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "inviteToken" = ${input.token} FOR UPDATE`);
+    const room = await tx.dinnerRoom.findUnique({
+      where: { inviteToken: input.token },
+      select: { id: true, status: true, inviteExpiresAt: true }
+    });
+    if (!room || (room.inviteExpiresAt && room.inviteExpiresAt <= new Date())) {
+      throw new Error("Invite link is invalid.");
+    }
+    const existing = await tx.guest.findUnique({
+      where: { submissionKey: input.submissionKey },
+      include: { preference: true }
+    });
+    if (existing && existing.roomId !== room.id) {
       throw new AuthorizationError();
     }
-    assertWorkflowActionAllowed(existing.room.status, "JOIN_ROOM");
-    const sessionToken = deriveGuestSessionToken(existing.id, input.submissionKey);
-    await prisma.guestSession.upsert({
-      where: { guestId: existing.id },
-      update: { tokenHash: hashGuestSessionToken(sessionToken), expiresAt: new Date(Date.now() + GUEST_SESSION_SECONDS * 1000), revokedAt: null },
-      create: { guestId: existing.id, tokenHash: hashGuestSessionToken(sessionToken), expiresAt: new Date(Date.now() + GUEST_SESSION_SECONDS * 1000) }
-    });
-    return { ...mapGuest(existing), sessionToken };
-  }
-
-  try {
-    return await prisma.$transaction(async (tx) => {
-      const room = await tx.dinnerRoom.findUnique({
-        where: {
-          inviteToken: input.token
-        },
-        select: {
-          id: true,
-          status: true,
-          inviteExpiresAt: true
-        }
-      });
-      if (!room) {
-        throw new Error("Invite link is invalid.");
+    if (existing) {
+      const sessionToken = deriveGuestSessionToken(existing.id, input.submissionKey);
+      const session = await tx.guestSession.findUnique({ where: { guestId: existing.id } });
+      if (
+        !session || session.revokedAt || session.expiresAt <= new Date() ||
+        session.tokenHash !== hashGuestSessionToken(sessionToken)
+      ) {
+        throw new Error("This response session has ended. Reopen the invite link to join again.");
       }
-      if (room.inviteExpiresAt && room.inviteExpiresAt <= new Date()) {
-        throw new Error("Invite link is invalid.");
-      }
-      assertWorkflowActionAllowed(room.status, "JOIN_ROOM");
-
-      const guest = await tx.guest.create({
-        data: {
-          roomId: room.id,
-          submissionKey: input.submissionKey,
-          name: input.name,
-          email: input.email,
-          canBring: input.canBring,
-          preference: {
-            create: input.preference
-          }
-        },
-        include: {
-          preference: true
-        }
-      });
-
-      const sessionToken = deriveGuestSessionToken(guest.id, input.submissionKey);
-      await tx.guestSession.create({
-        data: {
-          guestId: guest.id,
-          tokenHash: hashGuestSessionToken(sessionToken),
-          expiresAt: new Date(Date.now() + GUEST_SESSION_SECONDS * 1000)
-        }
-      });
-
-      await tx.activityEvent.create({
-        data: {
-          roomId: room.id,
-          actorName: guest.name,
-          type: "GUEST_JOINED",
-          message: `${guest.name} submitted preferences.`
-        }
-      });
-
-      return { ...mapGuest(guest), sessionToken };
-    });
-  } catch (error) {
-    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
-      const duplicate = await prisma.guest.findUnique({
-        where: { submissionKey: input.submissionKey },
-        include: {
-          preference: true,
-          room: { select: { inviteToken: true, inviteExpiresAt: true, status: true } }
-        }
-      });
-      if (duplicate) {
-        if (
-          duplicate.room.inviteToken !== input.token ||
-          (duplicate.room.inviteExpiresAt && duplicate.room.inviteExpiresAt <= new Date())
-        ) {
-          throw new AuthorizationError();
-        }
-        assertWorkflowActionAllowed(duplicate.room.status, "JOIN_ROOM");
-        const sessionToken = deriveGuestSessionToken(duplicate.id, input.submissionKey);
-        await prisma.guestSession.upsert({
-          where: { guestId: duplicate.id },
-          update: { tokenHash: hashGuestSessionToken(sessionToken), expiresAt: new Date(Date.now() + GUEST_SESSION_SECONDS * 1000), revokedAt: null },
-          create: { guestId: duplicate.id, tokenHash: hashGuestSessionToken(sessionToken), expiresAt: new Date(Date.now() + GUEST_SESSION_SECONDS * 1000) }
-        });
-        return { ...mapGuest(duplicate), sessionToken };
-      }
+      // Recover a lost response without extending, recreating, or unrevoking the
+      // existing session, including when voting began after the first submission.
+      return { ...mapGuest(existing), sessionToken };
     }
-    throw error;
-  }
+    assertWorkflowActionAllowed(room.status, "JOIN_ROOM");
+    const guest = await tx.guest.create({
+      data: {
+        roomId: room.id,
+        submissionKey: input.submissionKey,
+        name: input.name,
+        email: input.email,
+        canBring: input.canBring,
+        preference: {
+          create: input.preference
+        }
+      },
+      include: {
+        preference: true
+      }
+    });
+
+    const sessionToken = deriveGuestSessionToken(guest.id, input.submissionKey);
+    const sessionData = {
+      tokenHash: hashGuestSessionToken(sessionToken),
+      expiresAt: new Date(Date.now() + GUEST_SESSION_SECONDS * 1000)
+    };
+    await tx.guestSession.create({
+      data: { guestId: guest.id, ...sessionData }
+    });
+
+    if (room.status === "PLANNING") {
+      await tx.dinnerRoom.update({
+        where: { id: room.id },
+        data: { status: "COLLECTING_PREFERENCES", generationReport: Prisma.DbNull, generationAttemptedAt: null }
+      });
+    }
+    await tx.activityEvent.create({
+      data: {
+        roomId: room.id,
+        actorName: guest.name,
+        type: "GUEST_JOINED",
+        message: `${guest.name} submitted preferences.`
+      }
+    });
+    return { ...mapGuest(guest), sessionToken };
+  });
 }
 
 export async function updateGuestPreferences(
@@ -590,7 +598,7 @@ export async function updateGuestPreferences(
   input: Omit<JoinRoomInput, "token" | "submissionKey">
 ): Promise<Guest> {
   return prisma.$transaction(async (tx) => {
-    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Guest" WHERE "id" = ${actor.guestId} FOR UPDATE`);
+    await lockRoom(tx, actor.roomId);
     const current = await tx.guest.findUnique({
       where: { id: actor.guestId },
       include: {
@@ -625,7 +633,7 @@ export async function updateGuestPreferences(
       where: { id: current.id },
       data: {
         name: input.name,
-        email: input.email,
+        email: input.email ?? null,
         canBring: input.canBring,
         preference: {
           update: {
@@ -634,13 +642,19 @@ export async function updateGuestPreferences(
             dislikes: input.preference.dislikes,
             likes: input.preference.likes,
             spiceLevel: input.preference.spiceLevel,
-            maxBudgetCents: input.preference.maxBudgetCents,
-            notes: input.preference.notes
+            maxBudgetCents: input.preference.maxBudgetCents ?? null,
+            notes: input.preference.notes ?? null
           }
         }
       },
       include: { preference: true }
     });
+    if (current.room.status === "PLANNING") {
+      await tx.dinnerRoom.update({
+        where: { id: guest.roomId },
+        data: { status: "COLLECTING_PREFERENCES", generationReport: Prisma.DbNull, generationAttemptedAt: null }
+      });
+    }
     await tx.activityEvent.create({
       data: {
         roomId: guest.roomId,
@@ -658,35 +672,25 @@ export async function generatePlansForRoom(
   roomId: string,
   actor: HostActor
 ): Promise<MenuGenerationResult<MenuPlan>> {
-  const bundle = await getRoomBundleUnsafe(roomId);
-  if (!bundle) {
-    throw new Error("Room not found.");
-  }
-  assertHostOwnsResource(actor, bundle.room.hostId);
-  assertWorkflowActionAllowed(bundle.room.status, "GENERATE_PLANS");
-
   const dishes = await getDishCatalog();
   if (dishes.length === 0) {
     throw new Error("Dish catalog is empty. Run npm run db:seed.");
   }
 
-  const generation = generateMenuPlans({
-    room: bundle.room,
-    guests: bundle.guests,
-    dishes
-  });
-  if (generation.kind === "no-solution") {
-    await prisma.$transaction(async (tx) => {
-      await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
-      const currentRoom = await tx.dinnerRoom.findUnique({
-        where: { id: roomId },
-        select: { status: true, hostId: true }
-      });
-      if (!currentRoom) {
-        throw new Error("Room not found.");
-      }
-      assertHostOwnsResource(actor, currentRoom.hostId);
-      assertWorkflowActionAllowed(currentRoom.status, "GENERATE_PLANS");
+  return prisma.$transaction(async (tx) => {
+    await lockRoom(tx, roomId);
+    const currentRoom = await tx.dinnerRoom.findUnique({
+      where: { id: roomId },
+      include: roomBundleInclude
+    });
+    if (!currentRoom) {
+      throw new Error("Room not found.");
+    }
+    assertHostOwnsResource(actor, currentRoom.hostId);
+    assertWorkflowActionAllowed(currentRoom.status, "GENERATE_PLANS");
+    const bundle = mapRoomBundle(currentRoom);
+    const generation = generateMenuPlans({ room: bundle.room, guests: bundle.guests, dishes });
+    if (generation.kind === "no-solution") {
       await tx.menuPlan.deleteMany({
         where: {
           roomId,
@@ -714,27 +718,15 @@ export async function generatePlansForRoom(
           metadata: generation.report as unknown as Prisma.InputJsonValue
         }
       });
-    });
-    return generation;
-  }
-
-  const generated = generation.plans;
-  const plansWithIds = generated.map((plan) => ({
-    id: crypto.randomUUID(),
-    plan
-  }));
-
-  await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
-    const currentRoom = await tx.dinnerRoom.findUnique({
-      where: { id: roomId },
-      select: { status: true, hostId: true }
-    });
-    if (!currentRoom) {
-      throw new Error("Room not found.");
+      return generation;
     }
-    assertHostOwnsResource(actor, currentRoom.hostId);
-    assertWorkflowActionAllowed(currentRoom.status, "GENERATE_PLANS");
+
+    const generated = generation.plans;
+    const plansWithIds = generated.map((plan) => ({
+      id: crypto.randomUUID(),
+      plan
+    }));
+
     await tx.menuPlan.deleteMany({
       where: {
         roomId,
@@ -746,14 +738,14 @@ export async function generatePlansForRoom(
 
     await tx.menuPlan.createMany({
       data: plansWithIds.map(({ id, plan }) => ({
-          id,
-          roomId,
-          title: plan.title,
-          summary: plan.summary,
-          score: plan.score,
-          estimatedCostCents: plan.estimatedCostCents,
-          warnings: plan.warnings as unknown as Prisma.InputJsonValue
-        }))
+        id,
+        roomId,
+        title: plan.title,
+        summary: plan.summary,
+        score: plan.score,
+        estimatedCostCents: plan.estimatedCostCents,
+        warnings: plan.warnings as unknown as Prisma.InputJsonValue
+      }))
     });
     await tx.menuPlanDish.createMany({
       data: plansWithIds.flatMap(({ id, plan }) =>
@@ -783,51 +775,47 @@ export async function generatePlansForRoom(
         message: `Generated ${generated.length} menu plans.`
       }
     });
+    const updated = await tx.dinnerRoom.findUniqueOrThrow({ where: { id: roomId }, include: roomBundleInclude });
+    return {
+      kind: "success",
+      plans: updated.plans.filter((plan) => plan.status === "PROPOSED").map(mapPlan)
+    };
   });
-  const updated = await getRoomBundleUnsafe(roomId);
-  return {
-    kind: "success",
-    plans: updated?.plans.filter((plan) => plan.status === "PROPOSED") ?? []
-  };
 }
 
 export async function castVote(planId: string, actor: GuestActor, value: VoteValue, reason?: string): Promise<string> {
-  const normalizedReason = reason?.trim() || undefined;
+  const normalizedReason = value === "VETO" ? reason?.trim() || undefined : undefined;
   if (value === "VETO" && !normalizedReason) {
     throw new Error("A veto reason is required.");
   }
 
   return prisma.$transaction(async (tx) => {
-    await tx.$executeRaw(
-      Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${`vote:${planId}:${actor.guestId}`}, 0))`
-    );
-    const [plan, guest] = await Promise.all([
-      tx.menuPlan.findUnique({
-        where: {
-          id: planId
-        },
-        select: {
-          id: true,
-          roomId: true,
-          title: true,
-          room: {
-            select: {
-              status: true
-            }
+    await lockRoom(tx, actor.roomId);
+    const plan = await tx.menuPlan.findUnique({
+      where: {
+        id: planId
+      },
+      select: {
+        id: true,
+        roomId: true,
+        title: true,
+        room: {
+          select: {
+            status: true
           }
         }
-      }),
-      tx.guest.findUnique({
-        where: {
-          id: actor.guestId
-        },
-        select: {
-          id: true,
-          roomId: true,
-          name: true
-        }
-      })
-    ]);
+      }
+    });
+    const guest = await tx.guest.findUnique({
+      where: {
+        id: actor.guestId
+      },
+      select: {
+        id: true,
+        roomId: true,
+        name: true
+      }
+    });
 
     if (!plan || !guest || plan.roomId !== guest.roomId) {
       throw new AuthorizationError();
@@ -860,7 +848,7 @@ export async function castVote(planId: string, actor: GuestActor, value: VoteVal
       },
       update: {
         value,
-        reason: normalizedReason
+        reason: normalizedReason ?? null
       },
       create: {
         planId,
@@ -902,34 +890,23 @@ export async function finalizePlan(planId: string, actor: HostActor): Promise<st
     throw new Error("Plan not found.");
   }
 
-  const bundle = await getRoomBundleUnsafe(plan.roomId);
-  if (!bundle) {
-    throw new Error("Room not found.");
-  }
-  assertHostOwnsResource(actor, bundle.room.hostId);
-  assertWorkflowActionAllowed(bundle.room.status, "FINALIZE_PLAN");
-  const selectedPlan = bundle.plans.find((item) => item.id === planId);
-  if (!selectedPlan) {
-    throw new Error("Plan not found.");
-  }
-
-  const shopping = generateShoppingList({
-    room: bundle.room,
-    guests: bundle.guests,
-    plan: selectedPlan
-  });
-
-  await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "id" = ${bundle.room.id} FOR UPDATE`);
+  return prisma.$transaction(async (tx) => {
+    await lockRoom(tx, plan.roomId);
     const currentRoom = await tx.dinnerRoom.findUnique({
-      where: { id: bundle.room.id },
-      select: { status: true, hostId: true }
+      where: { id: plan.roomId },
+      include: roomBundleInclude
     });
     if (!currentRoom) {
       throw new Error("Room not found.");
     }
     assertHostOwnsResource(actor, currentRoom.hostId);
     assertWorkflowActionAllowed(currentRoom.status, "FINALIZE_PLAN");
+    const bundle = mapRoomBundle(currentRoom);
+    const selectedPlan = bundle.plans.find((item) => item.id === planId);
+    if (!selectedPlan) {
+      throw new Error("Plan not found.");
+    }
+    const shopping = generateShoppingList({ room: bundle.room, guests: bundle.guests, plan: selectedPlan });
     await tx.menuPlan.updateMany({
       where: {
         roomId: bundle.room.id
@@ -986,13 +963,13 @@ export async function finalizePlan(planId: string, actor: HostActor): Promise<st
         }
       ]
     });
+    return bundle.room.id;
   });
-  return bundle.room.id;
 }
 
 export async function reopenPreferences(roomId: string, actor: HostActor): Promise<void> {
   await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
+    await lockRoom(tx, roomId);
     const room = await tx.dinnerRoom.findUnique({
       where: { id: roomId },
       select: { status: true, hostId: true }
@@ -1026,7 +1003,7 @@ export async function reopenPreferences(roomId: string, actor: HostActor): Promi
 
 export async function undoFinalization(roomId: string, actor: HostActor): Promise<void> {
   await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
+    await lockRoom(tx, roomId);
     const room = await tx.dinnerRoom.findUnique({
       where: { id: roomId },
       select: {
@@ -1048,6 +1025,10 @@ export async function undoFinalization(roomId: string, actor: HostActor): Promis
     }
 
     await tx.shoppingItem.deleteMany({ where: { roomId } });
+    await tx.menuPlanDish.updateMany({
+      where: { plan: { roomId } },
+      data: { contributionGuestId: null, contributionReady: false }
+    });
     await tx.menuPlan.updateMany({
       where: { roomId, status: "FINALIZED" },
       data: { status: "PROPOSED" }
@@ -1061,7 +1042,7 @@ export async function undoFinalization(roomId: string, actor: HostActor): Promis
         roomId,
         actorName: "Host",
         type: "FINALIZATION_UNDONE",
-        message: "Undid finalization and removed the shopping list, assignments, and purchase state."
+        message: "Undid finalization and removed the shopping list, assignments, purchase state, and dish contributions."
       }
     });
   });
@@ -1069,7 +1050,9 @@ export async function undoFinalization(roomId: string, actor: HostActor): Promis
 
 export async function claimShoppingItem(itemId: string, actors: RequestActors, targetGuestId?: string): Promise<string> {
   return prisma.$transaction(async (tx) => {
-    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "ShoppingItem" WHERE "id" = ${itemId} FOR UPDATE`);
+    const reference = await tx.shoppingItem.findUnique({ where: { id: itemId }, select: { roomId: true } });
+    if (!reference) throw new AuthorizationError();
+    await lockRoom(tx, reference.roomId);
     const item = await tx.shoppingItem.findUnique({
       where: {
         id: itemId
@@ -1096,6 +1079,9 @@ export async function claimShoppingItem(itemId: string, actors: RequestActors, t
     let desiredGuestId = targetGuestId;
     if (!hostCanManage && guestActor) {
       if (targetGuestId && targetGuestId !== guestActor.guestId) throw new AuthorizationError();
+      if (targetGuestId && item.assignedToGuestId && item.assignedToGuestId !== guestActor.guestId) {
+        throw new AuthorizationError();
+      }
       if (!targetGuestId && item.assignedToGuestId !== guestActor.guestId) throw new AuthorizationError();
       desiredGuestId = targetGuestId ? guestActor.guestId : undefined;
     }
@@ -1141,7 +1127,9 @@ export async function claimShoppingItem(itemId: string, actors: RequestActors, t
 
 export async function toggleShoppingItem(itemId: string, actors: RequestActors, checked: boolean): Promise<string> {
   return prisma.$transaction(async (tx) => {
-    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "ShoppingItem" WHERE "id" = ${itemId} FOR UPDATE`);
+    const reference = await tx.shoppingItem.findUnique({ where: { id: itemId }, select: { roomId: true } });
+    if (!reference) throw new AuthorizationError();
+    await lockRoom(tx, reference.roomId);
     const item = await tx.shoppingItem.findUnique({
       where: {
         id: itemId
@@ -1186,5 +1174,150 @@ export async function toggleShoppingItem(itemId: string, actors: RequestActors, 
       }
     });
     return item.roomId;
+  });
+}
+
+async function lockedPotluckContribution(
+  tx: Prisma.TransactionClient,
+  menuPlanDishId: string,
+  actors: RequestActors
+) {
+  const reference = await tx.menuPlanDish.findUnique({
+    where: { id: menuPlanDishId },
+    select: { plan: { select: { roomId: true } } }
+  });
+  if (!reference) throw new AuthorizationError();
+  await lockRoom(tx, reference.plan.roomId);
+  const room = await tx.dinnerRoom.findUnique({
+    where: { id: reference.plan.roomId },
+    include: roomBundleInclude
+  });
+  if (!room) throw new AuthorizationError();
+  const hostCanManage = isOwningHost(actors, room.hostId);
+  const guest = actors.guest?.roomId === room.id
+    ? room.guests.find((item) => item.id === actors.guest?.guestId)
+    : undefined;
+  if (!hostCanManage && !guest) throw new AuthorizationError();
+  if (room.eventType !== "POTLUCK" || room.status !== "FINALIZED") {
+    throw new Error("Cannot change dish contributions unless a Potluck menu is finalized.");
+  }
+  const plan = room.plans.find((item) => item.dishes.some((dish) => dish.id === menuPlanDishId));
+  const item = plan?.dishes.find((dish) => dish.id === menuPlanDishId);
+  if (!plan || !item) throw new AuthorizationError();
+  if (plan.status !== "FINALIZED") {
+    throw new Error("Cannot change dish contributions on a menu that is not finalized.");
+  }
+  return { room, plan, item, hostCanManage, guest };
+}
+
+export async function assignPotluckContribution(
+  menuPlanDishId: string,
+  actors: RequestActors,
+  targetGuestId?: string,
+  confirmShoppingReset = false
+): Promise<string> {
+  return prisma.$transaction(async (tx) => {
+    const { room, plan, item, hostCanManage, guest } = await lockedPotluckContribution(tx, menuPlanDishId, actors);
+    const desiredGuestId = targetGuestId || undefined;
+    if (!hostCanManage) {
+      if (desiredGuestId && desiredGuestId !== guest?.id) throw new AuthorizationError();
+      if (desiredGuestId && item.contributionGuestId && item.contributionGuestId !== guest?.id) {
+        throw new AuthorizationError();
+      }
+      if (!desiredGuestId && item.contributionGuestId !== guest?.id) throw new AuthorizationError();
+    }
+    const owner = desiredGuestId ? room.guests.find((person) => person.id === desiredGuestId) : undefined;
+    if (desiredGuestId && !owner) throw new AuthorizationError();
+    if (owner && !owner.canBring) {
+      throw new Error("Cannot assign a dish to a guest who has not volunteered to bring food or groceries.");
+    }
+    if (item.contributionGuestId === (desiredGuestId ?? null)) {
+      throw new Error("This dish contribution is unchanged.");
+    }
+    const changesGroceries = Boolean(item.contributionGuestId) !== Boolean(desiredGuestId);
+    if (changesGroceries && room.shopping.length > 0 && !confirmShoppingReset) {
+      throw new Error("Confirm that shared groceries will change: ingredients no longer needed are removed, and increased quantities need a new purchase check. Other shopping progress is kept.");
+    }
+
+    await tx.menuPlanDish.update({
+      where: { id: menuPlanDishId },
+      data: { contributionGuestId: desiredGuestId ?? null, contributionReady: false }
+    });
+    // Regenerate from the locked snapshot with precisely this ownership change.
+    // Portions, plan cost, votes and menu composition are never changed here.
+    const updatedPlan = mapPlan(plan);
+    const updatedDish = updatedPlan.dishes.find((dish) => dish.id === menuPlanDishId)!;
+    updatedDish.contributionGuestId = desiredGuestId;
+    updatedDish.contributionReady = false;
+    if (changesGroceries) {
+      const shopping = generateShoppingList({
+        room: mapRoom(room), guests: room.guests.map((person) => mapGuest(person)), plan: updatedPlan
+      });
+      const reconciled = reconcileShoppingList(room.shopping.map(mapShoppingItem), shopping);
+      if (reconciled.removedIds.length > 0) {
+        await tx.shoppingItem.deleteMany({ where: { roomId: room.id, id: { in: reconciled.removedIds } } });
+      }
+      for (const shoppingItem of reconciled.items) {
+        const data = {
+          quantity: shoppingItem.quantity,
+          estimatedCostCents: shoppingItem.estimatedCostCents ?? null,
+          assignedToGuestId: shoppingItem.assignedToGuestId ?? null,
+          checked: shoppingItem.checked,
+          sortOrder: shoppingItem.sortOrder
+        };
+        if (shoppingItem.id) {
+          await tx.shoppingItem.update({ where: { id: shoppingItem.id }, data });
+        } else {
+          await tx.shoppingItem.create({ data: {
+            ...data, roomId: room.id, ingredientId: shoppingItem.ingredient.id, unit: shoppingItem.unit
+          } });
+        }
+      }
+    }
+    await tx.activityEvent.createMany({
+      data: [
+        {
+          roomId: room.id,
+          actorName: hostCanManage ? actors.host?.name ?? "Host" : guest?.name ?? "Guest",
+          type: "CONTRIBUTION_ASSIGNED",
+          message: `${item.dish.name} (${item.servings} servings) ${owner ? `will be brought by ${owner.name}` : "was returned to shared shopping"}.`
+        },
+        {
+          roomId: room.id,
+          actorName: "TableSync",
+          type: "SHOPPING_GENERATED",
+          message: changesGroceries
+            ? "Updated shared groceries for unclaimed dishes. Kept existing assignments and purchase checks; increased quantities need a new purchase check."
+            : "Changed the dish contributor without changing shared groceries, assignments, or purchase checks."
+        }
+      ]
+    });
+    return room.id;
+  });
+}
+
+export async function setPotluckContributionReady(
+  menuPlanDishId: string,
+  actors: RequestActors,
+  ready: boolean
+): Promise<string> {
+  return prisma.$transaction(async (tx) => {
+    const { room, item, hostCanManage, guest } = await lockedPotluckContribution(tx, menuPlanDishId, actors);
+    if (!item.contributionGuestId) throw new Error("Cannot mark an unclaimed dish ready.");
+    if (!hostCanManage && item.contributionGuestId !== guest?.id) throw new AuthorizationError();
+    if (item.contributionReady === ready) throw new Error("This dish readiness is unchanged.");
+    await tx.menuPlanDish.update({
+      where: { id: menuPlanDishId },
+      data: { contributionReady: ready }
+    });
+    await tx.activityEvent.create({
+      data: {
+        roomId: room.id,
+        actorName: hostCanManage ? actors.host?.name ?? "Host" : guest?.name ?? "Guest",
+        type: "CONTRIBUTION_READY",
+        message: `${item.dish.name} was marked ${ready ? "ready to bring" : "not ready"}.`
+      }
+    });
+    return room.id;
   });
 }

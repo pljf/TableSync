@@ -1,5 +1,6 @@
+import { isManagedDeployment } from "@/lib/deployment-environment";
+
 const LOCAL_DATABASE_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
-const DEPLOYED_ENVIRONMENTS = new Set(["staging", "production"]);
 const REQUIRED_TLS_MODES = new Set(["require", "verify-ca", "verify-full"]);
 
 type Environment = NodeJS.ProcessEnv | Record<string, string | undefined>;
@@ -51,14 +52,14 @@ function integerSetting(value: string | undefined, fallback: number): number {
 }
 
 export function isManagedDatabaseDeployment(environment: Environment = process.env): boolean {
-  return DEPLOYED_ENVIRONMENTS.has((environment.TABLESYNC_DEPLOYMENT_ENV ?? "").trim().toLowerCase());
+  return isManagedDeployment(environment);
 }
 
 export function inspectDatabaseEnvironment(
   environment: Environment = process.env
 ): DatabaseEnvironmentInspection {
   const deploymentEnvironment = (environment.TABLESYNC_DEPLOYMENT_ENV ?? "local").trim().toLowerCase();
-  const managedDeployment = DEPLOYED_ENVIRONMENTS.has(deploymentEnvironment);
+  const managedDeployment = isManagedDatabaseDeployment(environment);
   const databaseScope = (environment.TABLESYNC_DATABASE_SCOPE ?? (managedDeployment ? "" : "local"))
     .trim()
     .toLowerCase();
@@ -75,6 +76,9 @@ export function inspectDatabaseEnvironment(
   }
 
   if (managedDeployment) {
+    if (!["staging", "production"].includes(deploymentEnvironment)) {
+      issues.push("TABLESYNC_DEPLOYMENT_ENV must be staging or production on a hosting platform.");
+    }
     if (!["runtime", "acceptance"].includes(databaseScope)) {
       issues.push("TABLESYNC_DATABASE_SCOPE must be runtime or acceptance in a deployed environment.");
     }
