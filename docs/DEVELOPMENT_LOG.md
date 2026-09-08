@@ -1,6 +1,26 @@
 # TableSync Development Log
 
+## 2026-09-08 — Seven-format expansion accepted
+
+- Documented the user-authorized Potluck, BBQ, Picnic, Brunch, and Other menu structures and acceptance contract in `EVENT_FORMAT_EXPANSION.md`.
+- Defined Potluck whole-dish ownership, fixed servings, readiness, privacy, confirmed shopping rebuilds, and full-food-budget accounting.
+- Inspected the existing dirty worktree and retained pre-existing changes. Verified the live local database with 150 TCP reset cycles and a final independent SQL health check; no application data changed.
+- Implemented all seven room formats with explicit menu structures, suitable catalog dishes, role labels and practical preparation notes. Added 29 dishes and 12 ingredients while retaining Dinner/Hotpot constraints.
+- Added persisted Potluck claim/assignment/release and readiness, fixed-serving recipe details, total/contributed/shared cost summaries, confirmed atomic shopping rebuilds, anonymous public progress, and undo/reopen cleanup.
+- Fixed independent contribution-form draft preservation and tablet date-field stretching. All 81 added-format responsive screenshots are present and pass human review.
+- Verified 228 unit tests, 31 database tests, production build/typecheck/lint, current 13 migrations, two idempotent seeds, and all 46 applicable browser cases across Chromium/Firefox/WebKit (5 intentional skips). Voting hydration and final button-feedback regressions pass in all three engines.
+- Passed the unchanged median-of-three Lighthouse gate: Home 97, Auth 95, private finalized Potluck 93; all nine Accessibility/Best Practices scores 100 and CLS 0. Deferred unused authentication client loading and supplied missing favicon assets after the first benchmark missed the Home/Auth target. All 15 affected guest/interaction cases passed again. Failed reports, individual low samples and host-speed warnings are retained.
+- Local acceptance is complete. The full evidence ledger records the PGlite cross-process query limitation and the boundaries of separate-connection testing; native PostgreSQL load testing and deployment remain separate work.
+
 This file records completed work, important technical decisions, verification results, and upcoming milestones.
+
+## September 7, 2026: UI redesign
+
+- Reworked the welcome/authentication screens, shared navigation, dashboard, room overview, menu comparison, shopping, and forms with an ivory/olive/terracotta palette and original dinner-table illustration.
+- Added active navigation, useful room summaries, a prominent next step, compact mobile menu details, and shopping progress derived from saved purchases.
+- Three subagents supported implementation and visual review. Their final review caught and verified fixes for tablet banner crowding and mobile Hotpot status-label wrapping.
+- Preserved the concurrent guest-access implementation and the earlier bug fixes, including unsaved vote/shopping drafts and retained shopping filters.
+- The scoped changes, current validation evidence, and P1/P2/P3 remaining gaps are recorded in [UI_REDESIGN_2026_09_07.md](UI_REDESIGN_2026_09_07.md).
 
 ## August 1, 2026: Core-First Execution Direction
 
@@ -249,6 +269,32 @@ Minimum resume input: select/connect a hosting and managed PostgreSQL provider (
 - Opened the official GitHub developer settings, Vercel dashboard, and Neon console login pages as user handoffs. All three require interactive user sign-in; no password, one-time code, token, or account data was entered or inspected.
 - The production audit remains unexecuted because the execution policy requires a second, specific confirmation that production package names and versions may be sent to the public npm audit service. No audit payload was transmitted.
 
+### Product function and interaction audit (2026-09-02)
+
+- Audited the confirmed Dinner and Hotpot core workflow route by route and recorded the result in `docs/PRODUCT_FUNCTIONAL_AUDIT.md`.
+- Fixed premature public-share navigation, misleading empty/count states, room-section navigation drift, hidden current-vote state, stale non-Veto reasons, unrecoverable room-creation validation, and missing shopping filters and assignment totals.
+- Improved candidate quality so top menu recommendations differ by core meal composition instead of only by drink, and added descriptive Hotpot titles.
+- Added regression coverage for fresh-room display states, finalized navigation, vote feedback, shopping filters, room validation, and concurrent non-Veto normalization.
+- Final local evidence: Prisma validation, lint, typecheck, 47/47 unit tests, 8/8 PostgreSQL tests, 14-route production build, and 16 passing/5 intentionally skipped production-browser scenarios.
+- Recovered the experimental named Prisma development server without resetting data after it became unhealthy following prolonged multi-browser load; this remains a local tooling limitation, not managed-staging connection evidence.
+
+### Review and repair (2026-09-07)
+
+- Preserved the existing September 2 working changes and independently reviewed workflows, domain engines, authentication/deployment boundaries, routes, and forms.
+- Closed verified consistency, privacy, allergy-matching, portion/cost, date/time, preference clearing, Veto, shopping-ownership, and navigation defects.
+- Added host room editing during collection/planning, including recovery from an insufficient room budget without losing guest responses.
+- Recorded the prioritized fixed/missing inventory and final verification ledger in `docs/REVIEW_2026_09_07.md`; earlier pass claims remain historical evidence.
+- Initial review checks: 79/79 unit tests and 13/13 PostgreSQL integration tests passed. Production build and typechecking passed with the new edit route. Browser/evidence results are maintained in the review ledger.
+- Production acceptance, full dietary certification metadata, multi-guest session management, and guest spending caps remain open. No deployment, commit, or push was performed in this review.
+
+### Independent follow-up review (2026-09-07)
+
+- Added two independent subagent reviews of menu/shopping/date logic and state/authorization boundaries; no additional confirmed authorization bypass was found.
+- Fixed qualified allergy matching (including sesame seeds and milk allergy), cross-form draft loss and shopping-filter resets after saves, and outdated failed-generation guidance after guest inputs change.
+- Successful mutations refresh dynamic data and client navigation state; submitted Like/Neutral votes clear their own Veto reason while unrelated drafts survive. Removed duplicate preference-save feedback exposed by client navigation.
+- Reproduced the draft-loss regression against the previous production build before repairing it. Added browser assertions for unfinished vote/shopping changes and retained filters.
+- Expanded local checks passed: 86/86 unit tests and 14/14 PostgreSQL integration tests. Final browser/build/evidence results are recorded in `docs/REVIEW_2026_09_07.md`.
+
 ## Local Development
 
 Project directory:
@@ -280,11 +326,10 @@ npm run test:e2e
 
 ## Remaining Milestones
 
-1. Run a production-only dependency audit in an explicitly authorized environment and resolve applicable findings.
-2. Add production authentication and complete production authorization.
-3. Deploy the application against managed PostgreSQL and repeat the acceptance gate there.
-4. Consider realtime updates or polling after production identity and deployment are stable.
-5. Add extra event types, AI, payments, or portfolio packaging only after an explicit product decision.
+1. Complete real-provider authentication acceptance and repeat authorization verification remotely; the implementation already exists locally.
+2. Deploy the application against managed PostgreSQL, rehearse recovery, and repeat the acceptance gate there.
+3. Consider realtime updates or polling after production identity and deployment are stable.
+4. Consider AI, payments, or portfolio packaging only after an explicit product decision. The separately authorized seven meal formats are now implemented.
 
 ## Working Agreement
 
@@ -294,3 +339,22 @@ Complete one milestone at a time. After each milestone:
 2. Record the result in this file.
 3. List the remaining milestones.
 4. Discuss the next milestone before starting it.
+
+## September 8, 2026 — Guest access and demo retirement
+
+- Replaced the shared demo entry with per-browser guest host accounts using Better Auth anonymous sessions. GitHub configuration is optional for this flow; existing ownership checks still scope rooms to their host.
+- Added the eleventh migration for `User.isAnonymous`, applied it locally, and configured a stable local session secret so restarts do not invalidate browser access.
+- Retired `/demo` to the entry page, removed the public-demo room authorization exception, changed seeding to catalog only, and removed the verified legacy demo room while retaining the catalog and host account.
+- Added clear self-participation guidance, a missing-preference-session recovery screen, a planned-headcount shopping estimate, and confirmation before ending an unrecoverable guest session. Ending the host session also revokes and clears the active meal-response session.
+- Preserved concurrent UI work from the separate review task. Current automated results and final browser evidence are recorded in `docs/GUEST_ACCESS_REVIEW.md`; production OAuth/deployment acceptance remains separate.
+
+## September 8, 2026 — Button feedback and integrated full-stack review
+
+- Added pointer and keyboard press feedback, short ripples, stable loading labels, visible focus, accessible pending/success/error messages, duplicate-submission guards, recoverable forms, and reduced-motion support. Shopping completion reflects confirmed saved purchases.
+- Repaired persistent logout revocation and expired/revoked guest-join replay. Browser tests cover privacy, real cross-site request rejection, retries, retained drafts, and inaccessible private rooms after logout.
+- Repaired the local database socket lifecycle leak with a version-guarded project launcher; 150 actual abruptly disconnected clients and a subsequent SQL query passed without resetting saved data or increasing connection limits.
+- Updated vulnerable dependencies; both full and production npm audits report zero vulnerabilities. Corrected tofu's catalog category through a guarded data migration.
+- Coordinated the separately requested seven-format expansion into one final build and acceptance gate. Independent review caught and repaired Potluck draft loss and missing preparation guidance.
+- Corrected local setup and audit defaults, authenticated/public audit separation, final-page attribution, owned-process cleanup, and transient-session evidence scanning.
+- Closed early voting-input and Safari cancelled-key feedback gaps. Deferred authentication client loading until an account action and added browser icons after inspecting the performance reports.
+- The authoritative final results and local/hosted release boundary are maintained in `docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md`. Historical entries above remain historical evidence.

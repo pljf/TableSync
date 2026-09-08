@@ -1,0 +1,86 @@
+{
+  "home": {
+    "runs": [
+      {
+        "accessibility": 100,
+        "bestPractices": 96,
+        "cls": 0,
+        "performance": 89
+      },
+      {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "cls": 0,
+        "performance": 95
+      },
+      {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "cls": 0,
+        "performance": 74
+      }
+    ],
+    "median": {
+      "accessibility": 100,
+      "bestPractices": 100,
+      "cls": 0,
+      "performance": 89
+    }
+  },
+  "auth": {
+    "runs": [
+      {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "cls": 0,
+        "performance": 97
+      },
+      {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "cls": 0,
+        "performance": 89
+      },
+      {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "cls": 0,
+        "performance": 78
+      }
+    ],
+    "median": {
+      "accessibility": 100,
+      "bestPractices": 100,
+      "cls": 0,
+      "performance": 89
+    }
+  },
+  "core": {
+    "runs": [
+      {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "cls": 0,
+        "performance": 90
+      },
+      {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "cls": 0,
+        "performance": 93
+      },
+      {
+        "accessibility": 100,
+        "bestPractices": 100,
+        "cls": 0,
+        "performance": 81
+      }
+    ],
+    "median": {
+      "accessibility": 100,
+      "bestPractices": 100,
+      "cls": 0,
+      "performance": 90
+    }
+  }
+}
