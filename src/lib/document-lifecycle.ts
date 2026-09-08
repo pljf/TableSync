@@ -1,12 +1,16 @@
 /** Keep departure state across route mounts, including late passive effects. */
-export function createDocumentLifecycle(target?: Pick<EventTarget, "addEventListener">) {
+export function createDocumentLifecycle(target?: Pick<EventTarget, "addEventListener">, userAgent = "") {
   let active = true;
   const listeners = new Set<(active: boolean) => void>();
   function update(next: boolean) {
     active = next;
     for (const listener of listeners) listener(active);
   }
-  target?.addEventListener("beforeunload", () => update(false));
+  // WebKit rejects new requests before pagehide while its loader departs.
+  // Other engines use pagehide; avoid adding this workaround to their lifecycle.
+  if (/AppleWebKit\//i.test(userAgent) && !/Chrom(?:e|ium)\//i.test(userAgent)) {
+    target?.addEventListener("beforeunload", () => update(false));
+  }
   target?.addEventListener("pagehide", () => update(false));
   target?.addEventListener("pageshow", () => update(true));
   return {
@@ -21,4 +25,7 @@ export function createDocumentLifecycle(target?: Pick<EventTarget, "addEventList
 
 // Imported by the persistent main navigation as well as RoomSync, so this
 // listener exists before a streamed room's passive effect can be mounted.
-export const documentLifecycle = createDocumentLifecycle(typeof window === "undefined" ? undefined : window);
+export const documentLifecycle = createDocumentLifecycle(
+  typeof window === "undefined" ? undefined : window,
+  typeof navigator === "undefined" ? "" : navigator.userAgent
+);
