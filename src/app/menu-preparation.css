@@ -1,0 +1,15 @@
+.plans-page .menu-preparation { min-width: 0; padding: 24px; scroll-margin-top: 24px; box-shadow: none; }
+.plans-page .menu-preparation h2 { font: 400 1.7rem/1.2 var(--display); }
+.plans-page .menu-preparation header > p:last-child { margin: 10px 0 20px; font-size: 0.85rem; }
+.plans-page .preparation-dish { border-top: 1px solid var(--border); min-width: 0; }
+.plans-page .preparation-dish summary { cursor: pointer; padding: 16px 0; min-height: 44px; overflow-wrap: anywhere; }
+.plans-page .preparation-dish-name { font-weight: 600; font-size: 0.9rem; }
+.plans-page .preparation-dish-meta { display: block; padding-top: 6px; font-size: 0.8rem; }
+.plans-page .preparation-dish > p, .plans-page .preparation-footnote { font-size: 0.8rem; line-height: 1.6; }
+.plans-page .preparation-dish .dish-list { margin: 12px 0 20px; }
+.plans-page .preparation-dish .dish-list li { gap: 16px; }
+.plans-page .preparation-dish .dish-list small { flex-shrink: 0; }
+.plans-page .preparation-footnote { margin: 16px 0 0; }
+@media (max-width: 700px) {
+  .plans-page .menu-preparation { padding: 22px 20px; }
+}
