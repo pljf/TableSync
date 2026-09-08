@@ -6,7 +6,7 @@ The core-MVP acceptance contract is maintained in [`docs/CORE_MVP_EXECUTION_PLAN
 
 ## Current Build
 
-The current collaboration changes and their verification status are recorded in [`docs/COLLABORATION_RELIABILITY_2026_09_08.md`](docs/COLLABORATION_RELIABILITY_2026_09_08.md). Local verification passed: 313 unit tests, 32 database tests, and 27 browser tests. Hosted deployment and real GitHub OAuth callback acceptance remain separate owner-managed checks. Earlier button, animation, security, and full-stack evidence remains in [`docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md`](docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md).
+The simple party-planning follow-up is recorded in [`docs/SIMPLE_PARTY_PLANNING_2026_09_08.md`](docs/SIMPLE_PARTY_PLANNING_2026_09_08.md). It completes menu comparison and preparation, protects saved preference input while the form becomes ready, and improves shared-update recovery. Before PR submission, 353 unit tests, 32 database tests, and the full 22-test Chromium acceptance suite passed. The preceding collaboration implementation is recorded in [`docs/COLLABORATION_RELIABILITY_2026_09_08.md`](docs/COLLABORATION_RELIABILITY_2026_09_08.md). Hosted deployment and real GitHub OAuth callback acceptance remain separate owner-managed checks. Earlier button, animation, security, and full-stack evidence remains in [`docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md`](docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md).
 
 This repository supports Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, and shared-buffet Other gatherings, with guest access and production-readiness safeguards. Choose **Continue as guest** to create your own rooms and try the full planning workflow without a GitHub login. Guest access creates a unique account for this browser with normal room ownership permissions. The expanded meal-format contract and its acceptance record are in [`docs/EVENT_FORMAT_EXPANSION.md`](docs/EVENT_FORMAT_EXPANSION.md).
 
@@ -22,6 +22,7 @@ This repository supports Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, and share
 - Visible room pages check for changes every eight seconds while preserving unsaved form drafts
 - Tactile button feedback, accessible loading/results, retryable errors, and reduced-motion effects
 - A focused finalized menu, with other options collapsed for reference
+- Expandable preparation details for every meal format, using finalized portions, ingredient estimates, per-dish time, and adjustment notes
 - Shopping list generation, assignment, and purchased state
 - Potluck dish contributions, readiness, and shared groceries that preserve unaffected assignments and purchase checks when contributions change
 - Public read-only share page
