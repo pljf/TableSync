@@ -64,6 +64,7 @@ test.describe("collaboration reliability", () => {
       }
       await guest.goto(`/preferences?roomId=${first.roomId}`);
       await guest.getByRole("textbox", { name: "Notes", exact: true }).fill("Updated first room only");
+      await expect(guest.getByRole("textbox", { name: "Notes", exact: true })).toHaveValue("Updated first room only");
       await save(guest, () => guest.getByRole("button", { name: "Save preferences", exact: true }).click());
       await guest.reload();
       await expect(guest.getByRole("textbox", { name: "Notes", exact: true })).toHaveValue("Updated first room only");
@@ -91,14 +92,24 @@ test.describe("collaboration reliability", () => {
       await captureResponsiveEvidence(page, "menu-comparison");
       const planId = await page.locator("article.plan-card").first().getAttribute("data-plan-id");
       const hostPlan = page.locator(`article.plan-card[data-plan-id="${planId}"]`);
+      const reopen = page.locator("details.destructive-control").filter({ hasText: "Reopen guest preferences" });
+      await reopen.locator("summary").click();
+      const confirmation = reopen.getByRole("checkbox");
+      await confirmation.check();
       await guest.goto(`/rooms/${meal.roomId}/plans`);
       await save(guest, () => guest.locator(`article.plan-card[data-plan-id="${planId}"]`).getByRole("button", { name: "Like", exact: true }).click());
+      await expect(page.getByRole("status").filter({ hasText: "Updates are waiting" })).toBeVisible({ timeout: 25_000 });
+      await expect(hostPlan.locator(".metric-grid")).toContainText("0 likes");
+      // Canceling an ordinary confirmation must release draft protection too.
+      await confirmation.uncheck();
       await expect(hostPlan.locator(".metric-grid")).toContainText("1 likes", { timeout: 25_000 });
+      await reopen.locator("summary").click();
       const reason = guest.locator(`article.plan-card[data-plan-id="${planId}"]`).getByLabel("Veto reason", { exact: true });
       await reason.fill("Unsaved note to discuss with the host");
       await save(page, () => hostPlan.getByRole("button", { name: "Finalize plan", exact: true }).click());
       await guest.waitForResponse((response) => new URL(response.url()).pathname === `/api/rooms/${meal.roomId}/revision`, { timeout: 25_000 });
       await expect(reason).toHaveValue("Unsaved note to discuss with the host");
+      await expect(guest.getByRole("status").filter({ hasText: "Updates are waiting" })).toBeVisible();
       await expect(guest.getByRole("heading", { name: "Your selected menu", exact: true })).toHaveCount(0);
       await reason.fill("");
       await guest.getByRole("heading", { name: meal.title, exact: true }).click();
@@ -145,5 +156,38 @@ test.describe("collaboration reliability", () => {
     expect(Boolean(before && (await context.cookies()).some((cookie) => cookie.name === before.name && cookie.value === before.value))).toBe(true);
     await page.goto(`/rooms/${meal.roomId}`);
     await expect(page.getByRole("heading", { name: meal.title, exact: true })).toBeVisible();
+  });
+
+  test("leaves a room with an update request in flight and resumes updates on return", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await hostSignIn(page);
+    const meal = await createMeal(page, `Room navigation ${randomUUID()}`);
+    const revisionPath = `/api/rooms/${meal.roomId}/revision`;
+    const matchesRevision = (url: URL) => url.pathname === revisionPath;
+    let release!: () => void;
+    const heldResponse = new Promise<void>((resolve) => { release = resolve; });
+    await page.route(matchesRevision, async (route) => {
+      const response = await route.fetch();
+      await heldResponse;
+      await route.fulfill({ response });
+    });
+    try {
+      const request = page.waitForRequest((request) => new URL(request.url()).pathname === revisionPath);
+      await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+      await request;
+      await page.goto("/dashboard");
+      await expect(page.getByRole("heading", { name: /your meal rooms/i })).toBeVisible();
+      release();
+      await page.unrouteAll({ behavior: "wait" });
+      const resumed = page.waitForResponse((response) => new URL(response.url()).pathname === revisionPath);
+      await page.goBack();
+      await expect(page.getByRole("heading", { name: meal.title, exact: true })).toBeVisible();
+      expect((await resumed).ok()).toBe(true);
+      expect(errors).toEqual([]);
+    } finally {
+      release();
+      await page.unrouteAll({ behavior: "wait" });
+    }
   });
 });

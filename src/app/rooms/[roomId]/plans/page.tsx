@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { generatePlansAction, reopenPreferencesAction, undoFinalizationAction } from "@/app/actions";
 import { MenuPlanReview } from "@/components/menu/menu-plan-review";
+import { MenuPreparation } from "@/components/menu/menu-preparation";
 import { NoSolutionPanel } from "@/components/menu/no-solution-panel";
 import { RoomNavigation } from "@/components/rooms/room-navigation";
 import { RoomProgress } from "@/components/rooms/room-progress";
@@ -18,6 +19,7 @@ import { EventPreparationNotes } from "@/components/menu/event-preparation-notes
 import { eventFormats } from "@/lib/event-formats";
 import { eventTypeLabels } from "@/lib/format";
 import "@/app/menu-review.css";
+import "@/app/menu-preparation.css";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +131,7 @@ export default async function RoomPlansPage({ params }: PageProps) {
             <>
               {isPotluck ? <Link className="button" href="#potluck-contributions" prefetch={false}>{isHost ? "Manage contributions" : "View contributions"}</Link> : null}
               <Link className={isPotluck ? "button secondary" : "button"} href={`/rooms/${bundle.room.id}/shopping`} prefetch={false}>Open shopping</Link>
+              <Link className="button secondary" href="#menu-preparation" prefetch={false}>Prepare this menu</Link>
             </>
           ) : null}
           {["DRAFT", "ARCHIVED"].includes(bundle.room.status) ? (
@@ -188,6 +191,7 @@ export default async function RoomPlansPage({ params }: PageProps) {
         </article>
       )}
       {isPotluck && bundle.room.status === "FINALIZED" && finalPlan ? <div id="potluck-contributions"><PotluckContributions plan={finalPlan} guests={bundle.guests} guestId={actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined} isHost={isHost} hasShopping={bundle.shopping.length > 0} /></div> : null}
+      {bundle.room.status === "FINALIZED" && finalPlan ? <MenuPreparation plan={finalPlan} eventType={bundle.room.eventType} guests={bundle.guests} /> : null}
     </div>
   );
 }

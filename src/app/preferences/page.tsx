@@ -58,7 +58,7 @@ export default async function GuestPreferencePage({ searchParams }: PageProps) {
             <Link className="button secondary" href={`/rooms/${room.id}`} prefetch={false}>View room overview</Link>
           </article>
         ) : (
-          <MutationForm action={updateGuestPreferencesAction} className="card form-card" key={`${room.id}:${guest.id}`}>
+          <MutationForm action={updateGuestPreferencesAction} className="card form-card" key={`${room.id}:${guest.id}`} waitForHydration>
             <input name="roomId" type="hidden" value={room.id} />
             <div><p className="eyebrow">{eventTypeLabels[room.eventType]} - {room.title}</p><h1>Your preferences</h1><p className="muted">Review or update your response. Changes close when the host starts voting.</p></div>
             <div className="form-grid">

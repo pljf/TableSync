@@ -358,3 +358,12 @@ Complete one milestone at a time. After each milestone:
 - Corrected local setup and audit defaults, authenticated/public audit separation, final-page attribution, owned-process cleanup, and transient-session evidence scanning.
 - Closed early voting-input and Safari cancelled-key feedback gaps. Deferred authentication client loading until an account action and added browser icons after inspecting the performance reports.
 - The authoritative final results and local/hosted release boundary are maintained in `docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md`. Historical entries above remain historical evidence.
+
+## September 8, 2026 — Simple party-planning follow-up
+
+- Completed the five-item usability goal on `codex/simple-party-planning`, building on PR #4's guest access, grocery reconciliation, automatic updates, and selected-menu layout.
+- Added distinctive comparison labels, joined-guest voting progress, optional waiting-name details, and a short explanation of suggestions.
+- Added **Prepare this menu** for every meal format: expandable dishes, finalized portions, scaled ingredient estimates, prep-time estimates, spice adjustments, and contribution context. Cooking quantities and recipe steps are explicitly distinguished from shopping estimates.
+- Repaired update acknowledgement/retry, canceled native-form drafts, clean vote-note refreshes, and full-document navigation lifecycle. Saved preference inputs wait for their form to be ready before accepting edits, addressing the Safari input race found in the base PR's CI logs.
+- Before submission: 353 unit tests, 32 database tests, and 22 Chromium browser tests passed; the remote HTTPS health check was skipped locally. Build/TypeScript, lint, source/history secret scanning, responsive accessibility checks, and independent source/visual review completed. Final additional browser and GitHub check outcomes are recorded in the PR.
+- The detailed acceptance record and screenshots are in `docs/SIMPLE_PARTY_PLANNING_2026_09_08.md`. Deployment and real GitHub OAuth callback acceptance remain owner-managed; this task does not merge the PR chain or deploy the application.

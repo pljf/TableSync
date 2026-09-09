@@ -229,7 +229,7 @@ input[readonly] { color: var(--muted); background: #f9f9f1; }
 .checkbox-label input { width: 19px; min-width: 19px; height: 19px; min-height: 19px; margin: 0; accent-color: var(--primary); }
 .checkbox-label.standalone { align-self: end; }
 .form-actions { align-items: stretch; }
-.form-card > .form-actions { margin-top: 4px; padding-top: 22px; border-top: 1px solid var(--border); }
+.form-card > .form-actions, .form-card > fieldset > .form-actions { margin-top: 4px; padding-top: 22px; border-top: 1px solid var(--border); }
 .feedback { padding: 15px 18px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.88rem; }
 .feedback p:last-child { margin-bottom: 0; }
 .success-feedback { border-color: #b9cbb0; background: var(--success-soft); color: var(--success); }

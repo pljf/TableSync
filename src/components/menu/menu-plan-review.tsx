@@ -55,7 +55,7 @@ export function MenuPlanReview({ plans, eventType, guests, plannedGuestCount, cu
 
   return (
     <div className="menu-review">
-      <MenuComparison plans={plans} plannedGuestCount={plannedGuestCount} eventType={eventType} />
+      <MenuComparison plans={plans} plannedGuestCount={plannedGuestCount} eventType={eventType} guests={guests} />
       <section className="grid three menu-plan-grid" aria-label="Generated menu plans">
         {plans.map((plan) => card(plan))}
       </section>
