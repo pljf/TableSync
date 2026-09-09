@@ -1,5 +1,9 @@
 # TableSync Project Plan
 
+> **Event expansion accepted (2026-09-08):** Potluck, BBQ, Picnic, Brunch, and Other are implemented alongside Dinner and Hotpot. The [Seven-format planning contract](docs/EVENT_FORMAT_EXPANSION.md) records their menu rules, Potluck contribution behavior and passing local acceptance evidence. Existing safety and workflow guarantees remain required.
+
+> **Execution note (2026-08-01):** This file remains the long-term product vision and feature inventory. The completed core-MVP contract is maintained in [`docs/CORE_MVP_EXECUTION_PLAN.md`](docs/CORE_MVP_EXECUTION_PLAN.md). The active production-authentication, authorization, managed-database, staging-deployment, and re-acceptance contract is [`docs/PRODUCTION_READINESS_PLAN.md`](docs/PRODUCTION_READINESS_PLAN.md); it is authoritative where milestone ordering conflicts.
+
 ## 1. Project Summary
 
 **Project name:** TableSync
@@ -110,10 +114,10 @@ Reason: PostgreSQL shows real relational data modeling skill. Prisma keeps devel
 
 ### Auth
 
-- **Auth.js**
+- **Better Auth 1.6 with Prisma-backed sessions**
 - OAuth providers:
   - GitHub
-  - Google
+  - Google remains deferred until a product need justifies a second provider
 
 Reason: OAuth login is useful for a portfolio project and avoids storing passwords.
 
@@ -147,12 +151,12 @@ MVP can work without realtime if needed, but adding realtime room updates makes 
 ### Workflow A: Host Creates Dinner Room
 
 1. Host signs in.
-2. Host clicks "New dinner".
+2. Host clicks "New room".
 3. Host fills:
    - Dinner title
    - Date and time
    - Location
-   - Event type: dinner, potluck, hotpot, BBQ, picnic, brunch
+   - Event type: Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, or Other (shared buffet)
    - Expected number of guests
    - Total budget
    - Preferred cuisine options
@@ -219,6 +223,8 @@ MVP can work without realtime if needed, but adding realtime room updates makes 
 4. System generates shopping list from plan ingredients.
 5. System assigns shopping items if guest availability exists.
 6. Room status becomes `FINALIZED`.
+
+For finalized Potluck rooms, willing guests can claim a whole dish at its planned servings and mark it ready; the host can assign dishes to willing guests in the room. Ownership changes require confirmation before rebuilding shared groceries and clearing their assignment/purchase progress. Contributed dishes remain in the total food budget, while shared shopping includes only unclaimed dishes. Undoing finalization clears contributions, readiness and shopping. See [Seven-format planning contract](docs/EVENT_FORMAT_EXPANSION.md) for full rules and acceptance evidence.
 
 ### Workflow F: Shopping and Execution
 

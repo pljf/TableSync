@@ -21,6 +21,8 @@ export type SpiceLevel = "NONE" | "MILD" | "MEDIUM" | "HOT";
 
 export type DishCategory = "MAIN" | "SIDE" | "APPETIZER" | "DESSERT" | "DRINK" | "SAUCE";
 
+export type HotpotRole = "BROTH" | "PROTEIN" | "VEGETABLE" | "STAPLE" | "SAUCE" | "DRINK";
+
 export type IngredientCategory =
   | "PRODUCE"
   | "MEAT_SEAFOOD"
@@ -40,17 +42,23 @@ export type ActivityType =
   | "GUEST_JOINED"
   | "PREFERENCE_UPDATED"
   | "PLANS_GENERATED"
+  | "PLAN_GENERATION_FAILED"
+  | "PREFERENCES_REOPENED"
   | "VOTE_CAST"
   | "PLAN_FINALIZED"
+  | "FINALIZATION_UNDONE"
   | "SHOPPING_GENERATED"
   | "ITEM_ASSIGNED"
-  | "ITEM_CHECKED";
+  | "ITEM_CHECKED"
+  | "CONTRIBUTION_ASSIGNED"
+  | "CONTRIBUTION_READY";
 
 export type User = {
   id: string;
   name: string;
   email: string;
   image?: string;
+  isAnonymous?: boolean;
 };
 
 export type DinnerRoom = {
@@ -64,8 +72,10 @@ export type DinnerRoom = {
   totalBudgetCents?: number;
   expectedGuests?: number;
   status: RoomStatus;
-  inviteToken: string;
+  inviteToken?: string;
   isPublicShareable: boolean;
+  generationReport?: NoSolutionReport;
+  generationAttemptedAt?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -87,7 +97,6 @@ export type Guest = {
   roomId: string;
   name: string;
   email?: string;
-  editToken: string;
   isHostGuest: boolean;
   canBring: boolean;
   createdAt: string;
@@ -119,19 +128,32 @@ export type Dish = {
   estimatedCostCents: number;
   prepTimeMinutes: number;
   spiceLevel: SpiceLevel;
+  spiceAdjustable: boolean;
+  supportedEventTypes: EventType[];
+  hotpotRole?: HotpotRole;
   tags: string[];
   ingredients: DishIngredient[];
 };
 
 export type PlanWarning = {
-  type: "ALLERGY_CONFLICT" | "BUDGET_TOO_LOW" | "DIET_CONFLICT" | "LOW_VARIETY" | "SPICE_CONFLICT";
+  type:
+    | "ALLERGY_CONFLICT"
+    | "BUDGET_TOO_LOW"
+    | "DIET_CONFLICT"
+    | "LOW_VARIETY"
+    | "SPICE_CONFLICT"
+    | "SPICE_ADJUSTMENT";
   message: string;
   affectedGuestNames: string[];
 };
 
 export type MenuPlanDish = {
+  /** Database row ID; generated drafts do not yet have one. */
+  id?: string;
   dish: Dish;
   servings: number;
+  contributionGuestId?: string;
+  contributionReady?: boolean;
 };
 
 export type Vote = {
@@ -196,7 +218,65 @@ export type GenerateMenuInput = {
   dishes: Dish[];
 };
 
+export type InviteRoomView = Pick<DinnerRoom, "id" | "title" | "eventType" | "status">;
+
+export type PublicRoomView = {
+  room: Pick<DinnerRoom, "id" | "title" | "eventType" | "dateTime" | "location" | "totalBudgetCents">;
+  finalPlan?: {
+    id: string;
+    title: string;
+    preparationNotes: string[];
+    contributionSummary?: { claimedDishes: number; readyDishes: number; totalDishes: number };
+    dishes: Array<{
+      id: string;
+      name: string;
+      category: DishCategory;
+      hotpotRole?: HotpotRole;
+      servings: number;
+    }>;
+  };
+  shoppingCategories: Array<{ category: IngredientCategory; count: number }>;
+};
+
 export type GeneratedPlan = Omit<MenuPlan, "id" | "roomId" | "status" | "votes" | "createdAt" | "updatedAt">;
+
+export type NoSolutionIssueCode =
+  | "MISSING_REQUIRED_DISH"
+  | "UNSAFE_SHARED_BROTH"
+  | "GUEST_COVERAGE"
+  | "BUDGET_LIMIT"
+  | "UNSUPPORTED_EVENT";
+
+export type NoSolutionIssue = {
+  code: NoSolutionIssueCode;
+  message: string;
+  affectedGuestNames: string[];
+};
+
+export type ClosestOverBudgetPlan = {
+  title: string;
+  estimatedCostCents: number;
+  budgetCents: number;
+  overByCents: number;
+  dishNames: string[];
+};
+
+export type NoSolutionReport = {
+  eventType: EventType;
+  summary: string;
+  issues: NoSolutionIssue[];
+  closestOverBudgetPlan?: ClosestOverBudgetPlan;
+};
+
+export type MenuGenerationResult<TPlan = GeneratedPlan> =
+  | {
+      kind: "success";
+      plans: TPlan[];
+    }
+  | {
+      kind: "no-solution";
+      report: NoSolutionReport;
+    };
 
 export type GenerateShoppingInput = {
   room: DinnerRoom;

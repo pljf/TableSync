@@ -1,44 +1,41 @@
 import { createRoomAction } from "@/app/actions";
 import { requireHost } from "@/lib/auth";
-import { eventTypeLabels } from "@/lib/format";
-import { eventTypes } from "@/lib/seed-data";
+import { EventFormatSelect } from "@/components/rooms/event-format-select";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { MutationForm } from "@/components/ui/mutation-form";
+import { DateTimeInput } from "@/components/ui/date-time-input";
+import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 export default async function NewRoomPage() {
   await requireHost();
 
   return (
     <section className="narrow-page wide">
-      <form action={createRoomAction} className="card form-card">
+      <MutationForm action={createRoomAction} className="card form-card">
         <div>
-          <p className="eyebrow">New dinner</p>
+          <p className="eyebrow">New gathering</p>
           <h1>Create a room</h1>
+          <p className="muted">A good meal starts with a little planning. Set the scene, then invite your people.</p>
         </div>
         <label>
           Title
-          <input name="title" placeholder="Friday Hotpot Night" required />
+          <input maxLength={120} minLength={2} name="title" placeholder="Friday Hotpot Night" required />
         </label>
         <label>
           Description
-          <textarea name="description" placeholder="Short context for guests" rows={3} />
+          <textarea maxLength={2000} name="description" placeholder="Short context for guests" rows={3} />
         </label>
-        <div className="form-grid">
-          <label>
-            Event type
-            <select name="eventType" defaultValue="DINNER">
-              {eventTypes.map((type) => (
-                <option key={type} value={type}>
-                  {eventTypeLabels[type]}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="form-grid room-details-grid">
+          <EventFormatSelect />
           <label>
             Date and time
-            <input name="dateTime" type="datetime-local" />
+            <DateTimeInput />
           </label>
           <label>
             Location
-            <input name="location" placeholder="Apartment 4B" />
+            <input maxLength={200} name="location" placeholder="Apartment 4B" />
           </label>
           <label>
             Total budget
@@ -53,10 +50,15 @@ export default async function NewRoomPage() {
             Public share page
           </label>
         </div>
-        <button className="button full" type="submit">
-          Create room
-        </button>
-      </form>
+        <div className="button-row form-actions">
+          <SubmitButton className="button" pendingLabel="Creating room...">
+            Create room
+          </SubmitButton>
+          <Link className="button secondary" href="/dashboard" prefetch={false}>
+            Cancel
+          </Link>
+        </div>
+      </MutationForm>
     </section>
   );
 }

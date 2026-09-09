@@ -1,4 +1,15 @@
-import type { DinnerRoom, Dish, DishCategory, EventType, Guest, Ingredient, IngredientCategory, SpiceLevel, User } from "@/lib/domain";
+import type {
+  DinnerRoom,
+  Dish,
+  DishCategory,
+  EventType,
+  Guest,
+  HotpotRole,
+  Ingredient,
+  IngredientCategory,
+  SpiceLevel,
+  User
+} from "@/lib/domain";
 
 const now = new Date("2026-06-15T18:00:00.000Z").toISOString();
 
@@ -27,10 +38,21 @@ const ingredientRows: Array<{
   { id: "pork", name: "pork", category: "MEAT_SEAFOOD", defaultUnit: "lb", tags: ["meat", "pork"] },
   { id: "salmon", name: "salmon", category: "MEAT_SEAFOOD", defaultUnit: "lb", tags: ["seafood", "fish"] },
   { id: "shrimp", name: "shrimp", category: "MEAT_SEAFOOD", defaultUnit: "lb", tags: ["seafood", "shellfish"] },
-  { id: "tofu", name: "tofu", category: "DAIRY", defaultUnit: "block", tags: ["soy", "vegan", "vegetarian"] },
+  { id: "tofu", name: "tofu", category: "PRODUCE", defaultUnit: "block", tags: ["soy", "vegan", "vegetarian"] },
   { id: "chickpeas", name: "chickpeas", category: "PANTRY", defaultUnit: "can", tags: ["vegan", "gluten-free"] },
   { id: "black-beans", name: "black beans", category: "PANTRY", defaultUnit: "can", tags: ["vegan", "gluten-free"] },
   { id: "lentils", name: "lentils", category: "PANTRY", defaultUnit: "cup", tags: ["vegan", "gluten-free"] },
+  { id: "quinoa", name: "quinoa", category: "PANTRY", defaultUnit: "cup", tags: ["vegan", "gluten-free"] },
+  { id: "certified-oats", name: "certified gluten-free oats", category: "PANTRY", defaultUnit: "cup", tags: ["vegan", "gluten-free"] },
+  { id: "olive-oil", name: "olive oil", category: "PANTRY", defaultUnit: "tbsp", tags: ["vegan", "gluten-free"] },
+  { id: "potatoes", name: "potatoes", category: "PRODUCE", defaultUnit: "lb", tags: ["vegan", "gluten-free"] },
+  { id: "corn", name: "corn on the cob", category: "PRODUCE", defaultUnit: "each", tags: ["vegan", "gluten-free"] },
+  { id: "lemon", name: "lemon", category: "PRODUCE", defaultUnit: "each", tags: ["vegan", "gluten-free"] },
+  { id: "fresh-herbs", name: "parsley", category: "PRODUCE", defaultUnit: "bunch", tags: ["vegan", "gluten-free"] },
+  { id: "apples", name: "apples", category: "PRODUCE", defaultUnit: "each", tags: ["vegan", "gluten-free"] },
+  { id: "oranges", name: "oranges", category: "PRODUCE", defaultUnit: "each", tags: ["vegan", "gluten-free"] },
+  { id: "grapes", name: "grapes", category: "PRODUCE", defaultUnit: "lb", tags: ["vegan", "gluten-free"] },
+  { id: "eggs", name: "eggs", category: "DAIRY", defaultUnit: "each", tags: ["egg", "vegetarian", "gluten-free"] },
   { id: "mushrooms", name: "mushrooms", category: "PRODUCE", defaultUnit: "lb", tags: ["vegan", "umami"] },
   { id: "cabbage", name: "cabbage", category: "PRODUCE", defaultUnit: "head", tags: ["vegan", "gluten-free"] },
   { id: "bok-choy", name: "bok choy", category: "PRODUCE", defaultUnit: "bunch", tags: ["vegan", "gluten-free"] },
@@ -90,14 +112,227 @@ function dish(input: {
   estimatedCostCents: number;
   prepTimeMinutes: number;
   spiceLevel: SpiceLevel;
+  spiceAdjustable?: boolean;
+  supportedEventTypes?: EventType[];
+  hotpotRole?: HotpotRole;
   tags: string[];
   ingredients: Array<ReturnType<typeof item>>;
 }): Dish {
   return {
     baseServings: 4,
+    spiceAdjustable: false,
+    supportedEventTypes: ["DINNER"],
     ...input
   };
 }
+
+// Event eligibility is intentional: each new main is substantial, and portability,
+// grill preparation, and buffet suitability are represented separately from diet tags.
+const gatheringDishCatalog: Dish[] = [
+  dish({
+    id: "lentil-rice-bake", name: "Lentil and vegetable rice bake",
+    description: "A shareable tray of lentils, rice, carrots, and tomatoes.",
+    category: "MAIN", cuisine: "Mediterranean", estimatedCostCents: 1500, prepTimeMinutes: 45, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "OTHER"], tags: ["vegan", "gluten-free", "shareable", "buffet", "lentils", "rice"],
+    ingredients: [item("lentils", 1.5), item("rice", 1.5), item("carrot", 1), item("tomato", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "chickpea-potato-casserole", name: "Chickpea and potato casserole",
+    description: "Chickpeas and potatoes baked with spinach and a tomato sauce for sharing.",
+    category: "MAIN", cuisine: "Mediterranean", estimatedCostCents: 1700, prepTimeMinutes: 40, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "OTHER"], tags: ["vegan", "gluten-free", "shareable", "buffet", "chickpeas"],
+    ingredients: [item("chickpeas", 3), item("potatoes", 2), item("spinach", 1), item("tomato", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "chicken-rice-tray", name: "Herb chicken and rice tray",
+    description: "Chicken, rice, and roasted peppers portioned from a shared baking tray.",
+    category: "MAIN", cuisine: "American", estimatedCostCents: 2300, prepTimeMinutes: 45, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "OTHER"], tags: ["chicken", "meat", "gluten-free", "shareable", "buffet", "rice"],
+    ingredients: [item("chicken", 1.5), item("rice", 2), item("bell-pepper", 2), item("fresh-herbs", 0.5), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "vegetable-pasta-tray", name: "Vegetable and cheese pasta tray",
+    description: "Pasta baked with broccoli, tomato, and mozzarella for a shared meal.",
+    category: "MAIN", cuisine: "Italian", estimatedCostCents: 1900, prepTimeMinutes: 40, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "OTHER"], tags: ["vegetarian", "shareable", "buffet", "pasta"],
+    ingredients: [item("wheat-pasta", 1), item("broccoli", 1), item("tomato", 1), item("mozzarella", 0.75), item("olive-oil", 1)]
+  }),
+  dish({
+    id: "grilled-lentil-patties", name: "Grilled lentil and potato patties",
+    description: "Hearty lentil and potato patties cooked on the grill, with a rice accompaniment.",
+    category: "MAIN", cuisine: "American", estimatedCostCents: 1500, prepTimeMinutes: 35, spiceLevel: "NONE",
+    supportedEventTypes: ["BBQ"], tags: ["vegan", "gluten-free", "grilled", "lentils", "rice"],
+    ingredients: [item("lentils", 1.5), item("potatoes", 1), item("rice", 1), item("onion", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "grilled-chickpea-peppers", name: "Grilled chickpea-stuffed peppers",
+    description: "Grilled peppers filled with chickpeas, quinoa, and parsley.",
+    category: "MAIN", cuisine: "Mediterranean", estimatedCostCents: 1800, prepTimeMinutes: 35, spiceLevel: "NONE",
+    supportedEventTypes: ["BBQ"], tags: ["vegan", "gluten-free", "grilled", "chickpeas"],
+    ingredients: [item("bell-pepper", 4), item("chickpeas", 3), item("quinoa", 1.5), item("fresh-herbs", 0.5), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "grilled-tofu-rice", name: "Grilled tofu skewers with rice",
+    description: "Tofu and mushroom skewers grilled with tamari and served with rice.",
+    category: "MAIN", cuisine: "Global", estimatedCostCents: 1900, prepTimeMinutes: 30, spiceLevel: "NONE",
+    supportedEventTypes: ["BBQ"], tags: ["vegan", "gluten-free", "grilled", "tofu", "rice"],
+    ingredients: [item("tofu", 2), item("mushrooms", 1), item("rice", 1.5), item("tamari", 0.15), item("olive-oil", 1)]
+  }),
+  dish({
+    id: "picnic-chickpea-quinoa", name: "Chickpea quinoa picnic bowls",
+    description: "Portable chilled bowls of quinoa, chickpeas, cucumber, and lemon dressing.",
+    category: "MAIN", cuisine: "Mediterranean", estimatedCostCents: 1800, prepTimeMinutes: 25, spiceLevel: "NONE",
+    supportedEventTypes: ["PICNIC"], tags: ["vegan", "gluten-free", "portable", "chickpeas"],
+    ingredients: [item("quinoa", 2), item("chickpeas", 3), item("cucumber", 2), item("lemon", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "picnic-chicken-rice", name: "Chicken and rice picnic salad",
+    description: "Chilled chicken, rice, carrots, and parsley packed in individual containers.",
+    category: "MAIN", cuisine: "American", estimatedCostCents: 2200, prepTimeMinutes: 30, spiceLevel: "NONE",
+    supportedEventTypes: ["PICNIC"], tags: ["meat", "chicken", "gluten-free", "portable", "rice"],
+    ingredients: [item("chicken", 1.5), item("rice", 2), item("carrot", 1), item("fresh-herbs", 0.5), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "picnic-lentil-wraps", name: "Lentil and vegetable wraps",
+    description: "Flour tortilla wraps filled with lentils, cabbage, and avocado; pack chilled.",
+    category: "MAIN", cuisine: "Global", estimatedCostCents: 1600, prepTimeMinutes: 25, spiceLevel: "NONE",
+    supportedEventTypes: ["PICNIC"], tags: ["vegan", "portable", "lentils"],
+    ingredients: [item("tortillas", 1), item("lentils", 2), item("cabbage", 0.5), item("avocado", 2), item("lemon", 1)]
+  }),
+  dish({
+    id: "picnic-bean-corn-wraps", name: "Black bean corn tortilla wraps",
+    description: "Portable corn tortillas with black beans, rice, and crunchy carrots; pack chilled.",
+    category: "MAIN", cuisine: "Mexican", estimatedCostCents: 1500, prepTimeMinutes: 25, spiceLevel: "NONE",
+    supportedEventTypes: ["PICNIC"], tags: ["vegan", "gluten-free", "portable", "beans", "rice"],
+    ingredients: [item("corn-tortillas", 1), item("black-beans", 3), item("rice", 1), item("carrot", 1), item("olive-oil", 1)]
+  }),
+  dish({
+    id: "brunch-chickpea-hash", name: "Chickpea breakfast hash",
+    description: "A hearty breakfast skillet of chickpeas, potatoes, peppers, and spinach.",
+    category: "MAIN", cuisine: "American", estimatedCostCents: 1700, prepTimeMinutes: 30, spiceLevel: "NONE",
+    supportedEventTypes: ["BRUNCH"], tags: ["vegan", "gluten-free", "brunch", "chickpeas"],
+    ingredients: [item("chickpeas", 3), item("potatoes", 2), item("bell-pepper", 2), item("spinach", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "brunch-vegetable-frittata", name: "Potato and spinach frittata",
+    description: "A brunch frittata with eggs, potatoes, spinach, and tomatoes.",
+    category: "MAIN", cuisine: "Italian", estimatedCostCents: 1600, prepTimeMinutes: 35, spiceLevel: "NONE",
+    supportedEventTypes: ["BRUNCH"], tags: ["vegetarian", "gluten-free", "brunch", "egg"],
+    ingredients: [item("eggs", 8), item("potatoes", 1.5), item("spinach", 1), item("tomato", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "brunch-avocado-bean-toast", name: "Avocado and chickpea toast",
+    description: "Lunch-style toast topped with mashed chickpeas, avocado, and lemon.",
+    category: "MAIN", cuisine: "Global", estimatedCostCents: 1700, prepTimeMinutes: 15, spiceLevel: "NONE",
+    supportedEventTypes: ["BRUNCH"], tags: ["vegan", "brunch", "chickpeas"],
+    ingredients: [item("bread", 1), item("chickpeas", 3), item("avocado", 3), item("lemon", 1)]
+  }),
+  dish({
+    id: "brunch-tofu-scramble", name: "Tofu scramble and rice bowls",
+    description: "Breakfast tofu scramble with mushrooms and spinach, served over rice.",
+    category: "MAIN", cuisine: "Global", estimatedCostCents: 1800, prepTimeMinutes: 25, spiceLevel: "NONE",
+    supportedEventTypes: ["BRUNCH"], tags: ["vegan", "gluten-free", "brunch", "tofu", "rice"],
+    ingredients: [item("tofu", 2), item("rice", 1.5), item("mushrooms", 1), item("spinach", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "herb-potato-salad", name: "Lemon herb potato salad",
+    description: "A shareable potato salad with olive oil and parsley dressing, packed chilled.",
+    category: "SIDE", cuisine: "Mediterranean", estimatedCostCents: 650, prepTimeMinutes: 25, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "BBQ", "PICNIC", "OTHER"], tags: ["vegan", "gluten-free", "shareable", "portable", "buffet"],
+    ingredients: [item("potatoes", 2), item("lemon", 1), item("fresh-herbs", 0.5), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "carrot-cabbage-slaw", name: "Carrot and cabbage slaw",
+    description: "Crunchy vegetables tossed in lemon and olive oil, ready to share or pack chilled.",
+    category: "SIDE", cuisine: "American", estimatedCostCents: 550, prepTimeMinutes: 15, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "BBQ", "PICNIC", "OTHER"], tags: ["vegan", "gluten-free", "shareable", "portable", "buffet"],
+    ingredients: [item("carrot", 1), item("cabbage", 0.5), item("lemon", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "cucumber-chickpea-salad", name: "Cucumber and chickpea salad",
+    description: "A chilled sharing salad of cucumber, chickpeas, and fresh parsley.",
+    category: "SIDE", cuisine: "Mediterranean", estimatedCostCents: 750, prepTimeMinutes: 15, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "BBQ", "PICNIC", "OTHER"], tags: ["vegan", "gluten-free", "shareable", "portable", "buffet"],
+    ingredients: [item("cucumber", 2), item("chickpeas", 2), item("fresh-herbs", 0.5), item("lemon", 1), item("olive-oil", 1)]
+  }),
+  dish({
+    id: "grilled-corn", name: "Grilled corn on the cob",
+    description: "Corn cooked on the grill and brushed with olive oil.",
+    category: "SIDE", cuisine: "American", estimatedCostCents: 650, prepTimeMinutes: 20, spiceLevel: "NONE",
+    supportedEventTypes: ["BBQ"], tags: ["vegan", "gluten-free", "grilled"],
+    ingredients: [item("corn", 4), item("olive-oil", 1)]
+  }),
+  dish({
+    id: "brunch-breakfast-potatoes", name: "Roasted breakfast potatoes",
+    description: "Crisp potatoes and onions for a savory brunch side.",
+    category: "SIDE", cuisine: "American", estimatedCostCents: 650, prepTimeMinutes: 30, spiceLevel: "NONE",
+    supportedEventTypes: ["BRUNCH"], tags: ["vegan", "gluten-free", "savory"],
+    ingredients: [item("potatoes", 2), item("onion", 1), item("olive-oil", 2)]
+  }),
+  dish({
+    id: "brunch-spinach-mushrooms", name: "Savory spinach and mushrooms",
+    description: "Spinach and mushrooms sauteed in olive oil for brunch.",
+    category: "SIDE", cuisine: "Global", estimatedCostCents: 800, prepTimeMinutes: 15, spiceLevel: "NONE",
+    supportedEventTypes: ["BRUNCH"], tags: ["vegan", "gluten-free", "savory"],
+    ingredients: [item("spinach", 1), item("mushrooms", 1), item("olive-oil", 1)]
+  }),
+  dish({
+    id: "brunch-citrus-grapes", name: "Orange and grape fruit salad",
+    description: "Fresh oranges and grapes served as a brunch fruit side.",
+    category: "SIDE", cuisine: "Global", estimatedCostCents: 700, prepTimeMinutes: 10, spiceLevel: "NONE",
+    supportedEventTypes: ["BRUNCH"], tags: ["vegan", "gluten-free", "fruit"],
+    ingredients: [item("oranges", 4), item("grapes", 1)]
+  }),
+  dish({
+    id: "brunch-apple-side", name: "Fresh apple wedges",
+    description: "Sliced apples with a little lemon served as a brunch fruit side.",
+    category: "SIDE", cuisine: "Global", estimatedCostCents: 500, prepTimeMinutes: 10, spiceLevel: "NONE",
+    supportedEventTypes: ["BRUNCH"], tags: ["vegan", "gluten-free", "fruit"],
+    ingredients: [item("apples", 4), item("lemon", 0.5)]
+  }),
+  dish({
+    id: "gathering-fruit-cups", name: "Apple and orange fruit cups",
+    description: "Fresh apple and orange pieces in portable cups for a shared dessert.",
+    category: "DESSERT", cuisine: "Global", estimatedCostCents: 650, prepTimeMinutes: 15, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "PICNIC"], tags: ["vegan", "gluten-free", "shareable", "portable", "fruit"],
+    ingredients: [item("apples", 2), item("oranges", 3), item("lemon", 0.5)]
+  }),
+  dish({
+    id: "apple-oat-squares", name: "Apple oat squares",
+    description: "Shareable baked apple and certified gluten-free oat squares that pack easily.",
+    category: "DESSERT", cuisine: "American", estimatedCostCents: 700, prepTimeMinutes: 35, spiceLevel: "NONE",
+    supportedEventTypes: ["POTLUCK", "PICNIC"], tags: ["vegan", "gluten-free", "shareable", "portable"],
+    ingredients: [item("apples", 3), item("certified-oats", 2), item("olive-oil", 3)]
+  }),
+  dish({
+    id: "buffet-chickpea-dip", name: "Lemon chickpea dip and vegetables",
+    description: "Chickpeas blended with lemon and olive oil, served with vegetable sticks on a buffet board.",
+    category: "APPETIZER", cuisine: "Mediterranean", estimatedCostCents: 850, prepTimeMinutes: 15, spiceLevel: "NONE",
+    supportedEventTypes: ["OTHER"], tags: ["vegan", "gluten-free", "buffet"],
+    ingredients: [item("chickpeas", 2), item("lemon", 1), item("olive-oil", 2), item("carrot", 1), item("cucumber", 2)]
+  }),
+  dish({
+    id: "buffet-tomato-skewers", name: "Tomato and cucumber skewers",
+    description: "Small tomato and cucumber skewers with parsley for a shared buffet starter.",
+    category: "APPETIZER", cuisine: "Mediterranean", estimatedCostCents: 650, prepTimeMinutes: 15, spiceLevel: "NONE",
+    supportedEventTypes: ["OTHER"], tags: ["vegan", "gluten-free", "buffet"],
+    ingredients: [item("tomato", 1), item("cucumber", 2), item("fresh-herbs", 0.5)]
+  }),
+  dish({
+    id: "bbq-lemon-herb-sauce", name: "Lemon and parsley grill sauce",
+    description: "A mild lemon, parsley, and olive oil accompaniment for grilled food.",
+    category: "SAUCE", cuisine: "Mediterranean", estimatedCostCents: 450, prepTimeMinutes: 10, spiceLevel: "NONE",
+    supportedEventTypes: ["BBQ"], tags: ["vegan", "gluten-free"],
+    ingredients: [item("lemon", 2), item("fresh-herbs", 0.5), item("olive-oil", 4)]
+  }),
+  dish({
+    id: "bbq-tomato-sauce", name: "Tomato grill sauce",
+    description: "A simmered tomato and garlic sauce served separately alongside grilled mains.",
+    category: "SAUCE", cuisine: "American", estimatedCostCents: 500, prepTimeMinutes: 20, spiceLevel: "NONE",
+    supportedEventTypes: ["BBQ"], tags: ["vegan", "gluten-free"],
+    ingredients: [item("tomato", 1), item("garlic", 0.5), item("olive-oil", 1)]
+  })
+];
 
 export const dishCatalog: Dish[] = [
   dish({
@@ -109,8 +344,123 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 2200,
     prepTimeMinutes: 45,
     spiceLevel: "MILD",
+    spiceAdjustable: true,
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "BROTH",
     tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "mushroom"],
     ingredients: [item("broth", 2), item("mushrooms", 2), item("tofu", 3), item("bok-choy", 3), item("cabbage", 1), item("tamari", 1)]
+  }),
+  dish({
+    id: "tomato-hotpot-broth",
+    name: "Tomato hotpot broth",
+    description: "A mild tomato and vegetable broth designed for shared hotpot.",
+    category: "MAIN",
+    cuisine: "Chinese",
+    estimatedCostCents: 1200,
+    prepTimeMinutes: 30,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "BROTH",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "broth"],
+    ingredients: [item("broth", 2), item("tomato", 2), item("onion", 1), item("garlic", 1)]
+  }),
+  dish({
+    id: "hotpot-tofu",
+    name: "Hotpot tofu platter",
+    description: "Firm tofu portions ready to cook in a shared broth.",
+    category: "MAIN",
+    cuisine: "Chinese",
+    estimatedCostCents: 800,
+    prepTimeMinutes: 10,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "PROTEIN",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "protein", "tofu"],
+    ingredients: [item("tofu", 4)]
+  }),
+  dish({
+    id: "hotpot-beef-slices",
+    name: "Thin-sliced hotpot beef",
+    description: "Thin beef slices portioned for quick hotpot cooking.",
+    category: "MAIN",
+    cuisine: "Chinese",
+    estimatedCostCents: 1600,
+    prepTimeMinutes: 10,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "PROTEIN",
+    tags: ["beef", "meat", "gluten-free", "hotpot", "protein"],
+    ingredients: [item("beef", 3)]
+  }),
+  dish({
+    id: "hotpot-chicken-slices",
+    name: "Hotpot chicken slices",
+    description: "Chicken slices portioned for cooking safely in hotpot broth.",
+    category: "MAIN",
+    cuisine: "Chinese",
+    estimatedCostCents: 1300,
+    prepTimeMinutes: 15,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "PROTEIN",
+    tags: ["chicken", "meat", "gluten-free", "hotpot", "protein"],
+    ingredients: [item("chicken", 3)]
+  }),
+  dish({
+    id: "hotpot-mushroom-platter",
+    name: "Hotpot mushroom platter",
+    description: "A mixed mushroom platter for the shared pot.",
+    category: "SIDE",
+    cuisine: "Chinese",
+    estimatedCostCents: 700,
+    prepTimeMinutes: 10,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "VEGETABLE",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "vegetable", "mushroom"],
+    ingredients: [item("mushrooms", 4)]
+  }),
+  dish({
+    id: "hotpot-leafy-greens",
+    name: "Hotpot leafy greens",
+    description: "Bok choy and cabbage prepared for quick cooking.",
+    category: "SIDE",
+    cuisine: "Chinese",
+    estimatedCostCents: 650,
+    prepTimeMinutes: 12,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "VEGETABLE",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "vegetable"],
+    ingredients: [item("bok-choy", 4), item("cabbage", 2)]
+  }),
+  dish({
+    id: "hotpot-garlic-tamari-sauce",
+    name: "Garlic tamari dipping sauce",
+    description: "A gluten-free garlic, tamari, and sesame oil dipping sauce.",
+    category: "SAUCE",
+    cuisine: "Chinese",
+    estimatedCostCents: 350,
+    prepTimeMinutes: 5,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "SAUCE",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "sauce"],
+    ingredients: [item("tamari", 2), item("garlic", 1), item("sesame-oil", 1)]
+  }),
+  dish({
+    id: "hotpot-ginger-sesame-sauce",
+    name: "Ginger sesame dipping sauce",
+    description: "A mild ginger and sesame oil dipping sauce with tamari.",
+    category: "SAUCE",
+    cuisine: "Chinese",
+    estimatedCostCents: 350,
+    prepTimeMinutes: 5,
+    spiceLevel: "NONE",
+    supportedEventTypes: ["HOTPOT"],
+    hotpotRole: "SAUCE",
+    tags: ["vegan", "vegetarian", "gluten-free", "hotpot", "sauce"],
+    ingredients: [item("ginger", 2), item("sesame-oil", 1), item("tamari", 2)]
   }),
   dish({
     id: "chicken-taco-bowl",
@@ -121,6 +471,7 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 2600,
     prepTimeMinutes: 40,
     spiceLevel: "MEDIUM",
+    spiceAdjustable: true,
     tags: ["chicken", "gluten-free", "taco", "rice"],
     ingredients: [item("rice", 2), item("chicken", 2), item("black-beans", 3), item("bell-pepper", 4), item("avocado", 3), item("tomato", 1)]
   }),
@@ -157,6 +508,7 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 3100,
     prepTimeMinutes: 50,
     spiceLevel: "MEDIUM",
+    spiceAdjustable: true,
     tags: ["beef", "meat", "rice"],
     ingredients: [item("rice", 2), item("beef", 2), item("cucumber", 3), item("kimchi", 1), item("soy-sauce", 1), item("sesame-oil", 1)]
   }),
@@ -193,6 +545,7 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 2800,
     prepTimeMinutes: 45,
     spiceLevel: "MILD",
+    spiceAdjustable: true,
     tags: ["gluten-free", "taco", "flexible", "chicken-optional"],
     ingredients: [item("corn-tortillas", 2), item("black-beans", 4), item("bell-pepper", 4), item("cheese", 1), item("chicken", 1), item("avocado", 3)]
   }),
@@ -205,6 +558,7 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 2000,
     prepTimeMinutes: 30,
     spiceLevel: "MILD",
+    spiceAdjustable: true,
     tags: ["vegan", "vegetarian", "gluten-free", "tofu"],
     ingredients: [item("tofu", 3), item("broccoli", 2), item("carrot", 1), item("mushrooms", 1), item("rice", 2), item("tamari", 1)]
   }),
@@ -229,7 +583,8 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 3000,
     prepTimeMinutes: 45,
     spiceLevel: "MILD",
-    tags: ["chicken", "meat", "bbq", "gluten-free"],
+    supportedEventTypes: ["DINNER", "BBQ"],
+    tags: ["chicken", "meat", "bbq", "gluten-free", "grilled"],
     ingredients: [item("chicken", 3), item("bell-pepper", 4), item("onion", 2), item("garlic", 1)]
   }),
   dish({
@@ -301,6 +656,8 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 400,
     prepTimeMinutes: 25,
     spiceLevel: "NONE",
+    supportedEventTypes: ["DINNER", "HOTPOT"],
+    hotpotRole: "STAPLE",
     tags: ["vegan", "gluten-free", "rice"],
     ingredients: [item("rice", 3)]
   }),
@@ -421,6 +778,8 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 900,
     prepTimeMinutes: 1,
     spiceLevel: "NONE",
+    supportedEventTypes: ["DINNER", "HOTPOT", "POTLUCK", "BBQ", "PICNIC", "BRUNCH", "OTHER"],
+    hotpotRole: "DRINK",
     tags: ["vegan", "gluten-free"],
     ingredients: [item("sparkling-water", 2)]
   }),
@@ -433,6 +792,8 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 700,
     prepTimeMinutes: 1,
     spiceLevel: "NONE",
+    supportedEventTypes: ["DINNER", "HOTPOT", "POTLUCK", "BBQ", "PICNIC", "BRUNCH", "OTHER"],
+    hotpotRole: "DRINK",
     tags: ["vegan", "gluten-free"],
     ingredients: [item("lemonade", 2)]
   }),
@@ -445,9 +806,12 @@ export const dishCatalog: Dish[] = [
     estimatedCostCents: 700,
     prepTimeMinutes: 1,
     spiceLevel: "NONE",
+    supportedEventTypes: ["DINNER", "HOTPOT", "POTLUCK", "BBQ", "PICNIC", "BRUNCH", "OTHER"],
+    hotpotRole: "DRINK",
     tags: ["vegan", "gluten-free"],
     ingredients: [item("iced-tea", 2)]
-  })
+  }),
+  ...gatheringDishCatalog
 ];
 
 export const demoRoom: DinnerRoom = {
@@ -482,7 +846,6 @@ function guest(input: {
     id: input.id,
     roomId: demoRoom.id,
     name: input.name,
-    editToken: `${input.id}-edit-token`,
     isHostGuest: false,
     canBring: input.canBring ?? false,
     createdAt: now,
@@ -509,5 +872,5 @@ export const demoGuests: Guest[] = [
   guest({ id: "guest-taylor", name: "Taylor", dietType: "OMNIVORE", dislikes: ["seafood"], likes: ["drinks"], spiceLevel: "MILD", canBring: true })
 ];
 
-export const eventTypes: EventType[] = ["DINNER", "POTLUCK", "HOTPOT", "BBQ", "PICNIC", "BRUNCH", "OTHER"];
+export const eventTypes: EventType[] = ["DINNER", "HOTPOT", "POTLUCK", "BBQ", "PICNIC", "BRUNCH", "OTHER"];
 

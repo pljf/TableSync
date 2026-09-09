@@ -1,15 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test("demo room exposes the core planning workflow", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("link", { name: /open demo/i }).click();
-  await expect(page.getByRole("heading", { name: /friday hotpot night/i })).toBeVisible();
-
-  await page.getByRole("link", { name: /^plans$/i }).click();
-  await expect(page.getByText(/^menu plans$/i)).toBeVisible();
-  await expect(page.getByText(/score/i).first()).toBeVisible();
-
-  await page.getByRole("link", { name: /^shopping$/i }).click();
-  await expect(page.getByText(/^shopping workflow$/i)).toBeVisible();
-  await expect(page.getByText(/total estimate/i)).toBeVisible();
+test("retired demo redirects to guest entry and no longer exposes room details", async ({ page }) => {
+  await page.goto("/demo");
+  await expect(page).toHaveURL(/\/auth$/);
+  await expect(page.getByRole("button", { name: "Continue as guest", exact: true })).toBeVisible();
+  await page.goto("/rooms/room-friday-hotpot");
+  await expect(page.getByRole("heading", { name: "This page is unavailable", exact: true })).toBeVisible();
+  await page.goto("/preferences");
+  await expect(page.getByRole("heading", { name: "Open your meal invitation", exact: true })).toBeVisible();
 });

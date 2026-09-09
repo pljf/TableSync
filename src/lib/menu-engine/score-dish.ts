@@ -11,10 +11,8 @@ export type DishScore = {
 
 export function scoreDish(dish: Dish, guests: Guest[], room: DinnerRoom): DishScore {
   const constraint = evaluateDishConstraints(dish, guests);
-  const allLikes = guests.flatMap((guest) => guest.preference.likes);
-  const allDislikes = guests.flatMap((guest) => guest.preference.dislikes);
-  const likesMatched = dishMatchesTerms(dish, allLikes).length;
-  const dislikesMatched = dishMatchesTerms(dish, allDislikes).length;
+  const likesMatched = guests.reduce((sum, guest) => sum + dishMatchesTerms(dish, guest.preference.likes).length, 0);
+  const dislikesMatched = guests.reduce((sum, guest) => sum + dishMatchesTerms(dish, guest.preference.dislikes).length, 0);
   const estimatedGuestCount = Math.max(room.expectedGuests ?? guests.length, guests.length, 1);
   const scaledCost = Math.round(dish.estimatedCostCents * (estimatedGuestCount / dish.baseServings));
   const budgetTarget = room.totalBudgetCents ? room.totalBudgetCents * 0.35 : 4500;

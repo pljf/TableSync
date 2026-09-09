@@ -1,56 +1,42 @@
-import { CalendarDays, LayoutDashboard, LogIn, LogOut, Plus, Share2, Utensils } from "lucide-react";
+import { LogIn, Utensils } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { User } from "@/lib/domain";
-import { signOutAction } from "@/app/actions";
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { MainNavigation } from "@/components/layout/main-navigation";
+import { InteractionEffects } from "@/components/ui/interaction-effects";
 
 export function AppShell({ children, user }: { children: ReactNode; user?: User | null }) {
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <Link href="/" className="brand" aria-label="TableSync home">
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+      <header className="topbar site-header">
+        <Link href="/" className="brand" aria-label="TableSync home" prefetch={false}>
           <span className="brand-mark">
-            <Utensils size={18} />
+            <Utensils aria-hidden="true" size={20} />
           </span>
-          <span>TableSync</span>
+          <span className="brand-wordmark">TableSync</span>
         </Link>
-        <nav className="nav-links" aria-label="Main navigation">
-          <Link href="/demo">
-            <Share2 size={16} />
-            Demo
-          </Link>
-          <Link href="/dashboard">
-            <LayoutDashboard size={16} />
-            Dashboard
-          </Link>
-          <Link href="/rooms/new">
-            <Plus size={16} />
-            New room
-          </Link>
-        </nav>
+        <MainNavigation />
         <div className="topbar-actions">
           {user ? (
-            <form action={signOutAction}>
-              <button className="icon-text-button" type="submit">
-                <LogOut size={16} />
-                Sign out
-              </button>
-            </form>
+            <SignOutButton isGuest={user.isAnonymous} />
           ) : (
-            <Link className="icon-text-button" href="/auth">
-              <LogIn size={16} />
-              Sign in
+            <Link className="icon-text-button" href="/auth" prefetch={false}>
+              <LogIn aria-hidden="true" size={16} />
+              Get started
             </Link>
           )}
         </div>
       </header>
-      <main>{children}</main>
+      <main id="main-content">{children}</main>
       <footer className="footer">
-        <span>
-          <CalendarDays size={16} />
-          Collaborative dinner planning demo
-        </span>
+        <span className="footer-brand"><Utensils aria-hidden="true" size={16} /> TableSync</span>
+        <span>Meals, planned together.</span>
       </footer>
+      <InteractionEffects />
     </div>
   );
 }

@@ -1,0 +1,92 @@
+name: Staging acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      staging_url:
+        description: Exact non-local HTTPS deployment origin
+        required: true
+        type: string
+      deployment_id:
+        description: Hosting-provider deployment identifier
+        required: true
+        type: string
+      expected_migration:
+        description: Reviewed Prisma migration head
+        required: true
+        default: 20260908010000_correct_tofu_shopping_category
+        type: string
+
+concurrency:
+  group: tablesync-staging-acceptance
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 60
+    env:
+      AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
+      AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
+      AUTH_TRUSTED_ORIGINS: ${{ inputs.staging_url }}
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+      BETTER_AUTH_URL: ${{ inputs.staging_url }}
+      DATABASE_POOL_MAX_USES: "5000"
+      DATABASE_POOL_SIZE: "8"
+      DATABASE_RUNTIME_MODE: pooled
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      NEXT_PUBLIC_APP_URL: ${{ inputs.staging_url }}
+      TABLESYNC_DEPLOYMENT_ENV: staging
+      TABLESYNC_DATABASE_SCOPE: acceptance
+      TABLESYNC_DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+      TABLESYNC_E2E_BASE_URL: ${{ inputs.staging_url }}
+      TABLESYNC_EXPECTED_MIGRATION: ${{ inputs.expected_migration }}
+      TABLESYNC_GIT_SHA: ${{ github.sha }}
+      TABLESYNC_LIGHTHOUSE_BASE_URL: ${{ inputs.staging_url }}
+      TABLESYNC_STAGING_SESSION_COOKIE: ${{ secrets.TABLESYNC_STAGING_SESSION_COOKIE }}
+      TABLESYNC_STAGING_SESSION_COOKIE_NAME: __Secure-tablesync-auth.session_token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci
+      - run: npm run deployment:validate
+      - run: npx prisma validate
+      - run: npm run db:deploy
+      - run: npm run db:deploy
+      - run: npm run db:seed
+      - run: npm run db:seed
+      - run: npx prisma migrate status
+      - run: npm run db:verify-security -- --output docs/evidence/staging/database-security.json
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run test:db
+      - run: npm run security:secrets
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:e2e:staging
+      - run: npm run audit:performance
+      - name: Verify evidence redaction
+        id: evidence_redaction
+        if: always()
+        run: npm run security:evidence
+      - name: Upload redacted staging evidence
+        if: ${{ always() && steps.evidence_redaction.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-evidence-${{ github.run_id }}
+          path: |
+            docs/evidence/staging
+            docs/evidence/lighthouse/staging
+            docs/evidence/screenshots
+          if-no-files-found: error
+          retention-days: 30

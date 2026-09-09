@@ -1,6 +1,7 @@
 import { CircleDot } from "lucide-react";
 import type { ActivityEvent } from "@/lib/domain";
-import { activityLabels, formatDate } from "@/lib/format";
+import { activityLabels } from "@/lib/format";
+import { EventDateTime } from "@/components/ui/event-date-time";
 
 export function ActivityTimeline({ events }: { events: ActivityEvent[] }) {
   return (
@@ -11,7 +12,7 @@ export function ActivityTimeline({ events }: { events: ActivityEvent[] }) {
           <div>
             <strong>{activityLabels[event.type]}</strong>
             <p>{event.message}</p>
-            <span>{formatDate(event.createdAt)}</span>
+            <span><EventDateTime value={event.createdAt} /></span>
           </div>
         </li>
       ))}

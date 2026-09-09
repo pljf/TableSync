@@ -9,23 +9,29 @@ type MergeRecord = {
 };
 
 export function generateShoppingList(input: GenerateShoppingInput): GeneratedShoppingItem[] {
-  const { room, guests, plan } = input;
-  const guestCount = Math.max(room.expectedGuests ?? guests.length, guests.length, 1);
+  const { guests, plan } = input;
   const merged = new Map<string, MergeRecord>();
 
   for (const planDish of plan.dishes) {
+    // A Potluck owner brings this entire recipe at the finalized serving count.
+    // Its cost remains in the menu budget, but its ingredients must not also
+    // appear in the shared groceries (even when other dishes use them).
+    if (input.room.eventType === "POTLUCK" && planDish.contributionGuestId) continue;
     const scale = planDish.servings / planDish.dish.baseServings;
     const scaledDishCost = Math.round(planDish.dish.estimatedCostCents * (planDish.servings / planDish.dish.baseServings));
-    const ingredientCost = Math.max(1, Math.round(scaledDishCost / Math.max(planDish.dish.ingredients.length, 1)));
+    const ingredientCount = planDish.dish.ingredients.length;
+    const ingredientCost = Math.floor(scaledDishCost / Math.max(ingredientCount, 1));
+    const remainingCents = scaledDishCost % Math.max(ingredientCount, 1);
 
-    for (const dishIngredient of planDish.dish.ingredients) {
+    for (const [index, dishIngredient] of planDish.dish.ingredients.entries()) {
       const key = `${dishIngredient.ingredient.id}:${dishIngredient.unit}`;
       const previous = merged.get(key);
-      const scaledQuantity = Number((dishIngredient.quantity * scale).toFixed(2));
+      const scaledQuantity = dishIngredient.quantity * scale;
+      const allocatedCost = ingredientCost + (index < remainingCents ? 1 : 0);
 
       if (previous) {
-        previous.quantity = Number((previous.quantity + scaledQuantity).toFixed(2));
-        previous.estimatedCostCents += ingredientCost;
+        previous.quantity += scaledQuantity;
+        previous.estimatedCostCents += allocatedCost;
         continue;
       }
 
@@ -33,7 +39,7 @@ export function generateShoppingList(input: GenerateShoppingInput): GeneratedSho
         ingredient: dishIngredient.ingredient,
         quantity: scaledQuantity,
         unit: dishIngredient.unit,
-        estimatedCostCents: ingredientCost
+        estimatedCostCents: allocatedCost
       });
     }
   }
@@ -41,11 +47,11 @@ export function generateShoppingList(input: GenerateShoppingInput): GeneratedSho
   const items = [...merged.values()]
     .map<GeneratedShoppingItem>((item) => ({
       ...item,
-      estimatedCostCents: Math.round(item.estimatedCostCents * Math.max(1, guestCount / Math.max(room.expectedGuests ?? guestCount, 1)))
+      quantity: Number(item.quantity.toFixed(2))
     }))
     .sort((a, b) => {
       const category = a.ingredient.category.localeCompare(b.ingredient.category);
-      return category === 0 ? a.ingredient.name.localeCompare(b.ingredient.name) : category;
+      return category || a.ingredient.name.localeCompare(b.ingredient.name) || a.ingredient.id.localeCompare(b.ingredient.id) || a.unit.localeCompare(b.unit);
     });
 
   return assignShoppingItems(items, guests);

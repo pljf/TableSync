@@ -1,8 +1,14 @@
 import { CalendarDays, MapPin, ShoppingCart, Utensils } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { formatDate, formatMoney, humanize } from "@/lib/format";
+import { eventTypeLabels, formatMoney, humanize } from "@/lib/format";
+import { EventDateTime } from "@/components/ui/event-date-time";
+import { compareMenuDishes, formatServings, menuDishRole } from "@/lib/menu-presentation";
+import { eventFormats } from "@/lib/event-formats";
 import { getPublicRoom } from "@/lib/store";
+import { DietaryNote } from "@/components/menu/dietary-note";
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ roomId: string }> | { roomId: string };
@@ -10,23 +16,20 @@ type PageProps = {
 
 export default async function SharePage({ params }: PageProps) {
   const { roomId } = await params;
-  const bundle = await getPublicRoom(roomId);
-  if (!bundle) {
+  const view = await getPublicRoom(roomId);
+  if (!view) {
     notFound();
   }
 
-  const finalPlan = bundle.plans.find((plan) => plan.status === "FINALIZED");
-  const groupedShopping = bundle.shopping.reduce<Record<string, number>>((acc, item) => {
-    acc[item.ingredient.category] = (acc[item.ingredient.category] ?? 0) + 1;
-    return acc;
-  }, {});
+  const finalPlan = view.finalPlan;
 
   return (
     <div className="page-stack public-share">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Public dinner plan</p>
-          <h1>{bundle.room.title}</h1>
+          <p className="eyebrow">Public {eventTypeLabels[view.room.eventType].toLowerCase()} plan</p>
+          <h1>{view.room.title}</h1>
+          <p className="muted">{eventFormats[view.room.eventType].description}</p>
         </div>
         <Badge tone="success">Finalized</Badge>
       </header>
@@ -34,19 +37,20 @@ export default async function SharePage({ params }: PageProps) {
         <article className="metric-card">
           <CalendarDays size={20} />
           <span>Date</span>
-          <strong>{formatDate(bundle.room.dateTime)}</strong>
+          <strong><EventDateTime value={view.room.dateTime} /></strong>
         </article>
         <article className="metric-card">
           <MapPin size={20} />
           <span>Location</span>
-          <strong>{bundle.room.location || "TBD"}</strong>
+          <strong>{view.room.location || "TBD"}</strong>
         </article>
         <article className="metric-card">
           <ShoppingCart size={20} />
           <span>Budget</span>
-          <strong>{formatMoney(bundle.room.totalBudgetCents)}</strong>
+          <strong>{formatMoney(view.room.totalBudgetCents)}</strong>
         </article>
       </section>
+      <DietaryNote />
       {finalPlan ? (
         <section className="grid two">
           <article className="card">
@@ -55,20 +59,28 @@ export default async function SharePage({ params }: PageProps) {
               <h2>Final menu</h2>
             </div>
             <ul className="dish-list">
-              {finalPlan.dishes.map(({ dish, servings }) => (
+              {[...finalPlan.dishes].sort((left, right) => compareMenuDishes(left, right, view.room.eventType)).map((dish) => (
                 <li key={dish.id}>
                   <span>{dish.name}</span>
                   <small>
-                    {humanize(dish.category)} - {servings} servings
+                    {menuDishRole(dish, view.room.eventType)} - {formatServings(dish.servings)}
                   </small>
                 </li>
               ))}
             </ul>
+            {finalPlan.preparationNotes.length > 0 ? (
+              <div className="warning-list" aria-label="Menu preparation notes">
+                <h3>Preparation notes</h3>
+                {finalPlan.preparationNotes.map((note) => <p key={note}>{note}</p>)}
+              </div>
+            ) : null}
           </article>
           <article className="card">
             <h2>Shopping summary</h2>
+            {finalPlan.contributionSummary ? <p>{finalPlan.contributionSummary.claimedDishes} of {finalPlan.contributionSummary.totalDishes} dishes have contributors; {finalPlan.contributionSummary.readyDishes} ready to bring. Shared shopping covers the remaining dishes.</p> : null}
+            {view.shoppingCategories.length === 0 ? <p className="muted">No shared groceries are needed.</p> : null}
             <div className="tag-list">
-              {Object.entries(groupedShopping).map(([category, count]) => (
+              {view.shoppingCategories.map(({ category, count }) => (
                 <Badge key={category} tone="info">
                   {humanize(category)}: {count}
                 </Badge>
