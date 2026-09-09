@@ -20,7 +20,7 @@ This runbook is the execution contract for the managed PostgreSQL staging databa
 | `TABLESYNC_DEPLOYMENT_ENV` | Exactly `staging` |
 | `TABLESYNC_DEPLOYMENT_ID` | Immutable ID from the hosting provider |
 | `TABLESYNC_GIT_SHA` | Full deployed Git commit SHA |
-| `TABLESYNC_EXPECTED_MIGRATION` | Reviewed migration directory name, currently `20260802023000_security_audit` |
+| `TABLESYNC_EXPECTED_MIGRATION` | Reviewed migration directory name, currently `20260908010000_correct_tofu_shopping_category` |
 | `NEXT_PUBLIC_APP_URL` / `BETTER_AUTH_URL` | Same canonical non-local HTTPS origin, without an extra path |
 | `AUTH_TRUSTED_ORIGINS` | Explicit comma-separated origins; normally only the canonical staging origin |
 | `BETTER_AUTH_SECRET` | Random secret of at least 32 characters, unique to staging |

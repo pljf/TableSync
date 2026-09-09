@@ -28,13 +28,59 @@ export function dishSearchTerms(dish: Dish): string[] {
 }
 
 export function dishMatchesTerms(dish: Dish, terms: string[]): string[] {
-  const normalizedTerms = terms.map(normalizeTerm).filter(Boolean);
+  const normalizedTerms = [...new Set(terms.map(normalizeTerm).filter(Boolean))];
   if (normalizedTerms.length === 0) {
     return [];
   }
 
   const haystack = dishSearchTerms(dish);
   return normalizedTerms.filter((term) => haystack.some((entry) => entry.includes(term) || term.includes(entry)));
+}
+
+const allergenAliases: Record<string, string> = {
+  dairy: "milk",
+  eggs: "egg",
+  peanuts: "peanut",
+  nuts: "nut",
+  soya: "soy",
+  soybean: "soy",
+  soybeans: "soy"
+};
+
+const allergenFamilies = new Set([
+  "milk", "egg", "peanut", "nut", "soy", "sesame", "shellfish", "fish", "gluten", "wheat", "barley", "rye"
+]);
+
+function allergenWords(value: string): string {
+  return normalizeTerm(value)
+    // Absence labels are not evidence that an allergen is present.
+    .replace(/\b(?:gluten|wheat|dairy|milk|egg|soy|peanut|nut|sesame|shellfish)[- ]free\b/g, " ")
+    .replace(/\b(coconut|almond|soy|oat|rice) milk\b/g, "$1")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .map((word) => {
+      if (allergenAliases[word]) return allergenAliases[word];
+      if (word.endsWith("ies")) return `${word.slice(0, -3)}y`;
+      if (word.endsWith("oes")) return word.slice(0, -2);
+      if (word.length > 3 && word.endsWith("s") && !word.endsWith("ss") && !word.endsWith("us")) return word.slice(0, -1);
+      return word;
+    })
+    .join(" ");
+}
+
+export function dishMatchesAllergens(dish: Dish, terms: string[]): string[] {
+  const haystack = dishSearchTerms(dish).map((term) => ` ${allergenWords(term)} `);
+  return [...new Set(terms.map(normalizeTerm).filter(Boolean))].filter((term) => {
+    const words = allergenWords(term);
+    // Guests can qualify an allergen ("sesame seeds", "milk allergy").
+    // Match those families as whole words, without treating coconut as nut or milk.
+    const families = words.split(" ").filter((word) => allergenFamilies.has(word));
+    const ingredientWords = words.replace(/\b(?:allergy|product)\b/g, " ").replace(/\s+/g, " ").trim();
+    const searchTerms = families.length > 0 ? families : [ingredientWords];
+    return searchTerms.some((searchTerm) =>
+      searchTerm.length > 0 && haystack.some((entry) => entry.includes(` ${searchTerm} `))
+    );
+  });
 }
 
 function hasAnyTag(dish: Dish, tags: Set<string>): boolean {
@@ -67,7 +113,7 @@ export function dietViolation(dish: Dish, dietType: DietType): string | null {
     return "contains shellfish";
   }
 
-  if (dietType === "GLUTEN_FREE" && !dish.tags.includes("gluten-free") && dishMatchesTerms(dish, ["gluten", "wheat"]).length > 0) {
+  if (dietType === "GLUTEN_FREE" && dishMatchesAllergens(dish, ["gluten", "wheat", "barley", "rye"]).length > 0) {
     return "contains gluten";
   }
 
@@ -102,7 +148,7 @@ export type GuestPlanCoverage = {
 };
 
 export function evaluateDishForGuest(dish: Dish, guest: Guest): DishGuestSafety {
-  const allergyMatches = dishMatchesTerms(dish, guest.preference.allergies);
+  const allergyMatches = dishMatchesAllergens(dish, guest.preference.allergies);
   const dietIssue = dietViolation(dish, guest.preference.dietType);
   const spiceGap = Math.max(0, spiceRank[dish.spiceLevel] - spiceRank[guest.preference.spiceLevel]);
   const requiresSpiceAdjustment =

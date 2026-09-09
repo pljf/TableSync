@@ -1,7 +1,9 @@
 # TableSync Core MVP Execution Plan
 
-**Status:** Core MVP acceptance passed; authoritative for maintenance and deferred-scope control
-**Last updated:** 2026-08-01
+> **Scope update accepted (2026-09-08):** The five additional event types are implemented and locally accepted. [Seven-format planning contract](EVENT_FORMAT_EXPANSION.md) supersedes the original event-type restriction and records their behavior and passing evidence. The remaining safety, workflow, quality, and evidence standards below continue to apply.
+
+**Status:** Core MVP and seven-format local acceptance passed; authoritative for maintenance and deferred-scope control
+**Last updated:** 2026-09-08
 **Owner:** TableSync project
 **Supersedes:** The milestone ordering in `PROJECT_PLAN.md` and `docs/DEVELOPMENT_LOG.md` where they conflict with this document.
 
@@ -21,12 +23,17 @@ These decisions were confirmed during the 2026-07-24 to 2026-08-01 product grill
 
 ### 2.1 Supported event types
 
-The first production-quality core supports only:
+The current core supports:
 
 - `DINNER`
 - `HOTPOT`
+- `POTLUCK`
+- `BBQ`
+- `PICNIC`
+- `BRUNCH`
+- `OTHER` (a shared buffet)
 
-`POTLUCK`, `BBQ`, `PICNIC`, `BRUNCH`, and `OTHER` must not be presented as fully supported until they have real event-specific menu logic and acceptance coverage.
+The five added formats have event-specific menu logic, suitable catalog dishes and complete browser workflow coverage. Their structures, Potluck contribution rules and final quality audit are maintained in the [Seven-format planning contract](EVENT_FORMAT_EXPANSION.md).
 
 ### 2.2 Safety and guest coverage
 
@@ -65,6 +72,10 @@ The first production-quality core supports only:
 
 Hotpot must use real event-specific generation logic. Renaming a generic dinner plan is not sufficient.
 
+#### Added formats
+
+Potluck uses shareable mains, sides and dessert with whole-dish contributions. BBQ requires grilled mains including a plant-based main. Picnic requires portable food. Brunch combines brunch mains, a savory side and fruit. Other is an explicit shared buffet with an appetizer. Exact slot counts, eligibility, portions and preparation rules are maintained in [Seven-format planning contract](EVENT_FORMAT_EXPANSION.md).
+
 ### 2.5 Workflow state machine
 
 The core workflow is:
@@ -79,6 +90,7 @@ Rules:
 - Reopening preference collection invalidates all existing candidate plans and votes.
 - `FINALIZED` closes voting and menu regeneration.
 - Undoing finalization invalidates the generated shopping list and all shopping assignment or purchased state, then returns the room to `VOTING`.
+- In Potluck, undoing finalization also clears contribution ownership and readiness. Changing a contributor rebuilds shared shopping atomically after confirmation; readiness changes preserve shopping progress.
 - Any action that destroys derived work must require a clear user confirmation that names what will be lost.
 - Invalid state transitions must fail without partially mutating data.
 
@@ -135,7 +147,6 @@ The baseline was broad but not yet deep enough. The following gaps were recorded
 - Restaurant ordering
 - Chat
 - AI menu generation or AI explanations
-- Additional event types
 - Public deployment
 - Portfolio screenshots and marketing-focused README work
 
@@ -175,7 +186,7 @@ Baseline evidence:
 
 Status: Complete (2026-08-01)
 
-- Limit the exposed supported event types to Dinner and Hotpot.
+- Original milestone: limit exposed event types to Dinner and Hotpot. Superseded by the seven-format expansion on 2026-09-08.
 - Model event-specific menu roles without overloading generic display labels.
 - Model intrinsic versus optional spice.
 - Define plan-level per-guest safety coverage.
@@ -480,12 +491,16 @@ Do not weaken an acceptance criterion merely because it is difficult. If a crite
 | 2026-08-01 | Phases 5-6 | Closed guest edit/idempotency, host ownership, recoverable mutation, responsive, keyboard, touch-target, reduced-motion, accessibility, and console-error gaps | 36 viewport screenshots; Axe scans; fresh-room Dinner/Hotpot/no-solution flows; Playwright 1.62.1 browser matrix | Complete | Run final clean command set and performance gate |
 | 2026-08-01 | Phase 7 | Completed final core acceptance without weakening the documented thresholds | Validate; 7 migrations; seed x2; lint; typecheck; 28/28 unit; 3/3 DB before and after E2E; build; 15/15 E2E; Lighthouse medians Home 91 and Demo 95; Accessibility/Best Practices 100; CLS below 0.1 | Complete | Keep deferred production work separate; re-run production-only dependency audit in an explicitly authorized environment |
 
+### Seven-format expansion acceptance (2026-09-08)
+
+All seven formats passed complete fresh-room workflows across Chromium, Firefox and WebKit. Final evidence includes 228 unit tests, 31 database tests, 46 applicable browser passes with five intentional skips, 81 added-format responsive screenshots, schema validation/current 13 migrations/two idempotent seeds, lint/typecheck/build, and Lighthouse performance medians of 97 (Home), 95 (Auth) and 93 (private Potluck). All nine final audit runs scored Accessibility/Best Practices 100 and CLS 0. The [expansion contract](EVENT_FORMAT_EXPANSION.md) retains failed iterations, final evidence and local database/performance scope limits.
+
 ### Recorded external limitations and deferred work
 
 - The experimental local `prisma dev` TCP proxy can terminate connections after repeated high-volume suites. Final evidence was gathered after a clean named-server restart, and the database suite also passed after the final 15-test E2E run. Hosted PostgreSQL remains the required production recheck environment.
 - `npm install` reported 11 advisories across the complete dependency tree (5 moderate, 6 high). A production-only `npm audit --omit=dev` could not be classified because the environment rejected sending dependency metadata to npm's public audit API. This does not invalidate the functional acceptance evidence, but a production-only audit remains mandatory before deployment and must be run only with explicit authorization or in trusted CI.
 - Lighthouse 13.4.1 declares Node.js 22.19 or newer. The exact `npm run audit:performance` command passed in this environment on Node 22.14, and the same audit also passed on bundled Node 24.14; local/CI runtimes should be upgraded to a supported Node release before future evidence refreshes.
-- Production OAuth, complete production authorization, realtime behavior, managed deployment, additional event types, AI, payments, and portfolio packaging remain intentionally deferred.
+- Production OAuth, complete production authorization, realtime behavior, managed deployment, AI, payments, and portfolio packaging were intentionally deferred at this milestone. The additional event types were implemented in the 2026-09-08 expansion.
 
 ## 8. Completion Report Requirements
 

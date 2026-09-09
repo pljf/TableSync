@@ -1,0 +1,43 @@
+.event-format-field { min-width: 0; }
+.room-details-grid { align-items: start; }
+.event-format-description { margin-top: 12px; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+.event-format-description p { margin-bottom: 8px; }
+.event-format-description p:last-child { margin-bottom: 0; }
+.event-preparation-notes { margin-top: 20px; }
+.event-preparation-notes h3 { font-size: 0.9rem; }
+.event-preparation-notes ul { padding-left: 20px; margin: 0; font-size: 0.84rem; }
+.event-preparation-notes li + li { margin-top: 6px; }
+.room-event-icon.potluck, .room-event-icon.picnic { background: var(--success-soft); color: var(--success); }
+.room-event-icon.bbq { background: var(--accent-soft); color: var(--accent); }
+.room-event-icon.brunch { background: var(--warning-soft); color: var(--warning); }
+.room-event-icon.other { background: var(--info-soft); color: var(--info); }
+.page-stack.contribution-panel { width: 100%; padding: 0; }
+.contribution-intro > p { max-width: 90ch; }
+.contribution-intro .tag-list { margin-bottom: 16px; }
+.contribution-grid { align-items: start; }
+.contribution-card { overflow-wrap: anywhere; }
+.contribution-card .card-heading { gap: 14px; }
+.contribution-card .card-heading .badge { flex-shrink: 0; max-width: 40%; }
+.contribution-card .card-heading p { margin-bottom: 12px; font-size: 0.82rem; }
+.contribution-controls, .contribution-form { display: grid; gap: 12px; }
+.contribution-controls:empty { display: none; }
+.contribution-controls { margin-top: 20px; }
+.contribution-form + .contribution-form { border-top: 1px solid var(--border); padding-top: 16px; }
+.contribution-form .button { justify-self: start; }
+.contribution-confirmation { align-items: flex-start; color: var(--muted); font-size: 0.8rem; line-height: 1.5; }
+.contribution-confirmation input { margin-top: 2px; flex: 0 0 auto; }
+.contribution-recipe { margin: 16px 0; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.contribution-recipe summary { cursor: pointer; font-weight: 600; min-height: 44px; padding: 9px 0; }
+.contribution-recipe .dish-list { margin-top: 10px; }
+.contribution-recipe p { margin: 10px 0 0; font-size: 0.82rem; }
+.contribution-costs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.contribution-costs div { border-left: 2px solid var(--border); padding-left: 16px; }
+.contribution-costs dt { font-size: 0.8rem; color: var(--muted); }
+.contribution-costs dd { margin: 6px 0 0; font-size: 1.3rem; font-weight: 600; }
+@media (max-width: 700px) {
+  .grid.two.contribution-grid { grid-template-columns: minmax(0,1fr); }
+  .contribution-costs { grid-template-columns: minmax(0,1fr); }
+  .contribution-card .card-heading { flex-wrap: wrap; }
+  .contribution-card .card-heading .badge { max-width: 100%; }
+  .contribution-form .button { width: 100%; }
+}

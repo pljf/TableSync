@@ -1,14 +1,63 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
+import { useActionState, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { unstable_rethrow, useRouter } from "next/navigation";
 import { Ban, CircleMinus, Heart } from "lucide-react";
 import { castVoteAction } from "@/app/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { initialMutationState } from "@/lib/mutation-state";
+import { ActionFeedback } from "@/components/ui/action-feedback";
+import { initialMutationState, type MutationState } from "@/lib/mutation-state";
+import type { Vote } from "@/lib/domain";
 
-export function VoteForm({ planId }: { planId: string }) {
-  const [mutationState, formAction] = useActionState(castVoteAction, initialMutationState);
-  const [reason, setReason] = useState("");
+const voteLabels: Record<Vote["value"], string> = {
+  LIKE: "Like",
+  NEUTRAL: "Neutral",
+  VETO: "Veto"
+};
+
+const subscribeToHydration = () => () => {};
+const hydratedSnapshot = () => true;
+const serverHydratedSnapshot = () => false;
+
+type VoteReasonDraft = { saved: string; value: string };
+
+export function syncVoteReasonDraft(draft: VoteReasonDraft, saved: string): VoteReasonDraft {
+  if (draft.saved === saved) return draft;
+  return { saved, value: draft.value === draft.saved ? saved : draft.value };
+}
+
+export function VoteForm({ currentVote, planId }: { currentVote?: Vote; planId: string }) {
+  const router = useRouter();
+  // A streamed form can be visible before its controlled input handler exists.
+  // Keep it unavailable until hydration can retain every typed draft.
+  const hydrated = useSyncExternalStore(subscribeToHydration, hydratedSnapshot, serverHydratedSnapshot);
+  const savedReason = currentVote?.reason ?? "";
+  const [reasonDraft, setReasonDraft] = useState({ saved: savedReason, value: savedReason });
+  // Refresh clean inputs with another tab's vote while retaining local edits.
+  const currentReasonDraft = syncVoteReasonDraft(reasonDraft, savedReason);
+  if (currentReasonDraft !== reasonDraft) setReasonDraft(currentReasonDraft);
+  const reason = currentReasonDraft.value;
+  const submitting = useRef(false);
+  const [confirmedVote, setConfirmedVote] = useState<{ baseline?: Vote; value: Vote["value"] }>();
+  const [edited, setEdited] = useState(false);
+  const [mutationState, formAction, pending] = useActionState(async (previousState: MutationState, formData: FormData) => {
+    try {
+      const result = await castVoteAction(previousState, formData);
+      if (result.status === "success") {
+        const submittedReason = String(formData.get("reason") ?? "");
+        const savedValue = formData.get("value") as Vote["value"];
+        const savedReason = savedValue === "VETO" ? submittedReason.trim() : "";
+        setReasonDraft((current) => ({ ...current, value: current.value === submittedReason ? savedReason : current.value }));
+        setConfirmedVote({ baseline: currentVote, value: savedValue });
+      }
+      return result;
+    } catch (error) {
+      unstable_rethrow(error);
+      return { status: "error" as const, message: "We could not confirm your vote. Check your connection and try again.", mutationId: crypto.randomUUID() };
+    } finally {
+      submitting.current = false;
+    }
+  }, initialMutationState);
   const [error, setError] = useState<string>();
   const reasonRef = useRef<HTMLInputElement>(null);
 
@@ -16,11 +65,16 @@ export function VoteForm({ planId }: { planId: string }) {
     if (mutationState.status === "success" && mutationState.mutationId) {
       const nextUrl = new URL(window.location.href);
       nextUrl.searchParams.set("updated", mutationState.mutationId);
-      window.location.replace(nextUrl.toString());
+      router.replace(`${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`, { scroll: false });
+      router.refresh();
     }
-  }, [mutationState.mutationId, mutationState.status]);
+  }, [router, mutationState.mutationId, mutationState.status]);
 
   function validateVote(event: FormEvent<HTMLFormElement>) {
+    if (!hydrated || pending || submitting.current) {
+      event.preventDefault();
+      return;
+    }
     const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
     if (submitter?.value === "VETO" && reason.trim() === "") {
       event.preventDefault();
@@ -28,20 +82,34 @@ export function VoteForm({ planId }: { planId: string }) {
       reasonRef.current?.focus();
       return;
     }
+    submitting.current = true;
+    setEdited(false);
     setError(undefined);
   }
 
+  const displayedVote = confirmedVote && confirmedVote.baseline === currentVote ? confirmedVote.value : currentVote?.value;
+  const feedbackState = error ? "error" : pending ? "pending" : edited && mutationState.status === "success" ? "idle" : mutationState.status;
+
   return (
-    <form action={formAction} className="vote-form" onSubmit={validateVote}>
+    <form action={formAction} aria-busy={!hydrated || pending} className="vote-form" data-state={feedbackState} onSubmit={validateVote}>
       <input name="planId" type="hidden" value={planId} />
+      {displayedVote ? (
+        <p className="current-vote" role="status">
+          Your current vote: <strong>{voteLabels[displayedVote]}</strong>
+        </p>
+      ) : null}
       <label>
         Veto reason
         <input
           aria-describedby={error || mutationState.status === "error" ? `vote-error-${planId}` : undefined}
-          aria-invalid={Boolean(error) || mutationState.status === "error"}
+          aria-invalid={Boolean(error)}
+          data-dirty={reason !== (currentVote?.reason ?? "")}
+          disabled={!hydrated}
           name="reason"
+          maxLength={1000}
           onChange={(event) => {
-            setReason(event.target.value);
+            setReasonDraft({ saved: savedReason, value: event.target.value });
+            setEdited(true);
             if (error) {
               setError(undefined);
             }
@@ -51,31 +119,18 @@ export function VoteForm({ planId }: { planId: string }) {
           value={reason}
         />
       </label>
-      {error ? (
-        <p className="field-error" id={`vote-error-${planId}`} role="alert">
-          {error}
-        </p>
-      ) : null}
-      {!error && mutationState.status !== "idle" ? (
-        <p
-          className={mutationState.status === "error" ? "field-error" : "success-text"}
-          id={`vote-error-${planId}`}
-          role="status"
-        >
-          {mutationState.message}
-        </p>
-      ) : null}
+      <ActionFeedback id={`vote-error-${planId}`} message={error ?? (pending ? "Saving your vote…" : mutationState.message)} state={feedbackState} />
       <div className="button-row">
-        <SubmitButton className="button secondary" name="value" pendingLabel="Saving vote..." value="LIKE">
-          <Heart size={16} />
+        <SubmitButton aria-pressed={displayedVote === "LIKE"} className="button secondary" disabled={!hydrated} name="value" pendingLabel="Saving…" value="LIKE">
+          <Heart aria-hidden="true" size={16} />
           Like
         </SubmitButton>
-        <SubmitButton className="button secondary" name="value" pendingLabel="Saving vote..." value="NEUTRAL">
-          <CircleMinus size={16} />
+        <SubmitButton aria-pressed={displayedVote === "NEUTRAL"} className="button secondary" disabled={!hydrated} name="value" pendingLabel="Saving…" value="NEUTRAL">
+          <CircleMinus aria-hidden="true" size={16} />
           Neutral
         </SubmitButton>
-        <SubmitButton className="button danger" name="value" pendingLabel="Saving Veto..." value="VETO">
-          <Ban size={16} />
+        <SubmitButton aria-pressed={displayedVote === "VETO"} className="button danger" disabled={!hydrated} name="value" pendingLabel="Saving…" value="VETO">
+          <Ban aria-hidden="true" size={16} />
           Veto
         </SubmitButton>
       </div>

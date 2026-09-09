@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { anonymous } from "better-auth/plugins";
 import { authEnvironment } from "@/lib/auth-environment";
 import type { User } from "@/lib/domain";
 import { prisma } from "@/lib/prisma";
@@ -23,6 +24,28 @@ export const auth = betterAuth({
   secret: authEnvironment.secret,
   trustedOrigins: authEnvironment.trustedOrigins,
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  plugins: [
+    anonymous({
+      emailDomainName: "guest.tablesync.invalid",
+      generateName: () => "Guest host",
+      // Dinner rooms cascade when a host is deleted, so retain the guest account
+      // even if a future provider's linking behavior changes.
+      disableDeleteAnonymousUser: true,
+      onLinkAccount: async ({ anonymousUser, newUser }) => {
+        if (
+          !anonymousUser.user.isAnonymous ||
+          newUser.user.isAnonymous ||
+          anonymousUser.user.id === newUser.user.id
+        ) {
+          return;
+        }
+        await prisma.dinnerRoom.updateMany({
+          where: { hostId: anonymousUser.user.id },
+          data: { hostId: newUser.user.id }
+        });
+      }
+    })
+  ],
   socialProviders: authEnvironment.githubConfigured
     ? {
         github: {
@@ -51,6 +74,7 @@ export const auth = betterAuth({
     max: 100,
     customRules: {
       "/sign-in/social": { window: 60, max: 10 },
+      "/sign-in/anonymous": { window: 60, max: 10 },
       "/callback/*": { window: 60, max: 20 }
     }
   },
@@ -76,7 +100,7 @@ export const auth = betterAuth({
 });
 
 export async function getCurrentUser(): Promise<User | null> {
-  if (!authEnvironment.productionReady && !process.env.TABLESYNC_E2E_AUTH) {
+  if (!authEnvironment.sessionReady) {
     return null;
   }
   const session = await auth.api.getSession({
@@ -90,7 +114,8 @@ export async function getCurrentUser(): Promise<User | null> {
     id: session.user.id,
     name: session.user.name,
     email: session.user.email,
-    image: session.user.image ?? undefined
+    image: session.user.image ?? undefined,
+    isAnonymous: Boolean(session.user.isAnonymous)
   };
 }
 

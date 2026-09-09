@@ -53,17 +53,24 @@ const secureBaseUrl = isManagedRuntime
   ? parsedBaseUrl.protocol === "https:" && !localBaseUrl
   : parsedBaseUrl.protocol === "https:" || localBaseUrl;
 const trustedOrigins = inspectConfiguredOrigins(parsedBaseUrl);
+const localDevelopmentSession = !isManagedRuntime && localBaseUrl;
+const globalForAuth = globalThis as unknown as { tablesyncLocalAuthSecret?: string };
+const fallbackSecret =
+  globalForAuth.tablesyncLocalAuthSecret ?? (globalForAuth.tablesyncLocalAuthSecret = randomBytes(48).toString("base64url"));
 
 export const authEnvironment = {
   baseUrl: parsedBaseUrl.toString().replace(/\/$/, ""),
   origin: parsedBaseUrl.origin,
   trustedOrigins: trustedOrigins.origins,
   secureCookies: parsedBaseUrl.protocol === "https:",
-  secret: secret ?? randomBytes(48).toString("base64url"),
+  secret: secret ?? fallbackSecret,
   secretConfigured: Boolean(secret),
   githubId,
   githubSecret,
   githubConfigured,
+  sessionReady: Boolean(
+    configuredBaseUrlParsed && (secret || localDevelopmentSession) && secureBaseUrl && trustedOrigins.valid
+  ),
   productionReady: Boolean(
     configuredBaseUrlParsed && secret && githubConfigured && secureBaseUrl && trustedOrigins.valid
   )

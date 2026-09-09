@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inspectDatabaseEnvironment } from "@/lib/database-environment";
+import { assertRuntimeDatabaseEnvironment, inspectDatabaseEnvironment } from "@/lib/database-environment";
 import { inspectDeploymentEnvironment } from "@/lib/deployment-environment";
 
 function databaseUrl(user: string, password: string, host: string, port: number, tls = "") {
@@ -7,6 +7,20 @@ function databaseUrl(user: string, password: string, host: string, port: number,
 }
 
 describe("database environment", () => {
+  it.each(["VERCEL", "CF_PAGES"])("cannot bypass hosted database safeguards by omitting deployment metadata on %s", (provider) => {
+    const environment = {
+      [provider]: "1",
+      DATABASE_URL: "postgresql://tablesync:tablesync@127.0.0.1:5432/tablesync",
+      TABLESYNC_DEPLOYMENT_ENV: "local",
+      DATABASE_POOL_SIZE: "1"
+    };
+    const database = inspectDatabaseEnvironment(environment);
+    expect(database.managedDeployment).toBe(true);
+    expect(database.ready).toBe(false);
+    expect(() => assertRuntimeDatabaseEnvironment(environment)).toThrow("Unsafe deployed database configuration");
+    expect(inspectDeploymentEnvironment(environment).ready).toBe(false);
+    expect(inspectDeploymentEnvironment({ [provider]: "1" }).ready).toBe(false);
+  });
   it("keeps local development compatible with one direct connection", () => {
     const result = inspectDatabaseEnvironment({
       DATABASE_URL: "postgresql://tablesync:tablesync@127.0.0.1:5432/tablesync",

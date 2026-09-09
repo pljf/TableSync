@@ -70,7 +70,7 @@ test("security headers, hidden test auth, secure Cookie attributes, and Server A
   await expect(page.locator(".compact-auth-error[role='alert']")).toHaveText(
     "Sign-out could not be completed. Please try again."
   );
-  await expect(page.getByRole("heading", { name: /your dinner rooms/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /your meal rooms/i })).toBeVisible();
   await page.unroute("**/api/auth/sign-out");
 });
 

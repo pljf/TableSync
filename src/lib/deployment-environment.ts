@@ -2,6 +2,11 @@ const DEPLOYED_ENVIRONMENTS = new Set(["staging", "production"]);
 
 type Environment = NodeJS.ProcessEnv | Record<string, string | undefined>;
 
+export function isManagedDeployment(environment: Environment = process.env): boolean {
+  return Boolean(environment.VERCEL || environment.CF_PAGES) ||
+    DEPLOYED_ENVIRONMENTS.has((environment.TABLESYNC_DEPLOYMENT_ENV ?? "").trim().toLowerCase());
+}
+
 export type DeploymentInspection = {
   commitSha: string;
   deploymentEnvironment: string;
@@ -17,13 +22,16 @@ export function inspectDeploymentEnvironment(environment: Environment = process.
   const deploymentId = (environment.TABLESYNC_DEPLOYMENT_ID ?? "local").trim();
   const commitSha = (environment.TABLESYNC_GIT_SHA ?? "local").trim();
   const expectedMigration = (environment.TABLESYNC_EXPECTED_MIGRATION ?? "").trim();
-  const managedDeployment = DEPLOYED_ENVIRONMENTS.has(deploymentEnvironment);
+  const managedDeployment = isManagedDeployment(environment);
   const issues: string[] = [];
 
   if (environment.TABLESYNC_DEPLOYMENT_ENV && !["local", "ci", "staging", "production"].includes(deploymentEnvironment)) {
     issues.push("TABLESYNC_DEPLOYMENT_ENV must be local, ci, staging, or production.");
   }
   if (managedDeployment) {
+    if (!DEPLOYED_ENVIRONMENTS.has(deploymentEnvironment)) {
+      issues.push("TABLESYNC_DEPLOYMENT_ENV must be staging or production on a hosting platform.");
+    }
     if (!deploymentId || deploymentId === "local") {
       issues.push("TABLESYNC_DEPLOYMENT_ID is required for deployed environments.");
     }

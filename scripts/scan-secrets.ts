@@ -59,4 +59,4 @@ if (unique.length > 0) {
   process.exit(1);
 }
 
-console.log(`Secret scan passed across ${tracked.length} tracked files and reachable Git history.`);
+console.log(`Secret scan passed across ${tracked.length} tracked and untracked source files and reachable Git history.`);

@@ -49,13 +49,16 @@ export type ActivityType =
   | "FINALIZATION_UNDONE"
   | "SHOPPING_GENERATED"
   | "ITEM_ASSIGNED"
-  | "ITEM_CHECKED";
+  | "ITEM_CHECKED"
+  | "CONTRIBUTION_ASSIGNED"
+  | "CONTRIBUTION_READY";
 
 export type User = {
   id: string;
   name: string;
   email: string;
   image?: string;
+  isAnonymous?: boolean;
 };
 
 export type DinnerRoom = {
@@ -145,8 +148,12 @@ export type PlanWarning = {
 };
 
 export type MenuPlanDish = {
+  /** Database row ID; generated drafts do not yet have one. */
+  id?: string;
   dish: Dish;
   servings: number;
+  contributionGuestId?: string;
+  contributionReady?: boolean;
 };
 
 export type Vote = {
@@ -214,10 +221,12 @@ export type GenerateMenuInput = {
 export type InviteRoomView = Pick<DinnerRoom, "id" | "title" | "eventType" | "status">;
 
 export type PublicRoomView = {
-  room: Pick<DinnerRoom, "id" | "title" | "dateTime" | "location" | "totalBudgetCents">;
+  room: Pick<DinnerRoom, "id" | "title" | "eventType" | "dateTime" | "location" | "totalBudgetCents">;
   finalPlan?: {
     id: string;
     title: string;
+    preparationNotes: string[];
+    contributionSummary?: { claimedDishes: number; readyDishes: number; totalDishes: number };
     dishes: Array<{
       id: string;
       name: string;

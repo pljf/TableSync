@@ -26,6 +26,12 @@ export async function captureResponsiveEvidence(page: Page, stateName: string) {
   for (const viewport of reviewViewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await expect(page.locator("body")).toBeVisible();
+    // Capture the page from its origin; sticky navigation otherwise appears in
+    // the middle of a full-page image after an interaction scrolls the viewport.
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    });
 
     const overflow = await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,
@@ -35,6 +41,17 @@ export async function captureResponsiveEvidence(page: Page, stateName: string) {
       overflow.scrollWidth,
       `${stateName} overflows horizontally at ${viewport.name}`
     ).toBeLessThanOrEqual(overflow.clientWidth + 1);
+
+    const roomFieldHeights = await page.evaluate(() => {
+      const title = document.querySelector<HTMLInputElement>('input[name="title"]');
+      const date = document.querySelector<HTMLInputElement>('input[type="datetime-local"][name="dateTime"]');
+      if (!title || !date) return null;
+      return { title: title.getBoundingClientRect().height, date: date.getBoundingClientRect().height };
+    });
+    if (roomFieldHeights && roomFieldHeights.title > 0 && roomFieldHeights.date > 0) {
+      expect(roomFieldHeights.date, `${stateName} date input stretches beside the format description at ${viewport.name}`)
+        .toBeLessThanOrEqual(roomFieldHeights.title + 8);
+    }
 
     const undersizedTargets = await page.evaluate(() =>
       Array.from(

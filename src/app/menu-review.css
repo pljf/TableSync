@@ -1,0 +1,51 @@
+.plans-page .menu-review { display: grid; gap: 24px; min-width: 0; }
+.plans-page .menu-comparison { padding: 24px; box-shadow: none; }
+.plans-page .menu-comparison-heading h2, .plans-page .selected-menu-section > h2 { font: 400 1.7rem/1.2 var(--display); }
+.plans-page .menu-comparison-heading p { margin: 8px 0 0; font-size: 0.85rem; }
+.plans-page .menu-shared-dishes { margin-top: 14px; color: var(--muted); font-size: 0.8rem; }
+.plans-page .menu-shared-dishes summary { cursor: pointer; padding: 10px 0; min-height: 44px; }
+.plans-page .menu-shared-dishes ul { display: flex; flex-wrap: wrap; gap: 7px 24px; margin: 4px 0 16px; padding-left: 18px; }
+.plans-page .menu-comparison-options { margin-top: 16px; }
+.plans-page .menu-comparison-option { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.3fr) minmax(0, 0.9fr); gap: 18px; padding: 20px 0; border-top: 1px solid var(--border); }
+.plans-page .menu-comparison-option:last-child { padding-bottom: 0; }
+.plans-page .menu-comparison-option > *, .plans-page .menu-comparison-option h3 { min-width: 0; overflow-wrap: anywhere; }
+.plans-page .menu-comparison-name .eyebrow { margin-bottom: 7px; }
+.plans-page .menu-comparison-name h3 { font: 400 1.22rem/1.3 var(--display); }
+.plans-page .menu-comparison-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 6px; color: var(--primary); font-size: 0.8rem; font-weight: 600; text-underline-offset: 4px; }
+.plans-page .menu-comparison-link:hover { text-decoration: underline; }
+.plans-page .menu-comparison-estimate { display: flex; flex-direction: column; gap: 9px; margin: 0; }
+.plans-page .menu-comparison-estimate dt, .plans-page .menu-comparison-option h4 { margin: 0 0 6px; color: var(--muted); font-size: 0.72rem; font-weight: 600; }
+.plans-page .menu-comparison-estimate dd { margin: 0; font-size: 0.92rem; font-weight: 600; }
+.plans-page .menu-cost-difference { margin: 0; color: var(--primary); }
+.plans-page .menu-cost-difference dd { font-size: 0.74rem; font-weight: 500; }
+.plans-page .menu-comparison-differences ul { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.plans-page .menu-comparison-differences li { display: grid; gap: 2px; font-size: 0.81rem; }
+.plans-page .menu-comparison-differences small, .plans-page .menu-comparison-votes small { font-size: 0.72rem; color: var(--muted); }
+.plans-page .menu-comparison-differences p, .plans-page .menu-comparison-votes p { margin: 0; font-size: 0.8rem; line-height: 1.65; }
+.plans-page .menu-comparison-votes small { display: block; margin-top: 7px; }
+.plans-page .menu-comparison-votes .menu-veto-note { color: var(--warning); }
+.plans-page .selected-menu-section { display: grid; gap: 14px; min-width: 0; }
+.plans-page .featured-plan { padding: 30px; border-color: #b9c5a3; background: #fbfcf5; }
+.plans-page .featured-plan .card-heading h3 { font-size: 2rem; }
+.plans-page .featured-plan > .dish-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 30px; margin-top: 16px; }
+.plans-page .featured-plan .dish-list li { min-width: 0; }
+.plans-page .menu-alternatives { padding: 16px 22px; box-shadow: none; }
+.plans-page .menu-alternatives > summary { min-height: 44px; padding: 9px 0; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--primary); }
+.plans-page .menu-alternatives > p { margin: 8px 0 20px; font-size: 0.85rem; }
+.plans-page .menu-alternatives .menu-plan-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.plans-page .plan-card { scroll-margin-top: 24px; min-width: 0; }
+.plans-page .plan-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
+.plans-page .menu-per-person { padding-bottom: 10px; }
+@media (max-width: 1000px) {
+  .plans-page .menu-comparison-option { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; }
+}
+@media (max-width: 700px) {
+  .plans-page .menu-comparison, .plans-page .featured-plan { padding: 22px 20px; }
+  .plans-page .menu-comparison-option { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .plans-page .menu-comparison-estimate { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plans-page .menu-cost-difference { grid-column: 1 / -1; }
+  .plans-page .menu-comparison-name .menu-comparison-link { margin-top: 2px; }
+  .plans-page .featured-plan > .dish-list, .plans-page .menu-alternatives .menu-plan-grid { grid-template-columns: minmax(0, 1fr); }
+  .plans-page .featured-plan .card-heading h3 { font-size: 1.7rem; }
+  .plans-page .menu-alternatives { padding: 14px; }
+}

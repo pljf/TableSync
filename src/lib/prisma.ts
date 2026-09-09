@@ -18,10 +18,12 @@ function createPrismaClient() {
       : undefined;
 
   return new PrismaClient({
+    transactionOptions: { maxWait: 10_000, timeout: 10_000 },
     adapter: new PrismaPg({
       connectionString,
       max: databaseEnvironment.poolSize,
       maxUses,
+      connectionTimeoutMillis: 10_000,
       idleTimeoutMillis: 30_000
     })
   });
@@ -29,6 +31,6 @@ function createPrismaClient() {
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// Next can bundle route handlers and server pages separately in production.
+// Share their client within the process so the configured pool limit is real.
+globalForPrisma.prisma = prisma;

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -7,6 +8,7 @@ const secretEnvironmentKeys = [
   "DIRECT_URL",
   "BETTER_AUTH_SECRET",
   "AUTH_GITHUB_SECRET",
+  "TABLESYNC_LIGHTHOUSE_SESSION_COOKIE",
   "TABLESYNC_STAGING_SESSION_COOKIE"
 ] as const;
 

@@ -1,14 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { unstable_rethrow } from "next/navigation";
 import { ZodError } from "zod";
 import { AuthorizationError, type RequestActors } from "@/lib/authorization";
 import { requireGuestActor, setGuestSessionCookie } from "@/lib/guest-session";
 import { getRequestActors, requireHostActor } from "@/lib/request-actors";
+import { resourceRoomId } from "@/lib/request-context";
 import { actorRateLimitSubject, enforceRateLimit, RateLimitError, requestNetworkSubject } from "@/lib/rate-limit";
 import { recordSecurityAudit } from "@/lib/security-audit";
 import {
+  assignPotluckContribution,
   castVote,
   claimShoppingItem,
   createRoom,
@@ -16,12 +18,16 @@ import {
   generatePlansForRoom,
   joinRoom,
   reopenPreferences,
+  setPotluckContributionReady,
   toggleShoppingItem,
   undoFinalization,
-  updateGuestPreferences
+  updateGuestPreferences,
+  updateRoomDetails
 } from "@/lib/store";
 import { claimShoppingSchema, createRoomSchema, joinContextSchema, joinRoomSchema, voteSchema } from "@/lib/validations/forms";
 import type { MutationState } from "@/lib/mutation-state";
+import { roomDateTimeToIso } from "@/lib/date-time";
+import { contributionSchema } from "@/lib/validations/potluck";
 
 function optionalValue(formData: FormData, key: string): string | undefined {
   const value = formData.get(key);
@@ -63,6 +69,29 @@ function parseGuestPreferenceForm(formData: FormData) {
       maxBudgetCents: parsed.maxBudgetDollars ? Math.round(parsed.maxBudgetDollars * 100) : undefined,
       notes: parsed.notes
     }
+  };
+}
+
+function parseRoomForm(formData: FormData) {
+  const parsed = createRoomSchema.parse({
+    title: formData.get("title"),
+    description: optionalValue(formData, "description"),
+    eventType: formData.get("eventType"),
+    dateTime: optionalValue(formData, "dateTime"),
+    location: optionalValue(formData, "location"),
+    totalBudgetDollars: optionalNumberValue(formData, "totalBudgetDollars"),
+    expectedGuests: formData.get("expectedGuests"),
+    isPublicShareable: formData.has("isPublicShareable")
+  });
+  return {
+    title: parsed.title,
+    description: parsed.description,
+    eventType: parsed.eventType,
+    dateTime: roomDateTimeToIso(parsed.dateTime, formData.get("timeZoneOffset")),
+    location: parsed.location,
+    totalBudgetCents: parsed.totalBudgetDollars === undefined ? undefined : Math.round(parsed.totalBudgetDollars * 100),
+    expectedGuests: parsed.expectedGuests,
+    isPublicShareable: parsed.isPublicShareable
   };
 }
 
@@ -114,53 +143,60 @@ function auditOutcome(error: unknown): "DENIED" | "ERROR" {
 async function performMutation(
   message: string,
   audit: MutableAudit,
-  mutation: (audit: MutableAudit) => Promise<void>
+  mutation: (audit: MutableAudit) => Promise<void | string>
 ): Promise<MutationState> {
   try {
-    await mutation(audit);
+    const resultMessage = await mutation(audit);
     await recordSecurityAudit({ ...audit, outcome: "ALLOWED" });
-    return { status: "success", message, mutationId: crypto.randomUUID() };
+    return { status: "success", message: resultMessage ?? message, mutationId: crypto.randomUUID() };
+  } catch (error) {
+    unstable_rethrow(error);
+    await recordSecurityAudit({ ...audit, outcome: auditOutcome(error) });
+    return { status: "error", message: mutationErrorMessage(error), mutationId: crypto.randomUUID() };
+  }
+}
+
+export async function createRoomAction(
+  _previousState: MutationState,
+  formData: FormData
+): Promise<MutationState> {
+  void _previousState;
+  const host = await requireHostActor();
+  const audit: MutableAudit = { action: "create-room", actorType: "HOST", actorId: host.userId };
+  try {
+    await enforceRateLimit({ scope: "create-room", subject: `host:${host.userId}`, limit: 20, windowSeconds: 60 });
+    const room = await createRoom(host, parseRoomForm(formData));
+    Object.assign(audit, { resourceType: "room", resourceId: room.id });
+    await recordSecurityAudit({ ...audit, outcome: "ALLOWED" });
+    revalidatePath("/dashboard");
+    return {
+      status: "success",
+      message: "Room created.",
+      mutationId: crypto.randomUUID(),
+      redirectTo: `/rooms/${room.id}`
+    };
   } catch (error) {
     await recordSecurityAudit({ ...audit, outcome: auditOutcome(error) });
     return { status: "error", message: mutationErrorMessage(error), mutationId: crypto.randomUUID() };
   }
 }
 
-export async function createRoomAction(formData: FormData) {
-  const host = await requireHostActor();
-  await enforceRateLimit({ scope: "create-room", subject: `host:${host.userId}`, limit: 20, windowSeconds: 60 });
-  const parsed = createRoomSchema.parse({
-    title: formData.get("title"),
-    description: optionalValue(formData, "description"),
-    eventType: formData.get("eventType"),
-    dateTime: optionalValue(formData, "dateTime"),
-    location: optionalValue(formData, "location"),
-    totalBudgetDollars: optionalNumberValue(formData, "totalBudgetDollars"),
-    expectedGuests: formData.get("expectedGuests"),
-    isPublicShareable: formData.has("isPublicShareable")
-  });
-
-  const room = await createRoom(host, {
-    title: parsed.title,
-    description: parsed.description,
-    eventType: parsed.eventType,
-    dateTime: parsed.dateTime,
-    location: parsed.location,
-    totalBudgetCents: parsed.totalBudgetDollars ? Math.round(parsed.totalBudgetDollars * 100) : undefined,
-    expectedGuests: parsed.expectedGuests,
-    isPublicShareable: parsed.isPublicShareable
-  });
-  await recordSecurityAudit({
-    action: "create-room",
-    actorType: "HOST",
-    actorId: host.userId,
-    outcome: "ALLOWED",
-    resourceType: "room",
-    resourceId: room.id
-  });
-
-  revalidatePath("/dashboard");
-  redirect(`/rooms/${room.id}`);
+export async function updateRoomDetailsAction(
+  roomId: string,
+  _previousState: MutationState,
+  formData: FormData
+): Promise<MutationState> {
+  const state = await performMutation(
+    "Room details saved.",
+    { action: "update-room", resourceType: "room", resourceId: roomId },
+    async (audit) => {
+      const host = await requireHostActor();
+      Object.assign(audit, { actorType: "HOST" as const, actorId: host.userId });
+      await enforceRateLimit({ scope: "update-room", subject: `host:${host.userId}`, limit: 30, windowSeconds: 60 });
+      await updateRoomDetails(roomId, host, parseRoomForm(formData));
+    }
+  );
+  return state.status === "success" ? { ...state, redirectTo: `/rooms/${roomId}` } : state;
 }
 
 export async function joinRoomAction(
@@ -184,7 +220,7 @@ export async function joinRoomAction(
       submissionKey: context.submissionKey,
       ...input
     });
-    await setGuestSessionCookie(guest.sessionToken);
+    await setGuestSessionCookie(guest.sessionToken, guest.roomId);
     await recordSecurityAudit({
       action: "join-room",
       actorType: "GUEST",
@@ -198,7 +234,7 @@ export async function joinRoomAction(
       status: "success",
       message: "Preferences saved.",
       mutationId: crypto.randomUUID(),
-      redirectTo: "/preferences?saved=1"
+      redirectTo: `/preferences?roomId=${encodeURIComponent(guest.roomId)}&saved=1`
     };
   } catch (error) {
     await recordSecurityAudit({
@@ -217,7 +253,9 @@ export async function updateGuestPreferencesAction(
 ): Promise<MutationState> {
   void _previousState;
   return performMutation("Preferences saved.", { action: "update-guest-preferences" }, async (audit) => {
-    const guest = await requireGuestActor();
+    const roomId = optionalValue(formData, "roomId");
+    if (!roomId) throw new Error("Missing meal response room. Refresh your preferences page and try again.");
+    const guest = await requireGuestActor(roomId);
     Object.assign(audit, {
       actorType: "GUEST" as const,
       actorId: guest.guestId,
@@ -243,7 +281,10 @@ export async function generatePlansAction(
     const host = await requireHostActor();
     Object.assign(audit, { actorType: "HOST" as const, actorId: host.userId });
     await enforceRateLimit({ scope: "generate-plans", subject: `host:${host.userId}`, limit: 10, windowSeconds: 60 });
-    await generatePlansForRoom(roomId, host);
+    const result = await generatePlansForRoom(roomId, host);
+    if (result.kind === "no-solution") {
+      return "No safe menu fits these settings. Review the report and adjust your room or guest preferences.";
+    }
     }
   );
 }
@@ -281,7 +322,7 @@ export async function undoFinalizationAction(
     Object.assign(audit, { actorType: "HOST" as const, actorId: host.userId });
     await enforceRateLimit({ scope: "undo-finalization", subject: `host:${host.userId}`, limit: 10, windowSeconds: 60 });
     if (formData.get("confirmDataLoss") !== "on") {
-      throw new Error("Confirm that shopping assignments and purchase state will be removed.");
+      throw new Error("Confirm that shopping assignments, purchase state, and dish contributions will be removed.");
     }
     await undoFinalization(roomId, host);
     }
@@ -299,7 +340,7 @@ export async function castVoteAction(
       reason: optionalValue(formData, "reason")
     });
 
-    const guest = await requireGuestActor();
+    const guest = await requireGuestActor(await resourceRoomId("plan", parsed.planId));
     Object.assign(audit, {
       actorType: "GUEST" as const,
       actorId: guest.guestId,
@@ -339,7 +380,7 @@ export async function claimShoppingAction(
       itemId: formData.get("itemId"),
       guestId: optionalValue(formData, "guestId")
     });
-    const actors = await getRequestActors();
+    const actors = await getRequestActors(await resourceRoomId("shopping-item", parsed.itemId));
     auditActors(audit, actors);
     Object.assign(audit, { resourceType: "shopping-item", resourceId: parsed.itemId });
     const subject = actorRateLimitSubject(actors) === "anonymous" ? await requestNetworkSubject() : actorRateLimitSubject(actors);
@@ -357,12 +398,45 @@ export async function toggleShoppingAction(
     if (typeof itemId !== "string") {
       throw new Error("Missing shopping item.");
     }
-    const actors = await getRequestActors();
+    const actors = await getRequestActors(await resourceRoomId("shopping-item", itemId));
     auditActors(audit, actors);
     Object.assign(audit, { resourceType: "shopping-item", resourceId: itemId });
     const subject = actorRateLimitSubject(actors) === "anonymous" ? await requestNetworkSubject() : actorRateLimitSubject(actors);
     await enforceRateLimit({ scope: "toggle-shopping", subject, limit: 60, windowSeconds: 60 });
     await toggleShoppingItem(itemId, actors, formData.has("checked"));
+  });
+}
+
+export async function assignPotluckContributionAction(
+  _previousState: MutationState,
+  formData: FormData
+): Promise<MutationState> {
+  return performMutation("Dish contribution saved.", { action: "assign-potluck-contribution" }, async (audit) => {
+    const parsed = contributionSchema.parse({
+      menuPlanDishId: formData.get("menuPlanDishId"),
+      guestId: optionalValue(formData, "guestId")
+    });
+    const actors = await getRequestActors(await resourceRoomId("menu-plan-dish", parsed.menuPlanDishId));
+    auditActors(audit, actors);
+    Object.assign(audit, { resourceType: "menu-plan-dish", resourceId: parsed.menuPlanDishId });
+    const subject = actorRateLimitSubject(actors) === "anonymous" ? await requestNetworkSubject() : actorRateLimitSubject(actors);
+    await enforceRateLimit({ scope: "assign-potluck-contribution", subject, limit: 60, windowSeconds: 60 });
+    await assignPotluckContribution(parsed.menuPlanDishId, actors, parsed.guestId, formData.get("confirmShoppingReset") === "on");
+  });
+}
+
+export async function setPotluckContributionReadyAction(
+  _previousState: MutationState,
+  formData: FormData
+): Promise<MutationState> {
+  return performMutation("Dish readiness saved.", { action: "potluck-contribution-ready" }, async (audit) => {
+    const parsed = contributionSchema.parse({ menuPlanDishId: formData.get("menuPlanDishId") });
+    const actors = await getRequestActors(await resourceRoomId("menu-plan-dish", parsed.menuPlanDishId));
+    auditActors(audit, actors);
+    Object.assign(audit, { resourceType: "menu-plan-dish", resourceId: parsed.menuPlanDishId });
+    const subject = actorRateLimitSubject(actors) === "anonymous" ? await requestNetworkSubject() : actorRateLimitSubject(actors);
+    await enforceRateLimit({ scope: "potluck-contribution-ready", subject, limit: 60, windowSeconds: 60 });
+    await setPotluckContributionReady(parsed.menuPlanDishId, actors, formData.has("ready"));
   });
 }
 

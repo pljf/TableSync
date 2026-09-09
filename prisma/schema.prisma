@@ -14,6 +14,7 @@ model User {
   name          String
   email         String   @unique
   emailVerified Boolean  @default(false)
+  isAnonymous   Boolean  @default(false)
   image         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -139,6 +140,7 @@ model Guest {
   votes       Vote[]
   sessions    GuestSession[]
   assignments ShoppingItem[] @relation("ShoppingAssignment")
+  contributions MenuPlanDish[] @relation("PotluckContribution")
 }
 
 model GuestSession {
@@ -238,11 +240,15 @@ model MenuPlanDish {
   planId   String
   dishId   String
   servings Int
+  contributionGuestId String?
+  contributionReady Boolean @default(false)
 
   plan MenuPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
   dish Dish     @relation(fields: [dishId], references: [id])
+  contributionGuest Guest? @relation("PotluckContribution", fields: [contributionGuestId], references: [id], onDelete: SetNull)
 
   @@unique([planId, dishId])
+  @@index([contributionGuestId])
 }
 
 model Vote {
@@ -380,6 +386,8 @@ enum ActivityType {
   SHOPPING_GENERATED
   ITEM_ASSIGNED
   ITEM_CHECKED
+  CONTRIBUTION_ASSIGNED
+  CONTRIBUTION_READY
 }
 
 enum AuditActorType {

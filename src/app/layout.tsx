@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "TableSync",
-  description: "Collaborative dinner planning with guest constraints, voting, and shared shopping."
+  description: "Plan Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, and other shared meals with guest preferences, voting, contributions, and shopping."
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
