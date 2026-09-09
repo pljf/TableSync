@@ -6,6 +6,8 @@ The core-MVP acceptance contract is maintained in [`docs/CORE_MVP_EXECUTION_PLAN
 
 ## Current Build
 
+Deployment preparation and current verification results are recorded in [`docs/DEPLOYMENT_READINESS_2026_09_09.md`](docs/DEPLOYMENT_READINESS_2026_09_09.md). The repository now provides separate [hosting runtime settings](docs/deployment/runtime.env.example) and [protected acceptance-job settings](docs/deployment/acceptance.env.example). Store real values in the hosting/CI secret stores. Guest-only hosting is supported; configure both GitHub credentials only when offering GitHub sign-in.
+
 The simple party-planning follow-up is recorded in [`docs/SIMPLE_PARTY_PLANNING_2026_09_08.md`](docs/SIMPLE_PARTY_PLANNING_2026_09_08.md). It completes menu comparison and preparation, protects saved preference input while the form becomes ready, and improves shared-update recovery. Before PR submission, 353 unit tests, 32 database tests, and the full 22-test Chromium acceptance suite passed. The preceding collaboration implementation is recorded in [`docs/COLLABORATION_RELIABILITY_2026_09_08.md`](docs/COLLABORATION_RELIABILITY_2026_09_08.md). Hosted deployment and real GitHub OAuth callback acceptance remain separate owner-managed checks. Earlier button, animation, security, and full-stack evidence remains in [`docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md`](docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md).
 
 This repository supports Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, and shared-buffet Other gatherings, with guest access and production-readiness safeguards. Choose **Continue as guest** to create your own rooms and try the full planning workflow without a GitHub login. Guest access creates a unique account for this browser with normal room ownership permissions. The expanded meal-format contract and its acceptance record are in [`docs/EVENT_FORMAT_EXPANSION.md`](docs/EVENT_FORMAT_EXPANSION.md).
@@ -49,7 +51,9 @@ All application, authentication, guest-session, rate-limit, and security-audit d
 
 ## Local Setup
 
-Use Node.js 22.19 or newer in the 22.x line, or Node.js 24 LTS. The performance audit requires this version even though the app itself can run on some older Node releases.
+Use the Node.js version recorded in `.node-version` and `.nvmrc` (24.19.0), with npm 11.17.0 as recorded in `package.json`. CI and staging acceptance use that same Node/npm pair. The supported minimum remains Node.js 22.19 in the 22.x line; older Node releases do not meet the performance audit's requirements.
+
+When updating dependencies, generate the lockfile with npm 11.17.0 in a clean directory containing the manifests and no existing `node_modules`. Verify a clean install afterward. Updating from an installed Windows dependency tree can omit optional packages required by Linux hosting.
 
 Install dependencies and start the local database in one terminal:
 
@@ -184,6 +188,8 @@ PUSHER_CLUSTER=
 ```
 
 In a managed Web runtime, set `TABLESYNC_DATABASE_SCOPE=runtime` and do not expose `DIRECT_URL`. The protected staging migration/acceptance job sets `TABLESYNC_DATABASE_SCOPE=acceptance` and receives both pooled and direct URLs.
+
+On Vercel, enable **Enable access to System Environment Variables**. TableSync automatically uses `VERCEL_DEPLOYMENT_ID` and `VERCEL_GIT_COMMIT_SHA` for deployment identity; other hosts and the protected acceptance job require explicit `TABLESYNC_DEPLOYMENT_ID` and `TABLESYNC_GIT_SHA`. Keep `TABLESYNC_DEPLOYMENT_ENV` explicit. See [Vercel's system-variable documentation](https://vercel.com/docs/environment-variables/system-environment-variables).
 
 ## Next Milestones
 

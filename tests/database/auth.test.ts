@@ -30,10 +30,11 @@ async function createAuthenticatedUser() {
 describe("production host sessions", () => {
   it("persists a signed HttpOnly database session and revokes it on sign-out", async () => {
     const { user, login } = await createAuthenticatedUser();
-    const cookie = login.cookies.find((item) => item.name === "tablesync-auth.session_token");
+    const cookieName = `${authEnvironment.secureCookies ? "__Secure-" : ""}tablesync-auth.session_token`;
+    const cookie = login.cookies.find((item) => item.name === cookieName);
     const persisted = await prisma.session.findUnique({ where: { token: login.token } });
 
-    expect(cookie).toMatchObject({
+    expect(cookie && { httpOnly: cookie.httpOnly, sameSite: cookie.sameSite, secure: cookie.secure, path: cookie.path }).toEqual({
       httpOnly: true,
       sameSite: "Lax",
       secure: authEnvironment.secureCookies,

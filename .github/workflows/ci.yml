@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .node-version
           cache: npm
       - run: npm ci
       - run: npx prisma validate
@@ -42,6 +42,10 @@ jobs:
       - run: npm run security:secrets
       - run: npm audit --omit=dev --audit-level=high
       - run: npm run build
-      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Install Playwright browsers and dependencies
+        run: |
+          # Playwright downloads its own browsers; the runner's Chrome feed is unused.
+          sudo rm -f -- /etc/apt/sources.list.d/google-chrome.list /etc/apt/sources.list.d/google-chrome.sources
+          npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e
 

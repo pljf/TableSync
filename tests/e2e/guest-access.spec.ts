@@ -372,12 +372,18 @@ test.describe("public guest access", () => {
     const rejectedSignOut = page.waitForResponse((response) =>
       response.request().method() === "POST" && new URL(response.url()).pathname === "/api/auth/sign-out"
     );
+    // Receiving the 403 response can precede the form navigation completing in
+    // WebKit. Let that document load before navigating back to the dashboard.
+    const rejectedSignOutNavigation = page.waitForURL(new URL("/api/auth/sign-out", origin).href, {
+      waitUntil: "load"
+    });
     await page.getByRole("button", { name: "Submit cross-site request", exact: true }).click();
     const rejectedResponse = await rejectedSignOut;
     expect(rejectedResponse.status()).toBe(403);
     const requestCookies = await rejectedResponse.request().headerValue("cookie") ?? "";
     expect(requestCookies.includes(`${cookie!.name}=`), "Cross-site form posts must not send the host session cookie").toBe(false);
     expect((await sessionCookie(context))?.value === cookie!.value, "A rejected cross-site request must preserve the existing session").toBe(true);
+    await rejectedSignOutNavigation;
     await page.goto("/dashboard");
     await expect(page.getByRole("heading", { name: "Your meal rooms", exact: true })).toBeVisible();
   });

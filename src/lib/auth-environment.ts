@@ -1,25 +1,35 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
+import { isManagedDeployment } from "@/lib/deployment-environment";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
-const configuredBaseUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-const isManagedRuntime = Boolean(
-  process.env.VERCEL ||
-    process.env.CF_PAGES ||
-    ["staging", "production"].includes((process.env.TABLESYNC_DEPLOYMENT_ENV ?? "").toLowerCase())
-);
+const PLACEHOLDER_VALUE = /replace|example|changeme|placeholder/i;
+// Read the server's runtime value. Direct NEXT_PUBLIC_* access is replaced at
+// build time by Next, which can differ from a subsequently configured origin.
+const configuredAuthUrl = process.env.BETTER_AUTH_URL?.trim();
+const configuredAppUrl = (Reflect.get(process.env, "NEXT_PUBLIC_APP_URL") as string | undefined)?.trim();
+const configuredBaseUrl = configuredAuthUrl || configuredAppUrl || "http://localhost:3000";
+const isManagedRuntime = isManagedDeployment();
 
-function parseBaseUrl(value: string): URL | null {
+function parseOrigin(value: string): URL | null {
   try {
     const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:" ? url : null;
+    return (
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash
+    ) ? url : null;
   } catch {
     return null;
   }
 }
 
+function isLocalHost(hostname: string): boolean {
+  const normalized = hostname.replace(/\.$/, "");
+  return LOCAL_HOSTS.has(normalized) || normalized.endsWith(".localhost") || /^127\./.test(normalized);
+}
+
 function configuredSecret(): string | undefined {
   const value = process.env.BETTER_AUTH_SECRET ?? process.env.AUTH_SECRET;
-  if (!value || value.length < 32 || /replace|example|changeme/i.test(value)) {
+  if (!value || value.trim().length < 32 || PLACEHOLDER_VALUE.test(value)) {
     return undefined;
   }
   return value;
@@ -30,9 +40,9 @@ function inspectConfiguredOrigins(baseUrl: URL): { origins: string[]; valid: boo
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  const parsed = configured.map((value) => parseBaseUrl(value));
+  const parsed = configured.map((value) => parseOrigin(value));
   const valid = parsed.every(
-    (url) => url && (!isManagedRuntime || (url.protocol === "https:" && !LOCAL_HOSTS.has(url.hostname)))
+    (url) => url && (!isManagedRuntime || (url.protocol === "https:" && !isLocalHost(url.hostname)))
   );
   return {
     origins: [...new Set([baseUrl.origin, ...parsed.filter((url): url is URL => Boolean(url)).map((url) => url.origin)])],
@@ -40,26 +50,53 @@ function inspectConfiguredOrigins(baseUrl: URL): { origins: string[]; valid: boo
   };
 }
 
-const configuredBaseUrlParsed = parseBaseUrl(configuredBaseUrl);
+const configuredBaseUrlParsed = parseOrigin(configuredBaseUrl);
+const parsedAuthUrl = configuredAuthUrl ? parseOrigin(configuredAuthUrl) : null;
+const parsedAppUrl = configuredAppUrl ? parseOrigin(configuredAppUrl) : null;
+const canonicalUrlsValid = Boolean(
+  configuredBaseUrlParsed &&
+  (!configuredAuthUrl || parsedAuthUrl) &&
+  (!configuredAppUrl || parsedAppUrl) &&
+  (!parsedAuthUrl || !parsedAppUrl || parsedAuthUrl.origin === parsedAppUrl.origin) &&
+  (!isManagedRuntime || (parsedAuthUrl && parsedAppUrl))
+);
 const parsedBaseUrl = configuredBaseUrlParsed ?? new URL("http://localhost:3000");
 const secret = configuredSecret();
 const githubId = process.env.AUTH_GITHUB_ID?.trim();
 const githubSecret = process.env.AUTH_GITHUB_SECRET?.trim();
 const githubConfigured = Boolean(
-  githubId && githubSecret && !/replace|example|changeme/i.test(githubId) && !/replace|example|changeme/i.test(githubSecret)
+  githubId && githubSecret && !PLACEHOLDER_VALUE.test(githubId) && !PLACEHOLDER_VALUE.test(githubSecret)
 );
-const localBaseUrl = LOCAL_HOSTS.has(parsedBaseUrl.hostname);
+const githubConfigurationValid = (!githubId && !githubSecret) || githubConfigured;
+const localBaseUrl = isLocalHost(parsedBaseUrl.hostname);
 const secureBaseUrl = isManagedRuntime
   ? parsedBaseUrl.protocol === "https:" && !localBaseUrl
   : parsedBaseUrl.protocol === "https:" || localBaseUrl;
 const trustedOrigins = inspectConfiguredOrigins(parsedBaseUrl);
 const localDevelopmentSession = !isManagedRuntime && localBaseUrl;
+const issues: string[] = [];
+if (!canonicalUrlsValid) {
+  issues.push("BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL must use the same canonical origin, without credentials, paths, queries, or fragments; both are required when deployed.");
+}
+if (!secureBaseUrl) {
+  issues.push("Authentication requires a non-local HTTPS origin when deployed.");
+}
+if (!secret && !localDevelopmentSession) {
+  issues.push("BETTER_AUTH_SECRET must contain at least 32 non-placeholder characters when deployed.");
+}
+if (!trustedOrigins.valid) {
+  issues.push("AUTH_TRUSTED_ORIGINS must contain valid origins, using non-local HTTPS when deployed.");
+}
+if (!githubConfigurationValid) {
+  issues.push("GitHub sign-in requires both AUTH_GITHUB_ID and AUTH_GITHUB_SECRET with non-placeholder values, or both must be empty for guest-only access.");
+}
+const sessionReady = issues.length === 0;
 const globalForAuth = globalThis as unknown as { tablesyncLocalAuthSecret?: string };
 const fallbackSecret =
   globalForAuth.tablesyncLocalAuthSecret ?? (globalForAuth.tablesyncLocalAuthSecret = randomBytes(48).toString("base64url"));
 
 export const authEnvironment = {
-  baseUrl: parsedBaseUrl.toString().replace(/\/$/, ""),
+  baseUrl: parsedBaseUrl.origin,
   origin: parsedBaseUrl.origin,
   trustedOrigins: trustedOrigins.origins,
   secureCookies: parsedBaseUrl.protocol === "https:",
@@ -68,12 +105,10 @@ export const authEnvironment = {
   githubId,
   githubSecret,
   githubConfigured,
-  sessionReady: Boolean(
-    configuredBaseUrlParsed && (secret || localDevelopmentSession) && secureBaseUrl && trustedOrigins.valid
-  ),
-  productionReady: Boolean(
-    configuredBaseUrlParsed && secret && githubConfigured && secureBaseUrl && trustedOrigins.valid
-  )
+  issues,
+  sessionReady,
+  // Existing sign-in controls use this stricter condition to enable GitHub.
+  productionReady: Boolean(sessionReady && secret && githubConfigured)
 } as const;
 
 export function isLocalTestAuthEnabled(): boolean {

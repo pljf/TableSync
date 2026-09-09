@@ -1,10 +1,11 @@
+import "dotenv/config";
 import { authEnvironment, isLocalTestAuthEnabled } from "../src/lib/auth-environment";
 import { inspectDatabaseEnvironment } from "../src/lib/database-environment";
 import { inspectDeploymentEnvironment } from "../src/lib/deployment-environment";
 
 const database = inspectDatabaseEnvironment();
 const deployment = inspectDeploymentEnvironment();
-const issues = [...deployment.issues, ...database.issues];
+const issues = [...deployment.issues, ...database.issues, ...authEnvironment.issues];
 
 if (!deployment.managedDeployment) {
   issues.push("TABLESYNC_DEPLOYMENT_ENV must be staging or production for this gate.");
@@ -12,14 +13,8 @@ if (!deployment.managedDeployment) {
 if (database.databaseScope !== "acceptance") {
   issues.push("TABLESYNC_DATABASE_SCOPE must be acceptance for the deployment gate.");
 }
-if (!authEnvironment.productionReady) {
-  issues.push("Production authentication requires HTTPS URLs, a strong secret, and GitHub OAuth credentials.");
-}
 if (isLocalTestAuthEnabled() || process.env.TABLESYNC_E2E_AUTH || process.env.TABLESYNC_E2E_AUTH_KEY) {
   issues.push("Local E2E authentication variables must not exist in a deployed environment.");
-}
-if (process.env.BETTER_AUTH_URL !== process.env.NEXT_PUBLIC_APP_URL) {
-  issues.push("BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL must be the same canonical deployment URL.");
 }
 
 if (issues.length > 0) {
@@ -35,7 +30,7 @@ if (issues.length > 0) {
         deploymentId: deployment.deploymentId,
         commitSha: deployment.commitSha,
         expectedMigration: deployment.expectedMigration,
-        authentication: "configured",
+        authentication: authEnvironment.githubConfigured ? "guest-and-github" : "guest-only",
         database: {
           directConnection: "configured",
           pooledRuntimeConnection: "configured",

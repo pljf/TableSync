@@ -1,14 +1,16 @@
 # TableSync Production Readiness Plan
 
-> **Status:** Candidate branch pushed; waiting for GitHub, Vercel, and Neon browser sign-in plus explicit npm package-name/version egress consent (2026-09-02)
+> **Status:** Local deployment-readiness repairs and final validation passed; ready to begin deployment setup. The hosted phase has not started, and the existing hosting/database services still need to be identified and inspected (2026-09-09).
 > **Started:** 2026-08-01
 > **Scope:** Production authentication, deny-by-default authorization, managed PostgreSQL staging, real staging deployment, and complete re-acceptance of the existing core MVP in that environment.
 
+Current work and verification are tracked in [`DEPLOYMENT_READINESS_2026_09_09.md`](DEPLOYMENT_READINESS_2026_09_09.md). The user has authorized local readiness fixes before deployment. Dependency auditing is available and has run; earlier npm-consent and named-provider blockers below are historical records, not current prerequisites. Hosted service configuration, authentication acceptance, recovery checks, and deployment evidence remain unverified.
+
 ## 1. Required outcome
 
-TableSync is production-ready only when a real host can authenticate through an external identity provider, every private read and write is authorized at the server-side data boundary, every guest mutation is scoped to the guest represented by a secure server-side session, and the application is running against a real managed PostgreSQL staging database on a non-local deployment. The deployed commit must then pass the complete core acceptance contract in [`CORE_MVP_EXECUTION_PLAN.md`](CORE_MVP_EXECUTION_PLAN.md) without waived failures or weakened thresholds.
+TableSync is production-ready only when a real host can establish a secure session in the recorded authentication mode, every private read and write is authorized at the server-side data boundary, every guest mutation is scoped to the guest represented by a secure server-side session, and the application is running against a real managed PostgreSQL staging database on a non-local deployment. The current application supports guest-only access, or guest access with GitHub sign-in when both provider credentials are configured. The deployed commit must then pass the complete core acceptance contract in [`CORE_MVP_EXECUTION_PLAN.md`](CORE_MVP_EXECUTION_PLAN.md) without waived failures or weakened thresholds.
 
-Local success alone is not completion. A configured provider without a successful real callback is not completion. Hidden UI without server-side enforcement is not authorization. A deployment without an attributable commit, migration record, rollback procedure, and fresh staging evidence is not an accepted deployment.
+Local success alone is not completion. If GitHub sign-in is enabled, a configured provider without a successful real callback is not completion; a recorded guest-only release must instead leave both GitHub credentials empty and pass the complete guest-session lifecycle. Hidden UI without server-side enforcement is not authorization. A deployment without an attributable commit, migration record, rollback procedure, and fresh staging evidence is not an accepted deployment.
 
 ## 2. Non-negotiable quality bar
 

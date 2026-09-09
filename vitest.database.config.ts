@@ -1,8 +1,9 @@
+import "dotenv/config";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+import { configureDatabaseTestPool } from "./scripts/lib/database-test-environment.ts";
 
-process.env.DATABASE_POOL_SIZE = "1";
-process.env.DATABASE_POOL_MAX_USES = "0";
+configureDatabaseTestPool(process.env);
 
 export default defineConfig({
   test: {
