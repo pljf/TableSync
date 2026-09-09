@@ -24,7 +24,7 @@ This runbook is the execution contract for the managed PostgreSQL staging databa
 | `NEXT_PUBLIC_APP_URL` / `BETTER_AUTH_URL` | Same canonical non-local HTTPS origin, without an extra path |
 | `AUTH_TRUSTED_ORIGINS` | Explicit comma-separated origins; normally only the canonical staging origin |
 | `BETTER_AUTH_SECRET` | Random secret of at least 32 characters, unique to staging |
-| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | Staging GitHub OAuth app credentials |
+| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | Optional: leave both unset for guest-only hosting, or configure both for GitHub sign-in. Partial/placeholder credentials fail readiness. |
 | `DATABASE_URL` | TLS-required pooled URL using the runtime role |
 | `DIRECT_URL` | TLS-required direct URL using the migration role; never configure it in the deployed Web runtime |
 | `DATABASE_RUNTIME_MODE` | Exactly `pooled` |
@@ -148,18 +148,20 @@ Application rollback:
 3. If data corruption occurred, restore into a new target and validate it fully before switching `DATABASE_URL`; never restore over the only copy.
 4. Record old/new deployment IDs, commit SHAs, database target fingerprints, migration heads, timestamps, reason, operator, and health results.
 
-## 7. Deployment and real OAuth proof
+## 7. Deployment and authentication proof
 
 Before public staging acceptance:
 
-1. Create a dedicated GitHub OAuth app for staging.
-2. Configure its homepage as the exact staging origin and its callback as `<origin>/api/auth/callback/github`.
-3. Deploy the reviewed commit with all required secret-scoped variables.
-4. Confirm `/api/health` returns HTTP 200 and the expected environment, deployment ID, commit SHA, and migration head.
-5. Complete a real GitHub sign-in in a clean browser, reject/cancel once to verify safe recovery, then sign in successfully.
-6. Verify the session survives reload and a warm/cold application instance, then sign out and prove the prior session is rejected.
+1. Record whether the deployment is guest-only or GitHub-enabled. Guest-only hosting uses the complete planning workflow with a persistent session secret and HTTPS; leave both GitHub credentials unset.
+2. If enabling GitHub, create a dedicated staging OAuth app. Its homepage must be the exact staging origin and its callback `<origin>/api/auth/callback/github`; configure both credentials.
+3. Deploy the reviewed commit using the Node version in `.node-version` and all required secret-scoped variables.
+4. Confirm `/api/health` returns HTTP 200 and the expected environment, deployment ID, commit SHA, and migration head. Readiness also requires valid session/authentication configuration and matching canonical origins.
+5. In a clean browser, complete **Continue as guest** and verify the private planning workflow. If GitHub is enabled, separately test cancel/deny, successful sign-in and linking a guest account without losing its rooms.
+6. Verify sessions survive reload and a warm/cold application instance, then sign out and prove the prior session is rejected. For guest accounts, complete the End guest session confirmation.
 7. Capture Cookie attributes by name only: HttpOnly, Secure, SameSite=Lax, Path=/, and expected expiry. Never capture the Cookie value.
-8. Supply a current signed staging session Cookie only through the protected `TABLESYNC_STAGING_SESSION_COOKIE` CI secret for the authenticated browser matrix. Rotate/revoke it after acceptance.
+8. Supply a fresh, dedicated acceptance account's signed staging session Cookie only through the protected `TABLESYNC_STAGING_SESSION_COOKIE` CI secret for the browser matrix and authenticated Lighthouse run. It may belong to an anonymous guest host or a GitHub host. Do not use a real participant's account. Rotate/revoke it after acceptance.
+
+The canonical deployment gate accepts secure guest-only hosting. Optional GitHub acceptance is recorded as N/A only when both credentials are absent; an incomplete or placeholder configuration is an error. The web runtime must not receive the acceptance session Cookie or direct database connection.
 
 The test-only `/api/test/auth/session` route must return 404 in staging. `TABLESYNC_E2E_AUTH` and `TABLESYNC_E2E_AUTH_KEY` must not exist in the deployment or CI environment.
 

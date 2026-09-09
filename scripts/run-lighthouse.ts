@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { spawn } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer as createTcpServer } from "node:net";
@@ -5,9 +6,10 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium, type Browser } from "@playwright/test";
+import { validateStagingHealth, validateStagingTarget } from "./lib/staging-target";
 
 const port = 3001;
-const remoteBaseUrl = process.env.TABLESYNC_LIGHTHOUSE_BASE_URL?.trim().replace(/\/$/, "");
+const remoteBaseUrl = process.env.TABLESYNC_LIGHTHOUSE_BASE_URL?.trim();
 const baseUrl = remoteBaseUrl || `http://localhost:${port}`;
 const isRemote = Boolean(remoteBaseUrl);
 const corePath = process.env.TABLESYNC_LIGHTHOUSE_CORE_PATH?.trim();
@@ -148,13 +150,17 @@ async function main() {
     }
   }
   if (isRemote) {
-    const parsed = new URL(baseUrl);
-    if (parsed.protocol !== "https:" || ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname)) {
-      throw new Error("Remote Lighthouse requires a non-local HTTPS deployment origin.");
-    }
+    const target = validateStagingTarget(process.env, "TABLESYNC_LIGHTHOUSE_BASE_URL");
     if (!process.env.TABLESYNC_STAGING_SESSION_COOKIE?.trim()) {
       throw new Error("TABLESYNC_STAGING_SESSION_COOKIE is required for the authenticated staging audit.");
     }
+    const health = await fetch(new URL("/api/health", target.baseUrl), {
+      headers: { "Cache-Control": "no-cache" },
+      redirect: "error",
+      signal: AbortSignal.timeout(15_000)
+    });
+    if (!health.ok) throw new Error(`Staging Lighthouse health gate failed with HTTP ${health.status}.`);
+    validateStagingHealth(await health.json(), target.deployment);
   }
   const sessionCookieName = (
     isRemote ? process.env.TABLESYNC_STAGING_SESSION_COOKIE_NAME : process.env.TABLESYNC_LIGHTHOUSE_SESSION_COOKIE_NAME

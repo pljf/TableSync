@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { EventType } from "../../src/lib/domain";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
+import { signInAsHost } from "./host-auth";
 
 const e2eRunMarker = `TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`;
 const browserErrors = new WeakMap<Page, string[]>();
@@ -29,40 +30,12 @@ async function submitMutation(page: Page, path: string, submit: () => Promise<vo
   await page.waitForLoadState("networkidle");
 }
 
-async function signIn(page: Page) {
-  const origin = process.env.TABLESYNC_E2E_BASE_URL ?? "http://localhost:3000";
-  if (process.env.TABLESYNC_E2E_MODE === "remote") {
-    const value = process.env.TABLESYNC_STAGING_SESSION_COOKIE;
-    const name = process.env.TABLESYNC_STAGING_SESSION_COOKIE_NAME ?? "tablesync-auth.session_token";
-    if (!value) {
-      throw new Error("TABLESYNC_STAGING_SESSION_COOKIE is required for remote acceptance.");
-    }
-    await page.context().addCookies([
-      { name, value, url: origin, httpOnly: true, sameSite: "Lax", secure: true }
-    ]);
-    await page.goto("/dashboard");
-    await expect(page.getByRole("heading", { name: /your meal rooms/i })).toBeVisible();
-    return;
-  }
-
-  const key = process.env.TABLESYNC_E2E_AUTH_KEY;
-  if (!key) {
-    throw new Error("TABLESYNC_E2E_AUTH_KEY is required for the isolated local test identity.");
-  }
-  const response = await page.request.post("/api/test/auth/session", {
-    headers: { Origin: origin, "x-tablesync-e2e-key": key }
-  });
-  expect(response.status()).toBe(200);
-  await page.goto("/dashboard");
-  await expect(page.getByRole("heading", { name: /your meal rooms/i })).toBeVisible();
-}
-
 async function createRoom(
   page: Page,
   input: { title: string; eventType: EventType; budgetDollars: number },
   captureQuality = false
 ) {
-  await signIn(page);
+  await signInAsHost(page);
   if (captureQuality) await captureQualityEvidence(page, "dashboard");
   await page.getByRole("main").getByRole("link", { name: "New room", exact: true }).click();
   await expect(page).toHaveURL(/\/rooms\/new$/);

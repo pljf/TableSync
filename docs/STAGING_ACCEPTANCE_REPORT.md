@@ -17,7 +17,8 @@ This report must contain redacted facts and links to protected provider/CI evide
 | Managed PostgreSQL provider/project (redacted identifier) | Pending |
 | Runtime role fingerprint | Pending |
 | Migration role fingerprint | Pending |
-| Migration head | `20260802023000_security_audit` expected |
+| Migration head | `20260908010000_correct_tofu_shopping_category` expected |
+| Authentication mode | Guest-only or GitHub-enabled; record before acceptance |
 | Operator/reviewer | Pending |
 
 ## Provider and recovery controls
@@ -36,8 +37,9 @@ This report must contain redacted facts and links to protected provider/CI evide
 
 | Scenario | Expected | Result |
 |---|---|---|
-| GitHub cancel/deny | Safe error recovery; no session | Pending |
-| Successful callback | Correct account persisted; no provider tokens retained | Pending |
+| Guest host sign-in | Unique private account; planning workflow succeeds | Pending |
+| GitHub cancel/deny (when enabled) | Safe error recovery; no session | Pending, or N/A with guest-only mode recorded |
+| Successful callback/linking (when enabled) | Correct account persisted; no provider tokens retained; guest rooms retained | Pending, or N/A with guest-only mode recorded |
 | Reload/cold instance | Session remains valid | Pending |
 | Cookie attributes | HttpOnly, Secure, SameSite=Lax, Path=/ | Pending |
 | Logout/revocation | Prior Cookie rejected; database session removed | Pending |
@@ -75,4 +77,4 @@ This report must contain redacted facts and links to protected provider/CI evide
 
 ## Decision
 
-Final result: **NOT ACCEPTED** until every row above passes and the evidence ledger is updated.
+Final result: **NOT ACCEPTED** until every applicable row above passes and the evidence ledger is updated. Only the explicitly optional GitHub rows may be N/A for a recorded guest-only deployment; guest authentication, session security, data protection and recovery gates still apply.

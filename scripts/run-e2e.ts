@@ -36,6 +36,14 @@ async function waitForServer() {
   const startedAt = Date.now();
   while (Date.now() - startedAt < 120_000) {
     if (await isServerReady()) {
+      const health = await fetch(`${appUrl}/api/health`, {
+        headers: { "Cache-Control": "no-cache" },
+        signal: AbortSignal.timeout(10_000)
+      });
+      const body = await health.json() as { status?: string };
+      if (!health.ok || body.status !== "ready") {
+        throw new Error("Local E2E readiness failed. Check the database, migrations and authentication environment before running browser tests.");
+      }
       return;
     }
     await delay(500);
@@ -46,7 +54,7 @@ async function waitForServer() {
 
 async function isServerReady() {
   try {
-    const response = await fetch(appUrl);
+    const response = await fetch(appUrl, { signal: AbortSignal.timeout(5_000) });
     return response.ok;
   } catch {
     return false;
@@ -105,6 +113,7 @@ async function main() {
       TABLESYNC_E2E_AUTH_KEY: e2eAuthKey,
       BETTER_AUTH_SECRET: e2eAuthKey,
       BETTER_AUTH_URL: appUrl,
+      NEXT_PUBLIC_APP_URL: appUrl,
       DATABASE_POOL_SIZE: "1",
       DATABASE_POOL_MAX_USES: "0"
     });

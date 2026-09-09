@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma/client";
+import { authEnvironment } from "@/lib/auth-environment";
 import { inspectDatabaseEnvironment } from "@/lib/database-environment";
 import { inspectDeploymentEnvironment } from "@/lib/deployment-environment";
 import { prisma } from "@/lib/prisma";
@@ -41,6 +42,7 @@ export async function GET(): Promise<Response> {
     const ready = Boolean(
       deployment.ready &&
         database.ready &&
+        authEnvironment.sessionReady &&
         probe?.migration &&
         probe.failedCount === 0n &&
         migrationMatches

@@ -20,7 +20,7 @@ export const testAuth = betterAuth({
     cookiePrefix: "tablesync-auth",
     defaultCookieAttributes: {
       httpOnly: true,
-      secure: false,
+      secure: authEnvironment.secureCookies,
       sameSite: "lax",
       path: "/"
     }

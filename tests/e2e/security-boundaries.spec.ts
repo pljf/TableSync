@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { signInAsHost } from "./host-auth";
 
 test.skip(({ browserName }) => browserName !== "chromium", "One engine is sufficient for protocol-level boundary checks.");
 
@@ -8,11 +9,8 @@ test("security headers, hidden test auth, secure Cookie attributes, and Server A
 }) => {
   const origin = process.env.TABLESYNC_E2E_BASE_URL ?? "http://localhost:3000";
   const remote = process.env.TABLESYNC_E2E_MODE === "remote";
-  const key = process.env.TABLESYNC_E2E_AUTH_KEY;
-  const remoteCookie = process.env.TABLESYNC_STAGING_SESSION_COOKIE;
-  const cookieName = process.env.TABLESYNC_STAGING_SESSION_COOKIE_NAME ?? "tablesync-auth.session_token";
-  if (!remote && !key) throw new Error("TABLESYNC_E2E_AUTH_KEY is required.");
-  if (remote && !remoteCookie) throw new Error("TABLESYNC_STAGING_SESSION_COOKIE is required.");
+  const cookieName = process.env.TABLESYNC_STAGING_SESSION_COOKIE_NAME
+    ?? (remote ? "__Secure-tablesync-auth.session_token" : "tablesync-auth.session_token");
 
   const home = await page.request.get("/");
   expect(home.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
@@ -28,18 +26,11 @@ test("security headers, hidden test auth, secure Cookie attributes, and Server A
   });
   expect(hidden.status()).toBe(404);
 
-  if (remote) {
-    await context.addCookies([
-      { name: cookieName, value: remoteCookie!, url: origin, httpOnly: true, sameSite: "Lax", secure: true }
-    ]);
-  } else {
-    const login = await page.request.post("/api/test/auth/session", {
-      headers: { Origin: origin, "x-tablesync-e2e-key": key! }
-    });
-    expect(login.status()).toBe(200);
-  }
+  await signInAsHost(page);
   const sessionCookie = (await context.cookies()).find((cookie) => cookie.name === cookieName);
-  expect(sessionCookie).toMatchObject({ httpOnly: true, sameSite: "Lax", secure: remote });
+  // Assert only attributes so a failure cannot print a supplied staging token.
+  expect(sessionCookie && { httpOnly: sessionCookie.httpOnly, sameSite: sessionCookie.sameSite, secure: sessionCookie.secure })
+    .toEqual({ httpOnly: true, sameSite: "Lax", secure: remote });
 
   await page.goto("/rooms/new");
   await expect(page.getByRole("heading", { name: /create a room/i })).toBeVisible();
@@ -66,10 +57,26 @@ test("security headers, hidden test auth, secure Cookie attributes, and Server A
   await page.route("**/api/auth/sign-out", (route) =>
     route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "unavailable" }) })
   );
-  await page.getByRole("button", { name: /^sign out$/i }).click();
-  await expect(page.locator(".compact-auth-error[role='alert']")).toHaveText(
+  const signOut = page.getByRole("button", { name: /^(Sign out|End guest session)$/i });
+  await expect(signOut).toBeVisible();
+  const isGuest = (await signOut.textContent())?.trim() === "End guest session";
+  let submitSignOut = signOut;
+  if (isGuest) {
+    await signOut.click();
+    submitSignOut = page.getByRole("group", { name: "End guest session confirmation", exact: true })
+      .getByRole("button", { name: "End session", exact: true });
+  }
+  const failedSignOut = page.waitForResponse((response) =>
+    response.request().method() === "POST" && new URL(response.url()).pathname === "/api/auth/sign-out"
+  );
+  await submitSignOut.click();
+  expect((await failedSignOut).status()).toBe(503);
+  await expect(page.locator(".compact-auth-action").getByRole("alert")).toHaveText(
     "Sign-out could not be completed. Please try again."
   );
+  await expect(submitSignOut).toBeEnabled();
+  expect((await context.cookies()).some((cookie) => cookie.name === sessionCookie!.name && cookie.value === sessionCookie!.value),
+    "A failed sign-out must retain the existing host session").toBe(true);
   await expect(page.getByRole("heading", { name: /your meal rooms/i })).toBeVisible();
   await page.unroute("**/api/auth/sign-out");
 });

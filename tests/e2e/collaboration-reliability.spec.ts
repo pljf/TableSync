@@ -1,16 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
+import { signInAsHost } from "./host-auth";
 
 const origin = process.env.TABLESYNC_E2E_BASE_URL ?? "http://localhost:3000";
 const marker = `TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`;
-
-async function hostSignIn(page: Page) {
-  const key = process.env.TABLESYNC_E2E_AUTH_KEY;
-  if (!key) throw new Error("This local regression suite requires the isolated test identity.");
-  const result = await page.request.post("/api/test/auth/session", { headers: { Origin: origin, "x-tablesync-e2e-key": key } });
-  expect(result.status()).toBe(200);
-}
 
 async function createMeal(page: Page, title: string) {
   await page.goto("/rooms/new");
@@ -45,7 +39,7 @@ test.describe("collaboration reliability", () => {
   test.setTimeout(120_000);
 
   test("retains independent responses for multiple rooms in one browser", async ({ browser, page }) => {
-    await hostSignIn(page);
+    await signInAsHost(page);
     const first = await createMeal(page, `First meal ${randomUUID()}`);
     const second = await createMeal(page, `Second meal ${randomUUID()}`);
     const guestContext = await browser.newContext({ baseURL: origin });
@@ -78,7 +72,7 @@ test.describe("collaboration reliability", () => {
   });
 
   test("receives guest votes and shopping changes automatically without discarding a draft", async ({ browser, page }) => {
-    await hostSignIn(page);
+    await signInAsHost(page);
     const meal = await createMeal(page, "Friday dinner with friends");
     const guestContext = await browser.newContext({ baseURL: origin });
     try {
@@ -161,7 +155,7 @@ test.describe("collaboration reliability", () => {
   test("leaves a room with an update request in flight and resumes updates on return", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    await hostSignIn(page);
+    await signInAsHost(page);
     const meal = await createMeal(page, `Room navigation ${randomUUID()}`);
     const revisionPath = `/api/rooms/${meal.roomId}/revision`;
     const matchesRevision = (url: URL) => url.pathname === revisionPath;

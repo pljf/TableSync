@@ -8,6 +8,8 @@ screenshots
 src/generated/prisma
 .env
 .env*.local
+.env.runtime
+.env.acceptance
 *.log
 *.tsbuildinfo
 # Keep detailed local audits on disk; commit their compact summaries.
