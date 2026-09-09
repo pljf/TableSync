@@ -18,8 +18,8 @@ This runbook is the execution contract for the managed PostgreSQL staging databa
 | Variable | Requirement |
 |---|---|
 | `TABLESYNC_DEPLOYMENT_ENV` | Exactly `staging` |
-| `TABLESYNC_DEPLOYMENT_ID` | Immutable ID from the hosting provider |
-| `TABLESYNC_GIT_SHA` | Full deployed Git commit SHA |
+| `TABLESYNC_DEPLOYMENT_ID` | Immutable hosting deployment ID; required explicitly in the protected acceptance job. Vercel runtime uses its generated `VERCEL_DEPLOYMENT_ID` first. |
+| `TABLESYNC_GIT_SHA` | Full deployed Git commit SHA; required explicitly in the protected acceptance job. Vercel runtime uses `VERCEL_GIT_COMMIT_SHA` first. |
 | `TABLESYNC_EXPECTED_MIGRATION` | Reviewed migration directory name, currently `20260908010000_correct_tofu_shopping_category` |
 | `NEXT_PUBLIC_APP_URL` / `BETTER_AUTH_URL` | Same canonical non-local HTTPS origin, without an extra path |
 | `AUTH_TRUSTED_ORIGINS` | Explicit comma-separated origins; normally only the canonical staging origin |
@@ -33,6 +33,8 @@ This runbook is the execution contract for the managed PostgreSQL staging databa
 | `DATABASE_POOL_MAX_USES` | Integer 100-100000; start at 5000 |
 
 For both PostgreSQL URLs, include `sslmode=verify-full` when the provider supports normal certificate verification. `verify-ca` or `require` is accepted only when required by the provider and the provider's TLS documentation is captured in the evidence report.
+
+On Vercel, select **Enable access to System Environment Variables** in the project's environment-variable settings. TableSync automatically uses Vercel's deployment ID and commit SHA at build and runtime, so redeployments do not require updating identity settings. Explicit `TABLESYNC_*` identity remains the fallback when provider metadata is absent, and is required in the separate protected acceptance job. Keep `TABLESYNC_DEPLOYMENT_ENV=staging` explicit; it is independent of Vercel's environment name. See [Vercel system environment variables](https://vercel.com/docs/environment-variables/system-environment-variables).
 
 The hosting runtime must receive `DATABASE_URL` but not `DIRECT_URL`. The protected acceptance job receives both. Run the redacted configuration gate from that job before any migration:
 

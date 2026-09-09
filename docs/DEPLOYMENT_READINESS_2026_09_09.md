@@ -12,20 +12,23 @@ This report records local validation of the deployment-readiness repairs based o
 - Browser tests now await completion of a rejected cross-site form navigation. Shared host authentication works with both isolated local test sessions and a supplied staging session. HTTPS cookie settings and guest sign-out behavior are covered.
 - Remote browser and Lighthouse checks validate their destination against both configured app origins and verify the exact staging release identity before using a session cookie. Local browser acceptance now stops immediately if health is not ready.
 - Vitest and its affected mocker dependency were updated to 4.1.11. Node 24.19.0 is recorded in `.node-version` and `.nvmrc`, and both CI workflows use that version file.
+- The lockfile includes the optional Linux/WASM dependencies required by a clean GitHub install and was regenerated with npm 11.17.0 without an existing installation. The package-manager version and safe update procedure are recorded in the project.
+- Vercel's generated deployment ID and commit SHA now take precedence over stale manual identity settings. Enable access to system environment variables on Vercel; the protected acceptance job retains explicit expected identity.
 - The staging report references the current migration and explains optional GitHub acceptance. Empty, separated [runtime](deployment/runtime.env.example) and [acceptance](deployment/acceptance.env.example) configuration templates are ready to fill securely.
 
 PostgreSQL's privilege function treats a comma-separated list as “any”; the revised check explicitly requires all four application privileges. See the [official privilege-function documentation](https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE). The patched dependency addresses the [Vitest maintainer advisory](https://github.com/vitest-dev/vitest/security/advisories/GHSA-82fw-gwwq-j7x9).
 
 ## Local verification
 
-All final checks use the available Node 24.19.0 runtime. The machine's default Node executable is still 22.14.0, below this project's requirement; select the recorded version for future local commands.
+All final checks use the available Node 24.19.0 runtime. The machine's default Node executable is still 22.14.0, below this project's requirement; select the recorded Node version and npm 11.17.0 for future local commands. The production build, lint and complete unit suite were repeated after the Vercel identity integration.
 
 | Check | Result |
 | --- | --- |
 | Production build | Passed |
 | Lint | Passed |
 | TypeScript | Passed, including the standalone check |
-| Unit tests | 509 passed across 43 files; one Unix-only symlink case skipped on Windows, with Windows junction/hardlink cases passing |
+| Unit tests | 522 passed across 44 files; one Unix-only symlink case skipped on Windows, with Windows junction/hardlink cases passing |
+| Clean Linux dependency resolution | npm 11.17.0 dry run passed for 653 packages; actual GitHub install and checks must pass before merging |
 | Prisma schema validation | Passed |
 | Local database integration tests | 33 passed across 6 files |
 | Local migration state | All 13 migrations finished; no failed or rolled-back entries |
@@ -34,7 +37,7 @@ All final checks use the available Node 24.19.0 runtime. The machine's default N
 | WebKit navigation regression | Three further repetitions passed (10.9 seconds) |
 | Normal production-server smoke check | Health HTTP 200 and current migration; test-auth endpoint HTTP 404 |
 | Lighthouse performance | Three runs per public page: Home median 96, Auth median 97; both 100 accessibility, 100 best practices and zero layout shift |
-| Source/history secret scan | Passed across 247 source files and reachable Git history |
+| Source/history secret scan | Passed across 248 source files and reachable Git history |
 | Evidence redaction | Passed across all 176 files, including final generated artifacts |
 | Dependency audit including development dependencies | Zero vulnerabilities |
 

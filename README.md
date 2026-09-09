@@ -51,7 +51,9 @@ All application, authentication, guest-session, rate-limit, and security-audit d
 
 ## Local Setup
 
-Use the Node.js version recorded in `.node-version` and `.nvmrc` (24.19.0). CI and staging acceptance use that same version. The supported minimum remains Node.js 22.19 in the 22.x line; older Node releases do not meet the performance audit's requirements.
+Use the Node.js version recorded in `.node-version` and `.nvmrc` (24.19.0), with npm 11.17.0 as recorded in `package.json`. CI and staging acceptance use that same Node/npm pair. The supported minimum remains Node.js 22.19 in the 22.x line; older Node releases do not meet the performance audit's requirements.
+
+When updating dependencies, generate the lockfile with npm 11.17.0 in a clean directory containing the manifests and no existing `node_modules`. Verify a clean install afterward. Updating from an installed Windows dependency tree can omit optional packages required by Linux hosting.
 
 Install dependencies and start the local database in one terminal:
 
@@ -186,6 +188,8 @@ PUSHER_CLUSTER=
 ```
 
 In a managed Web runtime, set `TABLESYNC_DATABASE_SCOPE=runtime` and do not expose `DIRECT_URL`. The protected staging migration/acceptance job sets `TABLESYNC_DATABASE_SCOPE=acceptance` and receives both pooled and direct URLs.
+
+On Vercel, enable **Enable access to System Environment Variables**. TableSync automatically uses `VERCEL_DEPLOYMENT_ID` and `VERCEL_GIT_COMMIT_SHA` for deployment identity; other hosts and the protected acceptance job require explicit `TABLESYNC_DEPLOYMENT_ID` and `TABLESYNC_GIT_SHA`. Keep `TABLESYNC_DEPLOYMENT_ENV` explicit. See [Vercel's system-variable documentation](https://vercel.com/docs/environment-variables/system-environment-variables).
 
 ## Next Milestones
 
