@@ -13,6 +13,7 @@ This report records local validation of the deployment-readiness repairs based o
 - Remote browser and Lighthouse checks validate their destination against both configured app origins and verify the exact staging release identity before using a session cookie. Local browser acceptance now stops immediately if health is not ready.
 - Vitest and its affected mocker dependency were updated to 4.1.11. Node 24.19.0 is recorded in `.node-version` and `.nvmrc`, and both CI workflows use that version file.
 - The lockfile includes the optional Linux/WASM dependencies required by a clean GitHub install and was regenerated with npm 11.17.0 without an existing installation. The package-manager version and safe update procedure are recorded in the project.
+- GitHub browser setup removes the runner's unrelated preinstalled Chrome package feed before installing Playwright's browsers and system libraries. This avoids the observed stale-feed hash mismatch while preserving package integrity checks and Chromium, Firefox and WebKit coverage.
 - Vercel's generated deployment ID and commit SHA now take precedence over stale manual identity settings. Enable access to system environment variables on Vercel; the protected acceptance job retains explicit expected identity.
 - The staging report references the current migration and explains optional GitHub acceptance. Empty, separated [runtime](deployment/runtime.env.example) and [acceptance](deployment/acceptance.env.example) configuration templates are ready to fill securely.
 
