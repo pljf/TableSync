@@ -6,6 +6,7 @@ import { inspectDatabaseEnvironment } from "@/lib/database-environment";
 const runtime: RoleProbe = {
   role: "private-runtime-role",
   ssl: true,
+  backendSsl: false,
   rolsuper: false,
   rolcreaterole: false,
   rolcreatedb: false,
@@ -26,6 +27,8 @@ describe("database security evidence", () => {
     const report = databaseSecurityReport(runtime, migration, "staging");
     expect(report.status).toBe("passed");
     expect(report.runtime.migrationHistoryReadable).toBe(true);
+    expect(report.runtime).toMatchObject({ tls: true, backendTls: false });
+    expect(report.migration).toMatchObject({ tls: true, backendTls: false });
     expect(report.runtime.fingerprint).not.toBe(report.migration.fingerprint);
     expect(JSON.stringify(report)).not.toContain(runtime.role);
     expect(JSON.stringify(report)).not.toContain(migration.role);
@@ -65,6 +68,11 @@ describe("database security evidence", () => {
   it("rejects a shared role and elevated migration credentials", () => {
     expect(databaseSecurityReport(runtime, { ...migration, role: runtime.role }, "staging").status).toBe("failed");
     expect(databaseSecurityReport(runtime, { ...migration, rolsuper: true }, "staging").status).toBe("failed");
+  });
+
+  it("never accepts backend TLS in place of a verified client connection", () => {
+    expect(databaseSecurityReport({ ...runtime, ssl: false, backendSsl: true }, migration, "staging").status).toBe("failed");
+    expect(databaseSecurityReport(runtime, { ...migration, ssl: false, backendSsl: true }, "staging").status).toBe("failed");
   });
 });
 
