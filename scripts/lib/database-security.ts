@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 export type RoleProbe = {
   allApplicationCrud: boolean;
   anyDangerousTableGrant: boolean;
+  backendSsl: boolean;
   canCreateInDatabase: boolean;
   canCreateInPublic: boolean;
   canUsePublic: boolean;
@@ -14,6 +15,7 @@ export type RoleProbe = {
   rolcreaterole: boolean;
   rolreplication: boolean;
   rolsuper: boolean;
+  // Verified TLS on the client socket; the PostgreSQL backend may sit behind a proxy.
   ssl: boolean;
 };
 
@@ -25,7 +27,7 @@ export const applicationCrudCheckSql = ["SELECT", "INSERT", "UPDATE", "DELETE"]
 export const databaseRoleProbeSql = `
   SELECT
     current_user AS "role",
-    COALESCE((SELECT ssl FROM pg_stat_ssl WHERE pid = pg_backend_pid()), false) AS "ssl",
+    COALESCE((SELECT ssl FROM pg_stat_ssl WHERE pid = pg_backend_pid()), false) AS "backendSsl",
     role.rolsuper AS "rolsuper",
     role.rolcreaterole AS "rolcreaterole",
     role.rolcreatedb AS "rolcreatedb",
@@ -92,6 +94,7 @@ export function databaseSecurityReport(runtime: RoleProbe, migration: RoleProbe,
     runtime: {
       fingerprint: roleFingerprint(runtime.role),
       tls: runtime.ssl,
+      backendTls: runtime.backendSsl,
       noElevatedRoleAttributes: noElevatedRoleAttributes(runtime),
       cannotCreateDatabaseObjects: !runtime.canCreateInDatabase && !runtime.canCreateInPublic,
       applicationSchemaAccessible: runtime.canUsePublic,
@@ -103,6 +106,7 @@ export function databaseSecurityReport(runtime: RoleProbe, migration: RoleProbe,
     migration: {
       fingerprint: roleFingerprint(migration.role),
       tls: migration.ssl,
+      backendTls: migration.backendSsl,
       noElevatedRoleAttributes: noElevatedRoleAttributes(migration),
       applicationSchemaAccessible: migration.canUsePublic,
       canApplyMigrations: migration.canCreateInPublic && migration.canUsePublic

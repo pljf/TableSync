@@ -2,11 +2,12 @@ import "dotenv/config";
 import { Client } from "pg";
 import { inspectDatabaseEnvironment } from "../src/lib/database-environment";
 import { databaseRoleProbeSql, databaseSecurityReport, type RoleProbe } from "./lib/database-security";
+import { verifiedClientTls, verifiedDatabaseConnectionString } from "./lib/database-tls";
 import { resolveEvidencePath, writeEvidenceFile } from "./lib/evidence-output";
 
 async function probe(connectionString: string): Promise<RoleProbe> {
   const client = new Client({
-    connectionString,
+    connectionString: verifiedDatabaseConnectionString(connectionString),
     application_name: "tablesync-security-verifier",
     connectionTimeoutMillis: 10_000,
     query_timeout: 15_000
@@ -17,9 +18,9 @@ async function probe(connectionString: string): Promise<RoleProbe> {
   client.on("error", () => { disconnected = true; });
   try {
     await client.connect();
-    const result = await client.query<RoleProbe>(databaseRoleProbeSql);
+    const result = await client.query<Omit<RoleProbe, "ssl">>(databaseRoleProbeSql);
     if (disconnected || !result.rows[0]) throw new Error("Database role probe did not complete.");
-    return result.rows[0];
+    return { ...result.rows[0], ssl: verifiedClientTls(client.connection.stream) };
   } finally {
     await client.end();
   }

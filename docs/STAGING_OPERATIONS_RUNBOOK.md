@@ -32,7 +32,7 @@ This runbook is the execution contract for the managed PostgreSQL staging databa
 | `DATABASE_POOL_SIZE` | Integer 1-20; start at 8 and confirm against provider limits |
 | `DATABASE_POOL_MAX_USES` | Integer 100-100000; start at 5000 |
 
-For both PostgreSQL URLs, include `sslmode=verify-full` when the provider supports normal certificate verification. `verify-ca` or `require` is accepted only when required by the provider and the provider's TLS documentation is captured in the evidence report.
+For both PostgreSQL URLs, use `sslmode=verify-full` to verify the certificate and hostname. The configuration gate also recognizes `verify-ca` and `require`, but the security verifier explicitly upgrades its own probe connections to `verify-full`; it never disables certificate verification.
 
 On Vercel, select **Enable access to System Environment Variables** in the project's environment-variable settings. TableSync automatically uses Vercel's deployment ID and commit SHA at build and runtime, so redeployments do not require updating identity settings. Explicit `TABLESYNC_*` identity remains the fallback when provider metadata is absent, and is required in the separate protected acceptance job. Keep `TABLESYNC_DEPLOYMENT_ENV=staging` explicit; it is independent of Vercel's environment name. See [Vercel system environment variables](https://vercel.com/docs/environment-variables/system-environment-variables).
 
@@ -82,7 +82,9 @@ After migrations and grants, verify live TLS and role capabilities:
 npm run db:verify-security -- --output docs/evidence/staging/database-security.json
 ```
 
-The verifier fails if TLS is inactive, the roles are the same, either role has elevated cluster attributes, the runtime role owns tables or can create objects, runtime CRUD is incomplete, or runtime has TRUNCATE/TRIGGER rights. Output uses one-way role fingerprints rather than role names.
+The verifier's `tls` result requires the connected Node TLS socket to be encrypted and its peer certificate authorized. The separate `backendTls` value records PostgreSQL's `pg_stat_ssl` result for the backend connection. Neon routes both direct and pooled connections through its proxy, so backend TLS can be false while client TLS is verified. Backend TLS never substitutes for a verified client connection. See [Neon connection routing](https://neon.com/docs/introduction/network-transfer), [PostgreSQL SSL statistics](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-SSL-VIEW), and [Node TLS authorization](https://nodejs.org/docs/latest-v24.x/api/tls.html#tlssocketauthorized).
+
+The verifier fails if client TLS is inactive or unverified, the roles are the same, either role has elevated cluster attributes, the runtime role owns tables or can create objects, runtime CRUD is incomplete, or runtime has TRUNCATE/TRIGGER rights. Output uses one-way role fingerprints rather than role names. This database evidence does not by itself establish application or release readiness.
 
 ## 4. Fresh database and upgrade rehearsal
 
