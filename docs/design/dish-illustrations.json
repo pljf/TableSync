@@ -1,0 +1,405 @@
+{
+  "generator": "Built-in image_gen",
+  "background": "Warm ivory #fffaf2",
+  "style": "Painted gouache cookbook illustration, elevated three-quarter view",
+  "width": 512,
+  "height": 512,
+  "assets": [
+    {
+      "id": "mushroom-hotpot-broth",
+      "name": "Mushroom hotpot broth",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Mushroom hotpot broth. Savory vegetable broth with mushrooms, tofu, bok choy, and cabbage.\nSubject: A deep round ivory ceramic bowl filled with rich clear brown vegetable broth; recognizable mushroom caps, tofu cubes, green bok choy, and pale cabbage floating at the surface.\nActual ingredients: vegetable broth, mushrooms, tofu, bok choy, cabbage, tamari.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Mushroom hotpot broth, not the reference skewers.",
+      "output": "public/images/dishes/mushroom-hotpot-broth.webp"
+    },
+    {
+      "id": "tomato-hotpot-broth",
+      "name": "Tomato hotpot broth",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Tomato hotpot broth. A mild tomato and vegetable broth designed for shared hotpot.\nSubject: A round ivory ceramic hotpot bowl filled with mild vivid red tomato broth; visible tomato wedges, softened onion and small garlic pieces. A few subtle curls of steam.\nActual ingredients: vegetable broth, tomatoes, onion, garlic.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Tomato hotpot broth, not the reference skewers.",
+      "output": "public/images/dishes/tomato-hotpot-broth.webp"
+    },
+    {
+      "id": "hotpot-tofu",
+      "name": "Hotpot tofu platter",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Hotpot tofu platter. Firm tofu portions ready to cook in a shared broth.\nSubject: An ivory ceramic rectangular platter with eight generous clean ivory firm tofu cubes, neatly arranged with naturally porous faces; uncooked prepared tofu only.\nActual ingredients: tofu.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Hotpot tofu platter, not the reference skewers.",
+      "output": "public/images/dishes/hotpot-tofu.webp"
+    },
+    {
+      "id": "hotpot-beef-slices",
+      "name": "Thin-sliced hotpot beef",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Thin-sliced hotpot beef. Thin beef slices portioned for quick hotpot cooking.\nSubject: A round ivory plate holding a fan of delicate thinly sliced raw beef rolled into loose pink and red curls with creamy white marbling, recognizable hotpot beef slices ready for cooking.\nActual ingredients: beef.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Thin-sliced hotpot beef, not the reference skewers.",
+      "output": "public/images/dishes/hotpot-beef-slices.webp"
+    },
+    {
+      "id": "hotpot-chicken-slices",
+      "name": "Hotpot chicken slices",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Hotpot chicken slices. Chicken slices portioned for cooking safely in hotpot broth.\nSubject: An ivory oval platter holding a neat overlapping fan of uncooked boneless skinless chicken breast slices, pale peach pink with soft natural sheen, ready for hotpot cooking. Distinct flat irregular breast slices, no bones or cooked grill marks.\nActual ingredients: chicken.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Hotpot chicken slices, not the reference skewers.",
+      "output": "public/images/dishes/hotpot-chicken-slices.webp"
+    },
+    {
+      "id": "hotpot-mushroom-platter",
+      "name": "Hotpot mushroom platter",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Hotpot mushroom platter. A mixed mushroom platter for the shared pot.\nSubject: An ivory oval plate with a compact assortment of brown shiitake mushroom caps, ivory oyster mushroom fans, and a small tuft of slender enoki mushrooms. Mushrooms only.\nActual ingredients: mushrooms.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Hotpot mushroom platter, not the reference skewers.",
+      "output": "public/images/dishes/hotpot-mushroom-platter.webp"
+    },
+    {
+      "id": "hotpot-leafy-greens",
+      "name": "Hotpot leafy greens",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Hotpot leafy greens. Bok choy and cabbage prepared for quick cooking.\nSubject: An ivory oval platter with vivid green baby bok choy halves and broad pale-green crinkly napa cabbage leaves, prepared fresh for hotpot.\nActual ingredients: bok choy, cabbage.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Hotpot leafy greens, not the reference skewers.",
+      "output": "public/images/dishes/hotpot-leafy-greens.webp"
+    },
+    {
+      "id": "hotpot-garlic-tamari-sauce",
+      "name": "Garlic tamari dipping sauce",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Garlic tamari dipping sauce. A gluten-free garlic, tamari, and sesame oil dipping sauce.\nSubject: A small ivory ceramic dipping bowl of glossy very dark brown tamari and golden sesame oil, with many clearly visible small ivory chopped garlic bits on the sauce surface; a single garlic clove close beside the bowl.\nActual ingredients: tamari, garlic, sesame oil.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Garlic tamari dipping sauce, not the reference skewers.",
+      "output": "public/images/dishes/hotpot-garlic-tamari-sauce.webp"
+    },
+    {
+      "id": "hotpot-ginger-sesame-sauce",
+      "name": "Ginger sesame dipping sauce",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Ginger sesame dipping sauce. A mild ginger and sesame oil dipping sauce with tamari.\nSubject: A small ivory ceramic dipping bowl of warm amber-brown tamari and sesame oil with a central mound of finely grated golden ginger; a tiny fresh ginger root nub and ginger cross-section close beside bowl to make it recognizable.\nActual ingredients: ginger, sesame oil, tamari.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Ginger sesame dipping sauce, not the reference skewers.",
+      "output": "public/images/dishes/hotpot-ginger-sesame-sauce.webp"
+    },
+    {
+      "id": "chicken-taco-bowl",
+      "name": "Chicken taco bowl",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Chicken taco bowl. Rice bowls with chicken, black beans, peppers, avocado, and salsa-style toppings.\nSubject: A deep round ivory bowl filled with white rice topped in colorful separate sections with roasted chicken slices, black beans, red bell pepper, a neat fan of avocado, and finely diced fresh tomatoes.\nActual ingredients: rice, chicken, black beans, bell pepper, avocado, tomatoes.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Chicken taco bowl, not the reference skewers.",
+      "output": "public/images/dishes/chicken-taco-bowl.webp"
+    },
+    {
+      "id": "vegetarian-pasta-bake",
+      "name": "Vegetarian pasta bake",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Vegetarian pasta bake. Baked pasta with tomatoes, spinach, mushrooms, and mozzarella.\nSubject: An oval ivory ceramic gratin dish of golden baked penne pasta with rich red tomato sauce, green spinach, brown mushroom slices, and bubbly toasted mozzarella patches. Show recognizable hollow penne tubes.\nActual ingredients: wheat pasta, tomatoes, spinach, mushrooms, mozzarella.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Vegetarian pasta bake, not the reference skewers.",
+      "output": "public/images/dishes/vegetarian-pasta-bake.webp"
+    },
+    {
+      "id": "gluten-free-pasta-bake",
+      "name": "Gluten-free pasta bake",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Gluten-free pasta bake. Gluten-free pasta baked with tomato, spinach, mushrooms, and mozzarella.\nSubject: A small square ivory ceramic baking dish of golden gluten-free spiral fusilli pasta in red tomato sauce with green spinach, mushroom slices, and browned melted mozzarella. Spiral pasta and square dish make this distinct from penne pasta bake; no wheat symbols or labels.\nActual ingredients: gluten-free pasta, tomatoes, spinach, mushrooms, mozzarella.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Gluten-free pasta bake, not the reference skewers.",
+      "output": "public/images/dishes/gluten-free-pasta-bake.webp"
+    },
+    {
+      "id": "beef-bulgogi-rice-bowl",
+      "name": "Beef bulgogi rice bowl",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Beef bulgogi rice bowl. Sweet-savory beef over rice with cucumber and kimchi.\nSubject: A round ivory bowl with white rice, glossy sweet-savory browned thin sliced bulgogi beef piled on one side, a fan of cucumber half moons, and a compact portion of red-orange cabbage kimchi.\nActual ingredients: rice, beef, cucumber, kimchi, soy sauce, sesame oil.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Beef bulgogi rice bowl, not the reference skewers.",
+      "output": "public/images/dishes/beef-bulgogi-rice-bowl.webp"
+    },
+    {
+      "id": "chickpea-curry",
+      "name": "Chickpea coconut curry",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Chickpea coconut curry. Coconut curry with chickpeas, carrots, spinach, and rice.\nSubject: A round ivory shallow bowl with golden-orange coconut curry filled with round chickpeas, carrot chunks and wilted green spinach, with a neat white rice mound on one side.\nActual ingredients: chickpeas, coconut milk, curry paste, carrots, spinach, rice.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Chickpea coconut curry, not the reference skewers.",
+      "output": "public/images/dishes/chickpea-curry.webp"
+    },
+    {
+      "id": "salmon-rice-bowl",
+      "name": "Salmon rice bowl",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Salmon rice bowl. Roasted salmon with rice, cucumber, avocado, and tamari.\nSubject: A round ivory bowl with white rice topped by one roasted coral pink salmon fillet with lightly browned edges, a tidy fan of avocado slices, fresh cucumber rounds, and a small glossy tamari drizzle.\nActual ingredients: salmon, rice, cucumber, avocado, tamari.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Salmon rice bowl, not the reference skewers.",
+      "output": "public/images/dishes/salmon-rice-bowl.webp"
+    },
+    {
+      "id": "build-your-own-taco-night",
+      "name": "Build-your-own taco night",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Build-your-own taco night. Corn tortillas, beans, vegetables, cheese, and optional chicken.\nSubject: An ivory oval serving platter with three soft golden corn tortillas folded into tacos and arranged in a fan; visible black beans, grilled bell pepper strips, grated cheese, a few cooked chicken strips, and avocado.\nActual ingredients: corn tortillas, black beans, bell pepper, cheese, chicken, avocado.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Build-your-own taco night, not the reference skewers.",
+      "output": "public/images/dishes/build-your-own-taco-night.webp"
+    },
+    {
+      "id": "tofu-vegetable-stir-fry",
+      "name": "Tofu vegetable stir fry",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Tofu vegetable stir fry. Tofu, broccoli, carrots, mushrooms, and tamari over rice.\nSubject: A round ivory shallow bowl with glossy golden-browned tofu cubes, green broccoli florets, orange carrot coins, and brown mushroom slices coated with a light tamari glaze over white rice.\nActual ingredients: tofu, broccoli, carrots, mushrooms, rice, tamari.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Tofu vegetable stir fry, not the reference skewers.",
+      "output": "public/images/dishes/tofu-vegetable-stir-fry.webp"
+    },
+    {
+      "id": "black-bean-chili",
+      "name": "Black bean chili",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Black bean chili. Slow simmered black beans, tomatoes, peppers, and warming spices.\nSubject: A round ivory bowl with thick dark red vegetarian chili, many glossy black beans and distinct pieces of simmered tomato, red bell pepper and onion. Show hearty texture, no cheese or meat.\nActual ingredients: black beans, tomatoes, bell pepper, onion, garlic.\nInput image: style reference ONLY; do not copy its food subject or skewers.\nStyle/medium: Match the reference's cute appetizing painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered full dish filling 80–85% of the square canvas, complete vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: text, letters, captions, faces, hands, utensils, logos, unrelated ingredients. This image must clearly show Black bean chili, not the reference skewers.",
+      "output": "public/images/dishes/black-bean-chili.webp"
+    },
+    {
+      "id": "bbq-chicken-skewers",
+      "name": "BBQ chicken skewers",
+      "prompt": "Use case: stylized-concept. Asset type: one food illustration thumbnail for TableSync, a warm and inviting meal planning app. Create a unique square illustration of BBQ CHICKEN SKEWERS: three small wooden skewers threaded with golden-brown grilled chicken pieces, red bell pepper and onion, arranged diagonally on a small ivory ceramic plate. Style: cute, appetizing, softly painted gouache with gentle dimensional shading, rounded handmade forms, crisp readable silhouette, natural food colors, subtle fine paper texture; charming illustrated cookbook sticker, not a flat line icon, not a photograph, no faces. Elevated three-quarter view. Center the full plate and all food, filling about 80% of a square canvas with generous clear margins. Plain warm ivory background (#fffaf2), no surrounding scene. Soft very small contact shadow. This will display at 64px, so prioritize recognizable large food shapes over tiny details. No text, letters, labels, symbols, logos, garnish not specified, utensils, hands, border, or watermark. This image establishes the visual style for a coordinated collection of 66 distinct dish illustrations. Output one finished square image only.",
+      "output": "public/images/dishes/bbq-chicken-skewers.webp"
+    },
+    {
+      "id": "shrimp-fajitas",
+      "name": "Shrimp fajitas",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Shrimp fajitas. Shrimp, peppers, onions, and warm corn tortillas. Ingredients: shrimp, corn tortillas, bell pepper, onion, avocado.",
+      "output": "public/images/dishes/shrimp-fajitas.webp"
+    },
+    {
+      "id": "cucumber-salad",
+      "name": "Cucumber salad",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Cucumber salad. Crisp cucumbers with sesame oil, ginger, and tamari. Ingredients: cucumber, ginger, tamari, sesame oil.",
+      "output": "public/images/dishes/cucumber-salad.webp"
+    },
+    {
+      "id": "garlic-bread",
+      "name": "Garlic bread",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Garlic bread. Toasted bread with garlic and cheese. Ingredients: bread, garlic, cheese.",
+      "output": "public/images/dishes/garlic-bread.webp"
+    },
+    {
+      "id": "roasted-vegetables",
+      "name": "Roasted vegetables",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Roasted vegetables. Carrots, broccoli, peppers, onions, and garlic. Ingredients: carrots, broccoli, bell pepper, onion, garlic.",
+      "output": "public/images/dishes/roasted-vegetables.webp"
+    },
+    {
+      "id": "kimchi-side",
+      "name": "Kimchi",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Kimchi. A spicy fermented cabbage side. Ingredients: kimchi.",
+      "output": "public/images/dishes/kimchi-side.webp"
+    },
+    {
+      "id": "steamed-rice",
+      "name": "Steamed rice",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Steamed rice. Simple rice for sharing. Ingredients: rice.",
+      "output": "public/images/dishes/steamed-rice.webp"
+    },
+    {
+      "id": "tortilla-chips-side",
+      "name": "Tortilla chips",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Tortilla chips. Crunchy chips for taco bowls and chili. Ingredients: tortilla chips.",
+      "output": "public/images/dishes/tortilla-chips-side.webp"
+    },
+    {
+      "id": "peanut-sesame-noodles",
+      "name": "Peanut sesame noodles",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Peanut sesame noodles. Cold noodles with peanut sauce, sesame oil, cucumber, and carrots. Ingredients: wheat pasta, peanut sauce, sesame oil, cucumber, carrots.",
+      "output": "public/images/dishes/peanut-sesame-noodles.webp"
+    },
+    {
+      "id": "caprese-skewers",
+      "name": "Caprese skewers",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Caprese skewers. Tomatoes and mozzarella for a light side. Ingredients: tomatoes, mozzarella.",
+      "output": "public/images/dishes/caprese-skewers.webp"
+    },
+    {
+      "id": "hummus-vegetables",
+      "name": "Hummus and vegetables",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Hummus and vegetables. Hummus with cucumber, carrots, and peppers. Ingredients: hummus, cucumber, carrots, bell pepper.",
+      "output": "public/images/dishes/hummus-vegetables.webp"
+    },
+    {
+      "id": "fruit-platter",
+      "name": "Fruit platter",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Fruit platter. A shareable tray of seasonal fruit. Ingredients: seasonal fruit.",
+      "output": "public/images/dishes/fruit-platter.webp"
+    },
+    {
+      "id": "brownies",
+      "name": "Brownies",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Brownies. Classic chocolate brownies. Ingredients: brownie mix.",
+      "output": "public/images/dishes/brownies.webp"
+    },
+    {
+      "id": "mochi-dessert",
+      "name": "Mochi",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Mochi. Assorted mochi for a low-prep dessert. Ingredients: mochi.",
+      "output": "public/images/dishes/mochi-dessert.webp"
+    },
+    {
+      "id": "ice-cream",
+      "name": "Ice cream",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Ice cream. Pints of ice cream for sharing. Ingredients: ice cream.",
+      "output": "public/images/dishes/ice-cream.webp"
+    },
+    {
+      "id": "coconut-rice-pudding",
+      "name": "Coconut rice pudding",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Coconut rice pudding. Coconut milk and rice simmered into a simple dessert. Ingredients: rice, coconut milk.",
+      "output": "public/images/dishes/coconut-rice-pudding.webp"
+    },
+    {
+      "id": "sparkling-water",
+      "name": "Sparkling water",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Sparkling water. Cans of unsweetened sparkling water. Ingredients: sparkling water.",
+      "output": "public/images/dishes/sparkling-water.webp"
+    },
+    {
+      "id": "lemonade",
+      "name": "Lemonade",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Lemonade. Bottled lemonade. Ingredients: lemonade.",
+      "output": "public/images/dishes/lemonade.webp"
+    },
+    {
+      "id": "iced-tea",
+      "name": "Iced tea",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Iced tea. Bottled iced tea. Ingredients: iced tea.",
+      "output": "public/images/dishes/iced-tea.webp"
+    },
+    {
+      "id": "lentil-rice-bake",
+      "name": "Lentil and vegetable rice bake",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Lentil and vegetable rice bake. A shareable tray of lentils, rice, carrots, and tomatoes. Ingredients: lentils, rice, carrots, tomatoes, olive oil.",
+      "output": "public/images/dishes/lentil-rice-bake.webp"
+    },
+    {
+      "id": "chickpea-potato-casserole",
+      "name": "Chickpea and potato casserole",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Chickpea and potato casserole. Chickpeas and potatoes baked with spinach and a tomato sauce for sharing. Ingredients: chickpeas, potatoes, spinach, tomatoes, olive oil.",
+      "output": "public/images/dishes/chickpea-potato-casserole.webp"
+    },
+    {
+      "id": "chicken-rice-tray",
+      "name": "Herb chicken and rice tray",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Herb chicken and rice tray. Chicken, rice, and roasted peppers portioned from a shared baking tray. Ingredients: chicken, rice, bell pepper, parsley, olive oil.",
+      "output": "public/images/dishes/chicken-rice-tray.webp"
+    },
+    {
+      "id": "vegetable-pasta-tray",
+      "name": "Vegetable and cheese pasta tray",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Vegetable and cheese pasta tray. Pasta baked with broccoli, tomato, and mozzarella for a shared meal. Ingredients: wheat pasta, broccoli, tomatoes, mozzarella, olive oil.",
+      "output": "public/images/dishes/vegetable-pasta-tray.webp"
+    },
+    {
+      "id": "grilled-lentil-patties",
+      "name": "Grilled lentil and potato patties",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Grilled lentil and potato patties. Hearty lentil and potato patties cooked on the grill, with a rice accompaniment. Ingredients: lentils, potatoes, rice, onion, olive oil.",
+      "output": "public/images/dishes/grilled-lentil-patties.webp"
+    },
+    {
+      "id": "grilled-chickpea-peppers",
+      "name": "Grilled chickpea-stuffed peppers",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Grilled chickpea-stuffed peppers. Grilled peppers filled with chickpeas, quinoa, and parsley. Ingredients: bell pepper, chickpeas, quinoa, parsley, olive oil.",
+      "output": "public/images/dishes/grilled-chickpea-peppers.webp"
+    },
+    {
+      "id": "grilled-tofu-rice",
+      "name": "Grilled tofu skewers with rice",
+      "prompt": "Use case: stylized-concept. Asset type: one square food illustration for TableSync. The attached BBQ skewers picture is a STYLE REFERENCE ONLY, not the subject and not an edit target. Create a NEW distinct dish as specified. Match its charming painted gouache cookbook style, dimensional rounded food forms, warm natural colors and ivory ceramics; no line-icon simplification. Elevated three-quarter view, whole dish and plate/bowl centered, fills80-85% square, plain warm ivory #fffaf2 backdrop with tiny soft contact shadow. Recognizable appetizing food at thumbnail size, not a photograph. No words, text, labels, logos, faces, utensils, hands, border or watermark. Use only the specified ingredients (do not add toppings or garnishes). Subject: Grilled tofu skewers with rice. Tofu and mushroom skewers grilled with tamari and served with rice. Ingredients: tofu, mushrooms, rice, tamari, olive oil.",
+      "output": "public/images/dishes/grilled-tofu-rice.webp"
+    },
+    {
+      "id": "picnic-chickpea-quinoa",
+      "name": "Chickpea quinoa picnic bowls",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Chickpea quinoa picnic bowls\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A small ivory bowl filled with chilled golden quinoa grains, plump chickpeas, thick green cucumber half-moons, and a small lemon wedge; a fresh olive-oil sheen. Distinct fine quinoa grains visible. Actual ingredients: quinoa, chickpeas, cucumber, lemon, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/picnic-chickpea-quinoa.webp"
+    },
+    {
+      "id": "picnic-chicken-rice",
+      "name": "Chicken and rice picnic salad",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Chicken and rice picnic salad\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A shallow rounded ivory picnic container filled with chilled white rice, cooked chicken pieces, bright shredded carrots, and fresh chopped parsley, lightly glossy olive oil. Recognizably chicken rice salad, not hot stew. Actual ingredients: chicken, rice, carrots, parsley, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/picnic-chicken-rice.webp"
+    },
+    {
+      "id": "picnic-lentil-wraps",
+      "name": "Lentil and vegetable wraps",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Lentil and vegetable wraps\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: Two cut flour-tortilla wrap halves on an ivory plate, showing brown lentils, finely shredded pale-green and purple cabbage, and pale-green avocado slices in their generous cross-sections. Small lemon wedge. Soft beige tortillas. Actual ingredients: flour tortillas, lentils, cabbage, avocado, lemon. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/picnic-lentil-wraps.webp"
+    },
+    {
+      "id": "picnic-bean-corn-wraps",
+      "name": "Black bean corn tortilla wraps",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Black bean corn tortilla wraps\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: Three small yellow corn-tortilla wraps with visible black beans, white rice, and crunchy orange carrot shreds, gathered together on a small ivory plate. Distinct dark beans and golden corn tortillas; no extra cheese or meat. Actual ingredients: corn tortillas, black beans, rice, carrots, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/picnic-bean-corn-wraps.webp"
+    },
+    {
+      "id": "brunch-chickpea-hash",
+      "name": "Chickpea breakfast hash",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Chickpea breakfast hash\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A generous mound of breakfast hash on a small shallow ivory plate: golden chickpeas, crisp golden-brown potato cubes, red bell pepper chunks, and soft dark-green spinach leaves, lightly glossy olive oil. Actual ingredients: chickpeas, potatoes, bell pepper, spinach, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/brunch-chickpea-hash.webp"
+    },
+    {
+      "id": "brunch-vegetable-frittata",
+      "name": "Potato and spinach frittata",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Potato and spinach frittata\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A golden round potato and spinach frittata on an ivory plate, with one triangular wedge pulled slightly forward to show its thick egg-and-potato interior. Visible spinach leaves and red tomato pieces in the cooked top. Actual ingredients: eggs, potatoes, spinach, tomatoes, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/brunch-vegetable-frittata.webp"
+    },
+    {
+      "id": "brunch-avocado-bean-toast",
+      "name": "Avocado and chickpea toast",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Avocado and chickpea toast\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: Two thick toasted rustic bread slices on an ivory plate, topped with rustic mashed beige chickpeas and a fan of fresh avocado slices. A little lemon wedge at the edge. Recognizable browned toast edges and pale green avocado. Actual ingredients: bread, chickpeas, avocado, lemon. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/brunch-avocado-bean-toast.webp"
+    },
+    {
+      "id": "brunch-tofu-scramble",
+      "name": "Tofu scramble and rice bowls",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Tofu scramble and rice bowls\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: An ivory bowl of white rice topped with softly crumbled tofu scramble, browned sliced mushrooms and dark green spinach. Gentle olive oil sheen; clearly off-white tofu crumbles, not egg yolks. Actual ingredients: tofu, rice, mushrooms, spinach, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/brunch-tofu-scramble.webp"
+    },
+    {
+      "id": "herb-potato-salad",
+      "name": "Lemon herb potato salad",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Lemon herb potato salad\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A shallow ivory bowl of chilled chunky potato salad with small golden potato halves and irregular pieces, finely chopped parsley, a lemon wedge, and a delicate olive-oil sheen. No mayonnaise, eggs, or dairy. Actual ingredients: potatoes, lemon, parsley, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/herb-potato-salad.webp"
+    },
+    {
+      "id": "carrot-cabbage-slaw",
+      "name": "Carrot and cabbage slaw",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Carrot and cabbage slaw\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A rounded ivory bowl heaped with finely shredded crunchy orange carrot and pale green/purple cabbage slaw, lightly dressed with lemon and olive oil. Fine curled strands, small lemon wedge at the side; no creamy mayonnaise. Actual ingredients: carrots, cabbage, lemon, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/carrot-cabbage-slaw.webp"
+    },
+    {
+      "id": "cucumber-chickpea-salad",
+      "name": "Cucumber and chickpea salad",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Cucumber and chickpea salad\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A shallow ivory bowl filled with plump beige chickpeas, crisp thick cucumber half-moons, fresh parsley leaves, and a small lemon wedge, lightly dressed with olive oil. No grains, no extra vegetables. Actual ingredients: cucumber, chickpeas, parsley, lemon, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/cucumber-chickpea-salad.webp"
+    },
+    {
+      "id": "grilled-corn",
+      "name": "Grilled corn on the cob",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Grilled corn on the cob\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: Three short golden corn-on-the-cob portions arranged on an ivory plate, brushed with olive oil, with distinct juicy kernels and a few appetizing dark grill marks. No butter, cheese or garnishes. Actual ingredients: corn on the cob, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/grilled-corn.webp"
+    },
+    {
+      "id": "brunch-breakfast-potatoes",
+      "name": "Roasted breakfast potatoes",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Roasted breakfast potatoes\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A generous mound of crispy golden roasted potato cubes and soft roasted onion wedges on an ivory plate. Distinct deeply golden edges and olive oil sheen; no eggs or herbs. Actual ingredients: potatoes, onion, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/brunch-breakfast-potatoes.webp"
+    },
+    {
+      "id": "brunch-spinach-mushrooms",
+      "name": "Savory spinach and mushrooms",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Savory spinach and mushrooms\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: An ivory shallow bowl of glossy sautéed dark green spinach leaves with many browned sliced button mushrooms. Elegant simple savory vegetable side with softly dimensional mushroom caps; no rice or other ingredients. Actual ingredients: spinach, mushrooms, olive oil. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/brunch-spinach-mushrooms.webp"
+    },
+    {
+      "id": "brunch-citrus-grapes",
+      "name": "Orange and grape fruit salad",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Orange and grape fruit salad\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A rounded ivory bowl of juicy peeled orange segments and plump whole purple and green grapes. Fresh cut citrus surfaces visible, several orange segments piled among grapes. Only oranges and grapes. Actual ingredients: oranges, grapes. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/brunch-citrus-grapes.webp"
+    },
+    {
+      "id": "brunch-apple-side",
+      "name": "Fresh apple wedges",
+      "prompt": "Use case: stylized-concept. Asset type: individual square dish illustration for a food-planning app. Create one new illustration of \"Fresh apple wedges\". Input image is a STYLE REFERENCE ONLY: reproduce its soft painted gouache cookbook look, warm ivory setting, elevated three-quarter view, appetizing dimensional shading, and rounded handmade food shapes; REPLACE its skewers completely with the subject below. Subject: A neat fan of thick fresh red-skinned apple wedges on an ivory plate, with creamy crisp interiors and a tiny lemon wedge at the edge. Distinct curved red peels, no other fruit. Actual ingredients: apples, lemon. Cute and polished, natural rich food colors with subtle brush texture. Entire dish and vessel visible, centered, fills 80–85% of square with a little breathing room; background solid warm ivory #fffaf2 and a delicate grounded shadow. No text, labels, faces, characters, hands, logos, cutlery, borders or collage. Depict only this one dish; make its food recognizably distinct.",
+      "output": "public/images/dishes/brunch-apple-side.webp"
+    },
+    {
+      "id": "gathering-fruit-cups",
+      "name": "Apple and orange fruit cups",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Apple and orange fruit cups. Fresh apple and orange pieces in portable cups for a shared dessert.\nSubject: Two small ivory ceramic cups together, filled generously with crisp red-skinned apple chunks and bright orange segments, lightly dressed with lemon juice. Fruit cups without other fruits, garnishes, or toppings.\nActual ingredients: apples, oranges, lemon.\nInput image: STYLE REFERENCE ONLY. Generate an entirely new dish; do not copy the reference food or chicken skewers.\nStyle/medium: Match the reference's cute appetizing softly painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered complete dish filling 80–85% of the square canvas, whole vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: faces, text, labels, letters, captions, hands, utensils, logos, unrelated ingredients, extra toppings. Preserve the exact subject described above.",
+      "output": "public/images/dishes/gathering-fruit-cups.webp"
+    },
+    {
+      "id": "apple-oat-squares",
+      "name": "Apple oat squares",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Apple oat squares. Shareable baked apple and certified gluten-free oat squares that pack easily.\nSubject: An ivory ceramic plate with four thick square golden-brown baked apple oat bars, one bar slightly overlapping the others; visible oat flake crumb crust and soft apple pieces in the cut sides. No glaze, no sugar dusting, no cream.\nActual ingredients: apples, certified gluten-free oats, olive oil.\nInput image: STYLE REFERENCE ONLY. Generate an entirely new dish; do not copy the reference food or chicken skewers.\nStyle/medium: Match the reference's cute appetizing softly painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered complete dish filling 80–85% of the square canvas, whole vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: faces, text, labels, letters, captions, hands, utensils, logos, unrelated ingredients, extra toppings. Preserve the exact subject described above.",
+      "output": "public/images/dishes/apple-oat-squares.webp"
+    },
+    {
+      "id": "buffet-chickpea-dip",
+      "name": "Lemon chickpea dip and vegetables",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Lemon chickpea dip and vegetables. Chickpeas blended with lemon and olive oil, served with vegetable sticks on a buffet board.\nSubject: An ivory ceramic serving platter with a small ivory bowl of smooth pale golden chickpea dip, a shallow swirled surface with a little olive oil sheen, surrounded by distinct neat carrot sticks and cucumber sticks. No herb garnish, no spices, no sesame seeds, no other vegetables.\nActual ingredients: chickpeas, lemon, olive oil, carrots, cucumber.\nInput image: STYLE REFERENCE ONLY. Generate an entirely new dish; do not copy the reference food or chicken skewers.\nStyle/medium: Match the reference's cute appetizing softly painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered complete dish filling 80–85% of the square canvas, whole vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: faces, text, labels, letters, captions, hands, utensils, logos, unrelated ingredients, extra toppings. Preserve the exact subject described above.",
+      "output": "public/images/dishes/buffet-chickpea-dip.webp"
+    },
+    {
+      "id": "buffet-tomato-skewers",
+      "name": "Tomato and cucumber skewers",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Tomato and cucumber skewers. Small tomato and cucumber skewers with parsley for a shared buffet starter.\nSubject: An ivory ceramic platter with four short wooden skewers holding only red tomato pieces and crisp green-edged cucumber chunks, lightly scattered with parsley. Wooden skewers are integral to this dish and allowed, but no other utensils. No cheese, no meat, no onion.\nActual ingredients: tomatoes, cucumber, parsley.\nInput image: STYLE REFERENCE ONLY. Generate an entirely new dish; do not copy the reference food or chicken skewers.\nStyle/medium: Match the reference's cute appetizing softly painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered complete dish filling 80–85% of the square canvas, whole vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: faces, text, labels, letters, captions, hands, utensils, logos, unrelated ingredients, extra toppings. Preserve the exact subject described above.",
+      "output": "public/images/dishes/buffet-tomato-skewers.webp"
+    },
+    {
+      "id": "bbq-lemon-herb-sauce",
+      "name": "Lemon and parsley grill sauce",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Lemon and parsley grill sauce. A mild lemon, parsley, and olive oil accompaniment for grilled food.\nSubject: A small round ivory ceramic dipping bowl filled with glossy light yellow-green olive oil and lemon sauce with very finely chopped vivid green parsley dispersed throughout. A lemon wedge placed beside the bowl on a small ivory saucer, no grilled food or other ingredients.\nActual ingredients: lemon, parsley, olive oil.\nInput image: STYLE REFERENCE ONLY. Generate an entirely new dish; do not copy the reference food or chicken skewers.\nStyle/medium: Match the reference's cute appetizing softly painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered complete dish filling 80–85% of the square canvas, whole vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: faces, text, labels, letters, captions, hands, utensils, logos, unrelated ingredients, extra toppings. Preserve the exact subject described above.",
+      "output": "public/images/dishes/bbq-lemon-herb-sauce.webp"
+    },
+    {
+      "id": "bbq-tomato-sauce",
+      "name": "Tomato grill sauce",
+      "prompt": "Use case: stylized-concept\nAsset type: individual food illustration for a meal-planning app, square image.\nPrimary request: Create one unique picture of Tomato grill sauce. A simmered tomato and garlic sauce served separately alongside grilled mains.\nSubject: A small round ivory ceramic dipping bowl filled with rich simmered red tomato sauce, with soft tomato texture and a subtle olive oil sheen. No green herbs, no garnish, no grilled food, no spoon.\nActual ingredients: tomatoes, garlic, olive oil.\nInput image: STYLE REFERENCE ONLY. Generate an entirely new dish; do not copy the reference food or chicken skewers.\nStyle/medium: Match the reference's cute appetizing softly painted gouache cookbook illustration, rounded handmade food shapes, dimensional shading, natural food colors and soft paper texture. Small ivory ceramic serving vessel appropriate to this dish.\nComposition: elevated three-quarter view, centered complete dish filling 80–85% of the square canvas, whole vessel and subject visible, subtle soft contact shadow. Warm ivory #fffaf2 background.\nAvoid: faces, text, labels, letters, captions, hands, utensils, logos, unrelated ingredients, extra toppings. Preserve the exact subject described above.",
+      "output": "public/images/dishes/bbq-tomato-sauce.webp"
+    }
+  ]
+}

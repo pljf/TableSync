@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { VoteForm } from "@/components/menu/vote-form";
 import { VetoReasons } from "@/components/menu/veto-reasons";
 import { MutationForm } from "@/components/ui/mutation-form";
+import { FoodIcon } from "@/components/menu/food-icon";
 
 function voteCount(plan: MenuPlan, value: "LIKE" | "NEUTRAL" | "VETO") {
   return plan.votes.filter((vote) => vote.value === value).length;
@@ -75,10 +76,10 @@ export function MenuPlanCard({
       <strong className="price-line">{formatMoney(plan.estimatedCostCents)} total estimate</strong>
       <p className="muted menu-per-person">{formatMoney(Math.round(plan.estimatedCostCents / Math.max(plannedGuestCount, 1)))} per person · {Math.max(plannedGuestCount, 1)} planned {plannedGuestCount === 1 ? "guest" : "guests"}</p>
       {eventType === "POTLUCK" ? <p className="muted">Includes every dish, including food guests contribute.{finalized ? " Manage whole-dish contributions below." : " Claim dishes after finalization."}</p> : null}
-      <ul className="dish-list">
+      <ul className="dish-list illustrated-dish-list">
         {orderedDishes.map(({ dish, servings }) => (
           <li key={dish.id}>
-            <span>{dish.name}</span>
+            <span className="food-name"><FoodIcon dish={dish} /><span>{dish.name}</span></span>
             <small>
               {menuDishRole(dish, eventType)} - {formatServings(servings)}
             </small>

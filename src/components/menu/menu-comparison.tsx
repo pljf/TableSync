@@ -3,6 +3,7 @@ import type { EventType, Guest, MenuPlan } from "@/lib/domain";
 import { formatMoney } from "@/lib/format";
 import { formatServings } from "@/lib/menu-presentation";
 import { summarizeMenuComparison } from "@/lib/menu-comparison";
+import { FoodIcon } from "@/components/menu/food-icon";
 
 export { summarizeMenuComparison } from "@/lib/menu-comparison";
 
@@ -29,7 +30,7 @@ export function MenuComparison({ plans, plannedGuestCount, eventType, guests }: 
       {comparison.commonDishes.length > 0 ? (
         <details className="menu-shared-dishes">
           <summary>Shared by every menu: {comparison.commonDishes.length} {comparison.commonDishes.length === 1 ? "dish" : "dishes"}</summary>
-          <ul>{comparison.commonDishes.map(({ dish, servings }) => <li key={dish.id}>{dish.name} · {formatServings(servings)}</li>)}</ul>
+          <ul className="shared-food-list">{comparison.commonDishes.map(({ dish, servings }) => <li key={dish.id}><FoodIcon dish={dish} compact /><span>{dish.name} · {formatServings(servings)}</span></li>)}</ul>
         </details>
       ) : null}
       <div className="menu-comparison-options">
@@ -50,7 +51,7 @@ export function MenuComparison({ plans, plannedGuestCount, eventType, guests }: 
             <div className="menu-comparison-differences">
               <h4>What changes</h4>
               {differentDishes.length > 0 ? (
-                <ul>{differentDishes.map(({ dish, servings }) => <li key={dish.id}><span>{dish.name}</span><small>{formatServings(servings)}</small></li>)}</ul>
+                <ul>{differentDishes.map(({ dish, servings }) => <li className="comparison-food" key={dish.id}><FoodIcon dish={dish} compact /><span>{dish.name}</span><small>{formatServings(servings)}</small></li>)}</ul>
               ) : <p className="muted">{comparison.commonDishes.length === plan.dishes.length ? "Only the shared dishes above." : "No dish or portion differences."}</p>}
             </div>
             <div className="menu-comparison-votes">

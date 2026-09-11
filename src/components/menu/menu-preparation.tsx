@@ -1,6 +1,7 @@
 import type { EventType, Guest, MenuPlan } from "@/lib/domain";
 import { compareMenuDishes, formatServings, menuDishRole } from "@/lib/menu-presentation";
 import { preparationIngredients } from "@/lib/menu-preparation";
+import { FoodIcon } from "@/components/menu/food-icon";
 
 export function MenuPreparation({ plan, eventType, guests }: {
   plan: MenuPlan;
@@ -30,7 +31,7 @@ export function MenuPreparation({ plan, eventType, guests }: {
           return (
             <details className="preparation-dish" key={planDish.id ?? dish.id}>
               <summary>
-                <span className="preparation-dish-name">{dish.name}</span>
+                <span className="preparation-dish-name food-name"><FoodIcon dish={dish} compact /><span>{dish.name}</span></span>
                 <span className="muted preparation-dish-meta">{formatServings(servings)} · {dish.prepTimeMinutes > 0 ? `About ${dish.prepTimeMinutes} min` : "Prep time not listed"}</span>
               </summary>
               <p className="muted">{menuDishRole(dish, eventType)}{dish.description ? ` · ${dish.description}` : ""}</p>
