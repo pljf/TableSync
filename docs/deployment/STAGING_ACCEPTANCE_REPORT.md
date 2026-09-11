@@ -1,5 +1,7 @@
 # TableSync staging acceptance report
 
+Use this template to record a protected staging acceptance run. Pending fields describe evidence for this report, not the application's deployment status.
+
 > Status: Not executed
 
 This report must contain redacted facts and links to protected provider/CI evidence, never credentials or raw user data.

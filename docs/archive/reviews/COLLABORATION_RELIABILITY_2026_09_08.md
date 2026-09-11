@@ -1,5 +1,7 @@
 # Collaboration reliability update
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
 Date: 2026-09-08  
 Status: implemented and locally verified. Deployment remains with the project owner.
 
@@ -59,8 +61,8 @@ After finalization, the selected menu is prominent and other options are collaps
 
 The Chromium suite covers all seven meal formats, voting, finalization and reopening, Potluck contributions and shopping, guest access, interaction feedback, accessibility, and security boundaries. The cross-browser collaboration tests cover retained room identities, shared updates with draft protection, and the anonymous host account-upgrade entry point.
 
-The browser review checks menu comparison and finalization at 375px, 768px, and 1440px, with Axe accessibility and touch-target checks. Representative captures are included: [selected menu on desktop](evidence/ui/selected-menu-desktop.png) and [menu comparison on mobile](evidence/ui/menu-comparison-mobile.png).
+The browser review checks menu comparison and finalization at 375px, 768px, and 1440px, with Axe accessibility and touch-target checks. Representative captures are included: [selected menu on desktop](../../evidence/ui/selected-menu-desktop.png) and [menu comparison on mobile](../../evidence/ui/menu-comparison-mobile.png).
 
 Earlier acceptance results remain historical evidence; they do not establish acceptance of these changes. This document claims no production deployment, real GitHub callback acceptance, or completed managed-environment validation. The project owner handles deployment.
 
-The earlier format contract and evidence remain in [`EVENT_FORMAT_EXPANSION.md`](EVENT_FORMAT_EXPANSION.md). Production and staging requirements remain in [`PRODUCTION_READINESS_PLAN.md`](PRODUCTION_READINESS_PLAN.md) and [`STAGING_OPERATIONS_RUNBOOK.md`](STAGING_OPERATIONS_RUNBOOK.md).
+The earlier format contract and evidence remain in [`docs/product/EVENT_FORMAT_EXPANSION.md`](../../product/EVENT_FORMAT_EXPANSION.md). Production and staging requirements remain in [`docs/archive/plans/PRODUCTION_READINESS_PLAN.md`](../plans/PRODUCTION_READINESS_PLAN.md) and [`docs/deployment/STAGING_OPERATIONS_RUNBOOK.md`](../../deployment/STAGING_OPERATIONS_RUNBOOK.md).

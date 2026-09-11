@@ -2,7 +2,7 @@
 
 Status: implementation and local acceptance complete. Started and accepted 2026-09-08.
 
-Current collaboration behavior is updated in [`COLLABORATION_RELIABILITY_2026_09_08.md`](COLLABORATION_RELIABILITY_2026_09_08.md). Its integrated checks are pending; the acceptance status and dated evidence below describe the earlier format expansion.
+The later collaboration changes are recorded in the [collaboration review](../archive/reviews/COLLABORATION_RELIABILITY_2026_09_08.md). The acceptance status and dated evidence below describe the original format expansion. See the [user guide](../user-guide.md) for the current planning workflow.
 
 This user-authorized expansion supersedes the Dinner/Hotpot-only scope restriction in the core execution plan and the deferral of additional formats. It retains that plan's safety, workflow, persistence, visual, accessibility, performance, and evidence standards. Production deployment and unrelated integrations remain separate work.
 
@@ -54,7 +54,7 @@ The requirement table records final acceptance. The dated rows below retain the 
 | Authorization, competing claims, atomic rollback and destructive recovery | Room locks, host/scoped-guest checks, confirmed rebuild, undo cleanup; injected-failure and IDOR tests | Full 31-test database suite passed, including independent-connection stale-claim rejection |
 | Accurate public output and practical format guidance | Explicit event DTO, aggregate contributions, deduplicated preparation notes; privacy DB assertions and browser role/portion comparisons | Privacy/database assertions and all seven public-sharing flows passed in all three engines |
 | Polished responsive, accessible, reliable interactions | Format cards/selectors, native contribution forms, independent drafts, pending feedback; Axe, viewport evidence and browser error assertions | 46 applicable browser cases passed with 5 intentional skips; hydration and final feedback regressions passed in all three engines; 81 added-format screenshots reviewed |
-| Performance | Existing public audits plus isolated local finalized Potluck core audit, median of three | Passed: Home 97, Auth 95, private Potluck 93; all nine Accessibility/Best Practices scores 100 and CLS 0. [Final summary](evidence/lighthouse/local/summary.json) |
+| Performance | Existing public audits plus isolated local finalized Potluck core audit, median of three | Passed: Home 97, Auth 95, private Potluck 93; all nine Accessibility/Best Practices scores 100 and CLS 0. [Final summary](../evidence/lighthouse/local/summary.json) |
 | Compatible persistence, documentation and data preservation | Additive applied migration, idempotent catalog upserts, scoped test cleanup, maintained plans and evidence ledger | Schema validation, 13 current migrations and two idempotent seeds passed; current format lists and contribution contract updated |
 
 | Date | Work/evidence | Result | Next action |
@@ -91,6 +91,6 @@ The requirement table records final acceptance. The dated rows below retain the 
 
 - Final production build, full TypeScript checking and lint passed. The final unit suite passed 228 tests across 18 files; the full database suite passed 31 tests across five files.
 - Browser acceptance contains 46 unique applicable passes across Chromium, Firefox and WebKit. Five intentional skips cover the protocol suite's other browser engines and remote-staging health; remote deployment is outside this goal. Targeted regressions cover all three engines after the last shared UI changes.
-- All 81 added-format screenshots were reviewed at [mobile](evidence/screenshots/mobile-375x812/), [tablet](evidence/screenshots/tablet-768x1024/) and [desktop](evidence/screenshots/desktop-1440x900/) sizes. Axe scans, overflow/target checks and browser error assertions passed.
-- The fixed median-of-three performance gate passed in the [final report](evidence/lighthouse/local/summary.json). The [earlier failed benchmark](evidence/lighthouse/local-before-auth-defer/summary.json), individual low samples and host-speed warnings remain available; medians do not guarantee that every run scores at least 90.
+- All 81 added-format screenshots were reviewed at mobile (375×812), tablet (768×1024), and desktop (1440×900) sizes. These generated captures were saved locally under `docs/evidence/screenshots/` and are not committed; representative retained images are in [UI evidence](../evidence/ui/). Axe scans, overflow/target checks and browser error assertions passed.
+- The fixed median-of-three performance gate passed in the [final report](../evidence/lighthouse/local/summary.json). The [earlier failed benchmark](../evidence/lighthouse/local-before-auth-defer/summary.json), individual low samples and host-speed warnings remain available; medians do not guarantee that every run scores at least 90.
 - The separate-connection claim test proves committed-owner re-reading and rejected stealing on the local PGlite-backed runtime. Native PostgreSQL concurrency/load verification is not claimed. This local socket runtime also showed `08P01` when two separate review servers issued overlapping queries; isolated validation passed without a database reset. Managed deployment remains separate work.

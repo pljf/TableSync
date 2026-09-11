@@ -1,5 +1,7 @@
 # Workflow clarity — September 8, 2026
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
 The user chose to retain the existing green-and-cream visual style and implement the first three proposed UI priorities: clear progress, one obvious next action, and useful readiness guidance. The separate style concept was not applied to the app.
 
 ## Changes

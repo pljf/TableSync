@@ -1,10 +1,12 @@
 # Simple party planning
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
 Date: 2026-09-08
 
 ## Goal and scope
 
-Complete the five usability improvements from `USABILITY_REVIEW_2026_09_08.md`, keeping everyday party planning simple. Preserve the existing green-and-cream design, immediate guest entry, and the seven meal formats. This follow-up builds on the collaboration work in PR #4; it does not duplicate that pull request or deploy the application.
+Complete the five usability improvements from `docs/archive/reviews/USABILITY_REVIEW_2026_09_08.md`, keeping everyday party planning simple. Preserve the existing green-and-cream design, immediate guest entry, and the seven meal formats. This follow-up builds on the collaboration work in PR #4; it does not duplicate that pull request or deploy the application.
 
 ## What changed
 
@@ -40,7 +42,7 @@ Local acceptance recorded before pull-request submission:
 - Secret scanning passed for current source and reachable history; evidence-redaction checks passed.
 - Responsive captures and accessibility gates covered 375px, 768px, and 1440px. Independent review found no blocking source defect; the review's clarification about shopping versus cooking quantities was incorporated.
 
-Representative evidence: [preparation on a phone](evidence/ui/simple-menu-preparation-mobile.png) and [menu comparison on desktop](evidence/ui/simple-menu-comparison-desktop.png). Final additional browser and GitHub Actions outcomes are recorded in the pull request; earlier PR #4 results are historical evidence, not a claim that its failed Safari run passed.
+Representative evidence: [preparation on a phone](../../evidence/ui/simple-menu-preparation-mobile.png) and [menu comparison on desktop](../../evidence/ui/simple-menu-comparison-desktop.png). Final additional browser and GitHub Actions outcomes are recorded in the pull request; earlier PR #4 results are historical evidence, not a claim that its failed Safari run passed.
 
 ### Safari navigation follow-up
 
