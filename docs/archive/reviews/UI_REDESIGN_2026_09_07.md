@@ -1,5 +1,7 @@
 # TableSync UI redesign — September 7, 2026
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
 The visual redesign is implemented across the existing Dinner and Hotpot product. This record covers the design work; the earlier bug review remains in [REVIEW_2026_09_07.md](REVIEW_2026_09_07.md), and the concurrent guest-account implementation is documented separately in [GUEST_ACCESS_REVIEW.md](GUEST_ACCESS_REVIEW.md).
 
 ## What changed

@@ -1,5 +1,7 @@
 # TableSync deployment readiness — September 9, 2026
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
 **Decision: local readiness repairs and verification passed; ready to begin deployment setup.** No deployment has been started. The existing hosting and PostgreSQL services still need to be identified and checked during the deployment phase.
 
 This report records local validation of the deployment-readiness repairs based on `cbaef40c9c52deef5497d0760a64f002d81bb862`. It does not certify the configuration of an external hosting account.
@@ -15,7 +17,7 @@ This report records local validation of the deployment-readiness repairs based o
 - The lockfile includes the optional Linux/WASM dependencies required by a clean GitHub install and was regenerated with npm 11.17.0 without an existing installation. The package-manager version and safe update procedure are recorded in the project.
 - GitHub browser setup removes the runner's unrelated preinstalled Chrome package feed before installing Playwright's browsers and system libraries. This avoids the observed stale-feed hash mismatch while preserving package integrity checks and Chromium, Firefox and WebKit coverage.
 - Vercel's generated deployment ID and commit SHA now take precedence over stale manual identity settings. Enable access to system environment variables on Vercel; the protected acceptance job retains explicit expected identity.
-- The staging report references the current migration and explains optional GitHub acceptance. Empty, separated [runtime](deployment/runtime.env.example) and [acceptance](deployment/acceptance.env.example) configuration templates are ready to fill securely.
+- The staging report references the current migration and explains optional GitHub acceptance. Empty, separated [runtime](../../deployment/runtime.env.example) and [acceptance](../../deployment/acceptance.env.example) configuration templates are ready to fill securely.
 
 PostgreSQL's privilege function treats a comma-separated list as “any”; the revised check explicitly requires all four application privileges. See the [official privilege-function documentation](https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE). The patched dependency addresses the [Vitest maintainer advisory](https://github.com/vitest-dev/vitest/security/advisories/GHSA-82fw-gwwq-j7x9).
 

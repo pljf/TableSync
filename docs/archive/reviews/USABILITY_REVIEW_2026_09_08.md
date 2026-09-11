@@ -1,5 +1,7 @@
 # Feature testing and improvement assessment — September 8, 2026
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
 ## Fresh verification
 
 Reran the existing production build in Chromium: **13/13 browser cases passed in 2.7 minutes**. The temporary test rooms were removed by the runner. No application code or product behavior was changed during this assessment.

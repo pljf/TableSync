@@ -1,11 +1,13 @@
 # TableSync Core MVP Execution Plan
 
-> **Scope update accepted (2026-09-08):** The five additional event types are implemented and locally accepted. [Seven-format planning contract](EVENT_FORMAT_EXPANSION.md) supersedes the original event-type restriction and records their behavior and passing evidence. The remaining safety, workflow, quality, and evidence standards below continue to apply.
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
+> **Scope update accepted (2026-09-08):** The five additional event types are implemented and locally accepted. [Seven-format planning contract](../../product/EVENT_FORMAT_EXPANSION.md) supersedes the original event-type restriction and records their behavior and passing evidence. The remaining safety, workflow, quality, and evidence standards below continue to apply.
 
 **Status:** Core MVP and seven-format local acceptance passed; authoritative for maintenance and deferred-scope control
 **Last updated:** 2026-09-08
 **Owner:** TableSync project
-**Supersedes:** The milestone ordering in `PROJECT_PLAN.md` and `docs/DEVELOPMENT_LOG.md` where they conflict with this document.
+**Supersedes:** The milestone ordering in `docs/archive/plans/PROJECT_PLAN.md` and `docs/archive/DEVELOPMENT_LOG.md` where they conflict with this document.
 
 ## 1. Purpose
 
@@ -33,7 +35,7 @@ The current core supports:
 - `BRUNCH`
 - `OTHER` (a shared buffet)
 
-The five added formats have event-specific menu logic, suitable catalog dishes and complete browser workflow coverage. Their structures, Potluck contribution rules and final quality audit are maintained in the [Seven-format planning contract](EVENT_FORMAT_EXPANSION.md).
+The five added formats have event-specific menu logic, suitable catalog dishes and complete browser workflow coverage. Their structures, Potluck contribution rules and final quality audit are maintained in the [Seven-format planning contract](../../product/EVENT_FORMAT_EXPANSION.md).
 
 ### 2.2 Safety and guest coverage
 
@@ -74,7 +76,7 @@ Hotpot must use real event-specific generation logic. Renaming a generic dinner 
 
 #### Added formats
 
-Potluck uses shareable mains, sides and dessert with whole-dish contributions. BBQ requires grilled mains including a plant-based main. Picnic requires portable food. Brunch combines brunch mains, a savory side and fruit. Other is an explicit shared buffet with an appetizer. Exact slot counts, eligibility, portions and preparation rules are maintained in [Seven-format planning contract](EVENT_FORMAT_EXPANSION.md).
+Potluck uses shareable mains, sides and dessert with whole-dish contributions. BBQ requires grilled mains including a plant-based main. Picnic requires portable food. Brunch combines brunch mains, a savory side and fruit. Other is an explicit shared buffet with an appetizer. Exact slot counts, eligibility, portions and preparation rules are maintained in [Seven-format planning contract](../../product/EVENT_FORMAT_EXPANSION.md).
 
 ### 2.5 Workflow state machine
 
@@ -474,7 +476,7 @@ After each coherent milestone:
 4. Link generated screenshots, traces, reports, migrations, or tests.
 5. List the next highest-risk unmet acceptance item.
 6. Keep deferred work separate from blockers.
-7. Update `docs/DEVELOPMENT_LOG.md` with a concise delivery summary.
+7. Update `docs/archive/DEVELOPMENT_LOG.md` with a concise delivery summary.
 
 Do not weaken an acceptance criterion merely because it is difficult. If a criterion is impractical or incorrect, record the evidence and obtain an explicit product decision before changing it.
 
@@ -493,7 +495,7 @@ Do not weaken an acceptance criterion merely because it is difficult. If a crite
 
 ### Seven-format expansion acceptance (2026-09-08)
 
-All seven formats passed complete fresh-room workflows across Chromium, Firefox and WebKit. Final evidence includes 228 unit tests, 31 database tests, 46 applicable browser passes with five intentional skips, 81 added-format responsive screenshots, schema validation/current 13 migrations/two idempotent seeds, lint/typecheck/build, and Lighthouse performance medians of 97 (Home), 95 (Auth) and 93 (private Potluck). All nine final audit runs scored Accessibility/Best Practices 100 and CLS 0. The [expansion contract](EVENT_FORMAT_EXPANSION.md) retains failed iterations, final evidence and local database/performance scope limits.
+All seven formats passed complete fresh-room workflows across Chromium, Firefox and WebKit. Final evidence includes 228 unit tests, 31 database tests, 46 applicable browser passes with five intentional skips, 81 added-format responsive screenshots, schema validation/current 13 migrations/two idempotent seeds, lint/typecheck/build, and Lighthouse performance medians of 97 (Home), 95 (Auth) and 93 (private Potluck). All nine final audit runs scored Accessibility/Best Practices 100 and CLS 0. The [expansion contract](../../product/EVENT_FORMAT_EXPANSION.md) retains failed iterations, final evidence and local database/performance scope limits.
 
 ### Recorded external limitations and deferred work
 

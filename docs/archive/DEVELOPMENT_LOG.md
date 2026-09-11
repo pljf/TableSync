@@ -1,8 +1,10 @@
 # TableSync Development Log
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](README.md) for context and current guides.
+
 ## 2026-09-08 — Seven-format expansion accepted
 
-- Documented the user-authorized Potluck, BBQ, Picnic, Brunch, and Other menu structures and acceptance contract in `EVENT_FORMAT_EXPANSION.md`.
+- Documented the user-authorized Potluck, BBQ, Picnic, Brunch, and Other menu structures and acceptance contract in `docs/product/EVENT_FORMAT_EXPANSION.md`.
 - Defined Potluck whole-dish ownership, fixed servings, readiness, privacy, confirmed shopping rebuilds, and full-food-budget accounting.
 - Inspected the existing dirty worktree and retained pre-existing changes. Verified the live local database with 150 TCP reset cycles and a final independent SQL health check; no application data changed.
 - Implemented all seven room formats with explicit menu structures, suitable catalog dishes, role labels and practical preparation notes. Added 29 dishes and 12 ingredients while retaining Dinner/Hotpot constraints.
@@ -20,11 +22,11 @@ This file records completed work, important technical decisions, verification re
 - Added active navigation, useful room summaries, a prominent next step, compact mobile menu details, and shopping progress derived from saved purchases.
 - Three subagents supported implementation and visual review. Their final review caught and verified fixes for tablet banner crowding and mobile Hotpot status-label wrapping.
 - Preserved the concurrent guest-access implementation and the earlier bug fixes, including unsaved vote/shopping drafts and retained shopping filters.
-- The scoped changes, current validation evidence, and P1/P2/P3 remaining gaps are recorded in [UI_REDESIGN_2026_09_07.md](UI_REDESIGN_2026_09_07.md).
+- The scoped changes, current validation evidence, and P1/P2/P3 remaining gaps are recorded in [UI_REDESIGN_2026_09_07.md](reviews/UI_REDESIGN_2026_09_07.md).
 
 ## August 1, 2026: Core-First Execution Direction
 
-The project priority has been revised after a product grilling session. The active execution contract is now [`CORE_MVP_EXECUTION_PLAN.md`](CORE_MVP_EXECUTION_PLAN.md).
+The project priority has been revised after a product grilling session. The active execution contract is now [`docs/archive/plans/CORE_MVP_EXECUTION_PLAN.md`](plans/CORE_MVP_EXECUTION_PLAN.md).
 
 The immediate goal is to make the fresh-room Dinner and Hotpot workflows functionally correct, deeply tested, visually polished, accessible, performant, and repeatable before production authentication, deployment, realtime behavior, or portfolio packaging are prioritized. The new plan defines the confirmed menu safety, budget, event structure, state-machine, invalidation, evidence, and defect standards and must be maintained after every milestone.
 
@@ -157,7 +159,7 @@ Delivery:
 
 Completed:
 
-- Established `docs/CORE_MVP_EXECUTION_PLAN.md` as the maintained core-first execution contract.
+- Established `docs/archive/plans/CORE_MVP_EXECUTION_PLAN.md` as the maintained core-first execution contract.
 - Implemented strict Dinner and event-specific Hotpot generation with global allergy exclusion, per-guest coverage, spice adjustability, exact structures, and hard budgets.
 - Added first-class persisted no-solution reports instead of invalid placeholder plans.
 - Enforced the room workflow state machine, required Veto reasons, atomic destructive recovery, and deterministic shopping generation and assignment.
@@ -217,7 +219,7 @@ Completed locally:
 - Added transaction locks, PostgreSQL advisory locks, idempotent join/session issuance, and deterministic concurrency tests for joins, votes, finalization, shopping claims, and purchases.
 - Added database-backed shared rate limiting, redacted security audit events, bounded inputs, security headers, same-origin Server Action enforcement, repository/history secret scanning, and evidence redaction.
 - Added ten total Prisma migrations, pooled/direct managed database configuration, staging-only TLS and distinct-role enforcement, live role/privilege verification, migration-aware `/api/health`, bounded connection recycling, and operational-data retention tooling.
-- Added `docs/STAGING_OPERATIONS_RUNBOOK.md`, a restore/rollback contract, `docs/STAGING_ACCEPTANCE_REPORT.md`, and a protected manual GitHub Actions staging gate. Remote browser and Lighthouse paths explicitly reject localhost, reject the local test-auth bypass, and require health metadata to match the reviewed deployment ID, commit SHA, and migration head.
+- Added `docs/deployment/STAGING_OPERATIONS_RUNBOOK.md`, a restore/rollback contract, `docs/deployment/STAGING_ACCEPTANCE_REPORT.md`, and a protected manual GitHub Actions staging gate. Remote browser and Lighthouse paths explicitly reject localhost, reject the local test-auth bypass, and require health metadata to match the reviewed deployment ID, commit SHA, and migration head.
 
 Latest verified provider-independent evidence:
 
@@ -252,7 +254,7 @@ After three consecutive requests for the minimum external decision, no provider 
 - no Vercel, Neon, Supabase, GitHub OAuth, or TableSync deployment variables are available to this workspace process;
 - no `vercel`, `neonctl`, or `gh` command is installed/connected and no provider connector is callable;
 - Git remains on dirty local `main` at `bbea289184127e3a321775abc82083af529cce12`; no branch, commit, push, deployment, or remote mutation was performed;
-- `docs/STAGING_ACCEPTANCE_REPORT.md` remains not executed, with no staging URL, deployment ID, managed database role/TLS proof, backup restore, real OAuth callback, remote browser matrix, staging Lighthouse, log review, or rollback evidence;
+- `docs/deployment/STAGING_ACCEPTANCE_REPORT.md` remains not executed, with no staging URL, deployment ID, managed database role/TLS proof, backup restore, real OAuth callback, remote browser matrix, staging Lighthouse, log review, or rollback evidence;
 - production dependency classification remains unavailable because authorization to send dependency package/version metadata to npm was not provided.
 
 Minimum resume input: select/connect a hosting and managed PostgreSQL provider (recommended direction remains Vercel + Neon, or an equivalent existing stack), authorize the npm audit metadata request, and authorize creation/push of a review branch. Secrets must be placed directly in provider/GitHub protected stores, never in chat or repository files.
@@ -271,7 +273,7 @@ Minimum resume input: select/connect a hosting and managed PostgreSQL provider (
 
 ### Product function and interaction audit (2026-09-02)
 
-- Audited the confirmed Dinner and Hotpot core workflow route by route and recorded the result in `docs/PRODUCT_FUNCTIONAL_AUDIT.md`.
+- Audited the confirmed Dinner and Hotpot core workflow route by route and recorded the result in `docs/archive/reviews/PRODUCT_FUNCTIONAL_AUDIT.md`.
 - Fixed premature public-share navigation, misleading empty/count states, room-section navigation drift, hidden current-vote state, stale non-Veto reasons, unrecoverable room-creation validation, and missing shopping filters and assignment totals.
 - Improved candidate quality so top menu recommendations differ by core meal composition instead of only by drink, and added descriptive Hotpot titles.
 - Added regression coverage for fresh-room display states, finalized navigation, vote feedback, shopping filters, room validation, and concurrent non-Veto normalization.
@@ -283,7 +285,7 @@ Minimum resume input: select/connect a hosting and managed PostgreSQL provider (
 - Preserved the existing September 2 working changes and independently reviewed workflows, domain engines, authentication/deployment boundaries, routes, and forms.
 - Closed verified consistency, privacy, allergy-matching, portion/cost, date/time, preference clearing, Veto, shopping-ownership, and navigation defects.
 - Added host room editing during collection/planning, including recovery from an insufficient room budget without losing guest responses.
-- Recorded the prioritized fixed/missing inventory and final verification ledger in `docs/REVIEW_2026_09_07.md`; earlier pass claims remain historical evidence.
+- Recorded the prioritized fixed/missing inventory and final verification ledger in `docs/archive/reviews/REVIEW_2026_09_07.md`; earlier pass claims remain historical evidence.
 - Initial review checks: 79/79 unit tests and 13/13 PostgreSQL integration tests passed. Production build and typechecking passed with the new edit route. Browser/evidence results are maintained in the review ledger.
 - Production acceptance, full dietary certification metadata, multi-guest session management, and guest spending caps remain open. No deployment, commit, or push was performed in this review.
 
@@ -293,7 +295,7 @@ Minimum resume input: select/connect a hosting and managed PostgreSQL provider (
 - Fixed qualified allergy matching (including sesame seeds and milk allergy), cross-form draft loss and shopping-filter resets after saves, and outdated failed-generation guidance after guest inputs change.
 - Successful mutations refresh dynamic data and client navigation state; submitted Like/Neutral votes clear their own Veto reason while unrelated drafts survive. Removed duplicate preference-save feedback exposed by client navigation.
 - Reproduced the draft-loss regression against the previous production build before repairing it. Added browser assertions for unfinished vote/shopping changes and retained filters.
-- Expanded local checks passed: 86/86 unit tests and 14/14 PostgreSQL integration tests. Final browser/build/evidence results are recorded in `docs/REVIEW_2026_09_07.md`.
+- Expanded local checks passed: 86/86 unit tests and 14/14 PostgreSQL integration tests. Final browser/build/evidence results are recorded in `docs/archive/reviews/REVIEW_2026_09_07.md`.
 
 ## Local Development
 
@@ -346,7 +348,7 @@ Complete one milestone at a time. After each milestone:
 - Added the eleventh migration for `User.isAnonymous`, applied it locally, and configured a stable local session secret so restarts do not invalidate browser access.
 - Retired `/demo` to the entry page, removed the public-demo room authorization exception, changed seeding to catalog only, and removed the verified legacy demo room while retaining the catalog and host account.
 - Added clear self-participation guidance, a missing-preference-session recovery screen, a planned-headcount shopping estimate, and confirmation before ending an unrecoverable guest session. Ending the host session also revokes and clears the active meal-response session.
-- Preserved concurrent UI work from the separate review task. Current automated results and final browser evidence are recorded in `docs/GUEST_ACCESS_REVIEW.md`; production OAuth/deployment acceptance remains separate.
+- Preserved concurrent UI work from the separate review task. Current automated results and final browser evidence are recorded in `docs/archive/reviews/GUEST_ACCESS_REVIEW.md`; production OAuth/deployment acceptance remains separate.
 
 ## September 8, 2026 — Button feedback and integrated full-stack review
 
@@ -357,7 +359,7 @@ Complete one milestone at a time. After each milestone:
 - Coordinated the separately requested seven-format expansion into one final build and acceptance gate. Independent review caught and repaired Potluck draft loss and missing preparation guidance.
 - Corrected local setup and audit defaults, authenticated/public audit separation, final-page attribution, owned-process cleanup, and transient-session evidence scanning.
 - Closed early voting-input and Safari cancelled-key feedback gaps. Deferred authentication client loading until an account action and added browser icons after inspecting the performance reports.
-- The authoritative final results and local/hosted release boundary are maintained in `docs/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md`. Historical entries above remain historical evidence.
+- The authoritative final results and local/hosted release boundary are maintained in `docs/archive/reviews/INTERACTION_FULL_STACK_REVIEW_2026_09_08.md`. Historical entries above remain historical evidence.
 
 ## September 8, 2026 — Simple party-planning follow-up
 
@@ -366,4 +368,4 @@ Complete one milestone at a time. After each milestone:
 - Added **Prepare this menu** for every meal format: expandable dishes, finalized portions, scaled ingredient estimates, prep-time estimates, spice adjustments, and contribution context. Cooking quantities and recipe steps are explicitly distinguished from shopping estimates.
 - Repaired update acknowledgement/retry, canceled native-form drafts, clean vote-note refreshes, and full-document navigation lifecycle. Saved preference inputs wait for their form to be ready before accepting edits, addressing the Safari input race found in the base PR's CI logs.
 - Before submission: 353 unit tests, 32 database tests, and 22 Chromium browser tests passed; the remote HTTPS health check was skipped locally. Build/TypeScript, lint, source/history secret scanning, responsive accessibility checks, and independent source/visual review completed. Final additional browser and GitHub check outcomes are recorded in the PR.
-- The detailed acceptance record and screenshots are in `docs/SIMPLE_PARTY_PLANNING_2026_09_08.md`. Deployment and real GitHub OAuth callback acceptance remain owner-managed; this task does not merge the PR chain or deploy the application.
+- The detailed acceptance record and screenshots are in `docs/archive/reviews/SIMPLE_PARTY_PLANNING_2026_09_08.md`. Deployment and real GitHub OAuth callback acceptance remain owner-managed; this task does not merge the PR chain or deploy the application.

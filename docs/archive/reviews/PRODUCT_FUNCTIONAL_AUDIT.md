@@ -1,9 +1,12 @@
 # TableSync Product Functional Audit
 
-> Historical September 2 audit below. The September 7 review found additional defects that these checks did not cover; current repairs, limitations, and verification are recorded in [`REVIEW_2026_09_07.md`](REVIEW_2026_09_07.md).
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
+> Historical September 2 audit below. The September 7 review found additional defects that these checks did not cover; current repairs, limitations, and verification are recorded in [`docs/archive/reviews/REVIEW_2026_09_07.md`](REVIEW_2026_09_07.md).
 
 **Audit date:** 2026-09-02  
-**Scope:** Confirmed Dinner and Hotpot core MVP in `CORE_MVP_EXECUTION_PLAN.md`  
+**Scope:** Confirmed Dinner and Hotpot core MVP in `docs/archive/plans/CORE_MVP_EXECUTION_PLAN.md`
+
 **Result:** Pass for the complete local core workflow; external staging evidence remains explicitly open
 
 ## Audit method

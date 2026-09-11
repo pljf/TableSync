@@ -1,8 +1,10 @@
 # TableSync Project Plan
 
-> **Event expansion accepted (2026-09-08):** Potluck, BBQ, Picnic, Brunch, and Other are implemented alongside Dinner and Hotpot. The [Seven-format planning contract](docs/EVENT_FORMAT_EXPANSION.md) records their menu rules, Potluck contribution behavior and passing local acceptance evidence. Existing safety and workflow guarantees remain required.
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
 
-> **Execution note (2026-08-01):** This file remains the long-term product vision and feature inventory. The completed core-MVP contract is maintained in [`docs/CORE_MVP_EXECUTION_PLAN.md`](docs/CORE_MVP_EXECUTION_PLAN.md). The active production-authentication, authorization, managed-database, staging-deployment, and re-acceptance contract is [`docs/PRODUCTION_READINESS_PLAN.md`](docs/PRODUCTION_READINESS_PLAN.md); it is authoritative where milestone ordering conflicts.
+> **Event expansion accepted (2026-09-08):** Potluck, BBQ, Picnic, Brunch, and Other are implemented alongside Dinner and Hotpot. The [Seven-format planning contract](../../product/EVENT_FORMAT_EXPANSION.md) records their menu rules, Potluck contribution behavior and passing local acceptance evidence. Existing safety and workflow guarantees remain required.
+
+> **Execution note (2026-08-01):** This file remains the long-term product vision and feature inventory. The completed core-MVP contract is maintained in [`docs/archive/plans/CORE_MVP_EXECUTION_PLAN.md`](CORE_MVP_EXECUTION_PLAN.md). The active production-authentication, authorization, managed-database, staging-deployment, and re-acceptance contract is [`docs/archive/plans/PRODUCTION_READINESS_PLAN.md`](PRODUCTION_READINESS_PLAN.md); it is authoritative where milestone ordering conflicts.
 
 ## 1. Project Summary
 
@@ -224,7 +226,7 @@ MVP can work without realtime if needed, but adding realtime room updates makes 
 5. System assigns shopping items if guest availability exists.
 6. Room status becomes `FINALIZED`.
 
-For finalized Potluck rooms, willing guests can claim a whole dish at its planned servings and mark it ready; the host can assign dishes to willing guests in the room. Ownership changes require confirmation before rebuilding shared groceries and clearing their assignment/purchase progress. Contributed dishes remain in the total food budget, while shared shopping includes only unclaimed dishes. Undoing finalization clears contributions, readiness and shopping. See [Seven-format planning contract](docs/EVENT_FORMAT_EXPANSION.md) for full rules and acceptance evidence.
+For finalized Potluck rooms, willing guests can claim a whole dish at its planned servings and mark it ready; the host can assign dishes to willing guests in the room. Ownership changes require confirmation before rebuilding shared groceries and clearing their assignment/purchase progress. Contributed dishes remain in the total food budget, while shared shopping includes only unclaimed dishes. Undoing finalization clears contributions, readiness and shopping. See [Seven-format planning contract](../../product/EVENT_FORMAT_EXPANSION.md) for full rules and acceptance evidence.
 
 ### Workflow F: Shopping and Execution
 

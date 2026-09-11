@@ -181,13 +181,13 @@ npm run audit:performance
 npm run security:evidence
 ```
 
-Acceptance evidence belongs in `docs/evidence/staging/` and the maintained `docs/PRODUCTION_READINESS_PLAN.md` ledger. Do not commit raw CI logs, Playwright traces, HAR files, database dumps, storage state, environment exports, or unredacted provider screenshots.
+Acceptance evidence belongs in `docs/evidence/staging/`. Record the run's status and evidence links in the [staging acceptance report](STAGING_ACCEPTANCE_REPORT.md). Do not commit raw CI logs, Playwright traces, HAR files, database dumps, storage state, environment exports, or unredacted provider screenshots.
 
 ## 9. Scheduled maintenance
 
 Run `npm run ops:cleanup` at least daily from a protected scheduled job. Rooms expire after seven days and are permanently deleted by the next successful cleanup, including their related room data. Defaults for operational data are 90 days for security audit events, 30 days for revoked guest sessions, and 24 hours for rate-limit counters. The command also removes expired host sessions, guest sessions, and verification records. Its output contains counts only.
 
-On Vercel, `vercel.json` schedules a daily room cleanup through `/api/cron/rooms`; set `CRON_SECRET` in the Production environment before deployment. See [room retention deployment setup](deployment/room-retention.md) for access-expiry timing, scheduling limits, existing-room effects, and other hosts. The Vercel endpoint removes rooms only; keep the operational-data job for audit and authentication maintenance.
+On Vercel, `vercel.json` schedules a daily room cleanup through `/api/cron/rooms`; set `CRON_SECRET` in the Production environment before deployment. See [room retention deployment setup](room-retention.md) for access-expiry timing, scheduling limits, existing-room effects, and other hosts. The Vercel endpoint removes rooms only; keep the operational-data job for audit and authentication maintenance.
 
 Monitor at minimum:
 

@@ -1,5 +1,7 @@
 # Guest access and usability review
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
 > This records the initial guest-access implementation. The later seven-format expansion and final integrated verification are recorded in [the interaction and full-stack review](INTERACTION_FULL_STACK_REVIEW_2026_09_08.md).
 
 This change replaces the shared demo entry with **Continue as guest**, so someone can create a room and inspect the full Dinner/Hotpot workflow without configuring GitHub. Earlier review documents remain historical records; their sign-in limitations and test totals do not describe this change.

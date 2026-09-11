@@ -1,8 +1,10 @@
 # Interaction and full-stack completion review — September 8, 2026
 
+> Historical record. Status statements and verification results reflect the work recorded here. See the [archive index](../README.md) for context and current guides.
+
 ## Requested outcome
 
-Polish buttons and animation, give users strong and accurate interaction feedback, and inspect and repair the complete existing full-stack product. The initial contract was the fresh-room Dinner/Hotpot workflow and browser guest hosting. During final review, the separately authorized seven-format expansion in `EVENT_FORMAT_EXPANSION.md` added Potluck, BBQ, Picnic, Brunch, and Other. The shared final gate includes that integrated source. This review does not treat the older demo or historical passing test counts as evidence for the current build.
+Polish buttons and animation, give users strong and accurate interaction feedback, and inspect and repair the complete existing full-stack product. The initial contract was the fresh-room Dinner/Hotpot workflow and browser guest hosting. During final review, the separately authorized seven-format expansion in `docs/product/EVENT_FORMAT_EXPANSION.md` added Potluck, BBQ, Picnic, Brunch, and Other. The shared final gate includes that integrated source. This review does not treat the older demo or historical passing test counts as evidence for the current build.
 
 ## Changes
 
