@@ -8,6 +8,7 @@ import { eventFormats } from "@/lib/event-formats";
 import { getPublicRoom } from "@/lib/store";
 import { DietaryNote } from "@/components/menu/dietary-note";
 import { RoomExpiryNotice } from "@/components/rooms/room-expiry-notice";
+import { FoodIcon } from "@/components/menu/food-icon";
 
 export const dynamic = "force-dynamic";
 
@@ -60,10 +61,10 @@ export default async function SharePage({ params }: PageProps) {
               <Utensils size={18} />
               <h2>Final menu</h2>
             </div>
-            <ul className="dish-list">
+            <ul className="dish-list illustrated-dish-list">
               {[...finalPlan.dishes].sort((left, right) => compareMenuDishes(left, right, view.room.eventType)).map((dish) => (
                 <li key={dish.id}>
-                  <span>{dish.name}</span>
+                  <span className="food-name"><FoodIcon dish={dish} /><span>{dish.name}</span></span>
                   <small>
                     {menuDishRole(dish, view.room.eventType)} - {formatServings(dish.servings)}
                   </small>

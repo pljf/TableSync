@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Every dish, illustrated · TableSync</title>
+  <style>
+    :root { --paper: #f8f5ed; --card: #fffdf8; --ink: #323c2f; --muted: #727567; --line: #e4e4d7; --sage: #e8eddc; --focus: #687b47; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+    .page { width: min(1600px, 100%); margin: 0 auto; padding: 32px 40px 64px; }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+    .brand { font-family: Georgia, "Times New Roman", serif; font-size: 25px; letter-spacing: -1px; font-weight: 700; }
+    .edition { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
+    .intro { padding: 52px 0 34px; max-width: 820px; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; color: #6a7d4c; margin: 0 0 16px; font-size: 11px; letter-spacing: .17em; text-transform: uppercase; font-weight: 700; }
+    .eyebrow::before { content: ""; display: inline-block; width: 23px; height: 2px; background: #8fa06e; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(36px, 4.3vw, 64px); line-height: 1.07; letter-spacing: -.045em; margin: 0; }
+    .intro > p:last-child { color: var(--muted); margin: 18px 0 0; font-size: 15px; line-height: 1.7; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 0 24px; }
+    .search { width: min(400px, 100%); }
+    .search label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; }
+    .search input { display: block; width: 100%; min-height: 48px; border: 1px solid #d5d9c8; background: var(--card); color: var(--ink); border-radius: 12px; padding: 12px 16px; font-size: 14px; }
+    .search input::placeholder { color: #898c80; }
+    .result-count { align-self: end; margin: 0 0 15px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .gallery { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px; padding: 0; margin: 0; list-style: none; }
+    .dish-card { display: flex; flex-direction: column; align-items: stretch; width: 100%; height: 100%; text-align: left; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--card); color: inherit; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+    .dish-card:hover { transform: translateY(-3px); border-color: #bec9a8; box-shadow: 0 8px 24px #464b3110; }
+    .picture { display: grid; place-items: center; aspect-ratio: 1; width: 100%; background: #faf6ed; overflow: hidden; }
+    .picture > * { grid-area: 1 / 1; }
+    .picture img { display: block; width: 100%; height: 100%; aspect-ratio: 1; object-fit: contain; transition: transform .25s ease; }
+    .dish-card:hover img { transform: scale(1.025); }
+    .picture .pending { padding: 18px; text-align: center; font-size: 12px; line-height: 1.5; color: #8a8c7c; }
+    .card-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px 16px 18px; flex: 1; }
+    .category { display: inline-flex; align-items: center; background: var(--sage); color: #65794d; font-size: 9px; line-height: 1.3; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: 5px 8px; border-radius: 6px; }
+    .category[data-category="DESSERT"] { background: #f5e8de; color: #9b725c; }
+    .category[data-category="DRINK"] { background: #e4edeb; color: #5c7c73; }
+    .category[data-category="SAUCE"] { background: #f2ebd8; color: #8b7950; }
+    .dish-name { display: block; margin: 0; font-size: 14px; font-weight: 600; line-height: 1.45; overflow-wrap: anywhere; }
+    .empty { padding: 56px 0; text-align: center; color: var(--muted); font-size: 15px; }
+    footer { margin-top: 36px; border-top: 1px solid var(--line); padding-top: 20px; display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    dialog { width: min(600px, calc(100% - 32px)); max-height: calc(100dvh - 32px); border: 1px solid var(--line); border-radius: 24px; padding: 0; background: var(--card); color: var(--ink); box-shadow: 0 24px 80px #29302030; overflow-y: auto; }
+    dialog::backdrop { background: #272d25a6; backdrop-filter: blur(4px); }
+    .dialog-content { padding: 22px; }
+    .dialog-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 14px; }
+    .close { background: transparent; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; min-height: 44px; cursor: pointer; color: var(--ink); font-size: 13px; }
+    .close:hover { background: var(--sage); }
+    .large-picture { border-radius: 16px; }
+    .dialog-title { font: 400 30px/1.2 Georgia, "Times New Roman", serif; letter-spacing: -.03em; margin: 22px 0 10px; overflow-wrap: anywhere; }
+    .dialog-note { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    [hidden] { display: none !important; }
+    @media (max-width: 1380px) { .gallery { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+    @media (max-width: 1080px) { .page { padding-right: 24px; padding-left: 24px; } .gallery { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; } }
+    @media (max-width: 800px) { .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 600px) {
+      .page { padding: 22px 10px 36px; }
+      .topline, .intro, .toolbar, footer { margin-left: 6px; margin-right: 6px; }
+      .topline { padding-bottom: 18px; }
+      .brand { font-size: 22px; }
+      .edition { font-size: 9px; letter-spacing: .1em; }
+      .intro { padding: 36px 0 20px; }
+      .intro > p:last-child { font-size: 14px; }
+      .toolbar { align-items: stretch; flex-direction: column; gap: 12px; padding: 10px 0 20px; }
+      .search { width: 100%; }
+      .result-count { align-self: start; margin: 0; }
+      .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .dish-card { border-radius: 16px; }
+      .card-copy { padding: 13px 12px 16px; gap: 8px; }
+      .dish-name { font-size: 13px; }
+      footer { flex-direction: column; gap: 6px; }
+      .dialog-content { padding: 16px; }
+      .dialog-title { font-size: 26px; }
+    }
+    @media (max-width: 360px) { .page { padding-right: 5px; padding-left: 5px; } .gallery { gap: 6px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topline"><span class="brand">TableSync</span><span class="edition">The dish collection</span></div>
+    <header class="intro">
+      <p class="eyebrow">A closer look at the menu</p>
+      <h1>Every dish.<br>Its own little picture.</h1>
+      <p>Explore all 66 dishes, from a bubbling hotpot to a sweet finish.<br>Select any dish for a closer look.</p>
+    </header>
+    <div class="toolbar">
+      <div class="search"><label for="dish-search">Find a dish</label><input id="dish-search" type="search" placeholder="Try chicken, hotpot, or rice…" autocomplete="off" aria-controls="dish-gallery"></div>
+      <p id="result-count" class="result-count" role="status" aria-live="polite" aria-atomic="true">66 of 66 dishes</p>
+    </div>
+    <ul class="gallery" id="dish-gallery" aria-label="All dish pictures"></ul>
+    <p class="empty" id="empty-state" hidden>No dishes match that name. Try another search.</p>
+    <noscript><p>Enable JavaScript to explore the complete dish gallery.</p></noscript>
+    <footer><span>66 dishes, each with its own picture.</span><span>TableSync · Dish illustration preview</span></footer>
+  </main>
+  <dialog id="dish-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-note">
+    <div class="dialog-content">
+      <div class="dialog-top"><span id="dialog-category" class="category"></span><button type="button" class="close" id="close-dialog" autofocus>Close <span aria-hidden="true">×</span></button></div>
+      <div class="picture large-picture"><span class="pending" id="dialog-pending" hidden>Illustration coming soon</span><img id="dialog-image" alt="" width="552" height="552"></div>
+      <h2 class="dialog-title" id="dialog-title"></h2>
+      <p id="dialog-note" class="dialog-note">Press Escape or select Close to return to the collection.</p>
+    </div>
+  </dialog>
+  <script id="dish-data" type="application/json">[{"id":"mushroom-hotpot-broth","name":"Mushroom hotpot broth","category":"MAIN"},{"id":"tomato-hotpot-broth","name":"Tomato hotpot broth","category":"MAIN"},{"id":"hotpot-tofu","name":"Hotpot tofu platter","category":"MAIN"},{"id":"hotpot-beef-slices","name":"Thin-sliced hotpot beef","category":"MAIN"},{"id":"hotpot-chicken-slices","name":"Hotpot chicken slices","category":"MAIN"},{"id":"hotpot-mushroom-platter","name":"Hotpot mushroom platter","category":"SIDE"},{"id":"hotpot-leafy-greens","name":"Hotpot leafy greens","category":"SIDE"},{"id":"hotpot-garlic-tamari-sauce","name":"Garlic tamari dipping sauce","category":"SAUCE"},{"id":"hotpot-ginger-sesame-sauce","name":"Ginger sesame dipping sauce","category":"SAUCE"},{"id":"chicken-taco-bowl","name":"Chicken taco bowl","category":"MAIN"},{"id":"vegetarian-pasta-bake","name":"Vegetarian pasta bake","category":"MAIN"},{"id":"gluten-free-pasta-bake","name":"Gluten-free pasta bake","category":"MAIN"},{"id":"beef-bulgogi-rice-bowl","name":"Beef bulgogi rice bowl","category":"MAIN"},{"id":"chickpea-curry","name":"Chickpea coconut curry","category":"MAIN"},{"id":"salmon-rice-bowl","name":"Salmon rice bowl","category":"MAIN"},{"id":"build-your-own-taco-night","name":"Build-your-own taco night","category":"MAIN"},{"id":"tofu-vegetable-stir-fry","name":"Tofu vegetable stir fry","category":"MAIN"},{"id":"black-bean-chili","name":"Black bean chili","category":"MAIN"},{"id":"bbq-chicken-skewers","name":"BBQ chicken skewers","category":"MAIN"},{"id":"shrimp-fajitas","name":"Shrimp fajitas","category":"MAIN"},{"id":"cucumber-salad","name":"Cucumber salad","category":"SIDE"},{"id":"garlic-bread","name":"Garlic bread","category":"SIDE"},{"id":"roasted-vegetables","name":"Roasted vegetables","category":"SIDE"},{"id":"kimchi-side","name":"Kimchi","category":"SIDE"},{"id":"steamed-rice","name":"Steamed rice","category":"SIDE"},{"id":"tortilla-chips-side","name":"Tortilla chips","category":"SIDE"},{"id":"peanut-sesame-noodles","name":"Peanut sesame noodles","category":"SIDE"},{"id":"caprese-skewers","name":"Caprese skewers","category":"APPETIZER"},{"id":"hummus-vegetables","name":"Hummus and vegetables","category":"APPETIZER"},{"id":"fruit-platter","name":"Fruit platter","category":"DESSERT"},{"id":"brownies","name":"Brownies","category":"DESSERT"},{"id":"mochi-dessert","name":"Mochi","category":"DESSERT"},{"id":"ice-cream","name":"Ice cream","category":"DESSERT"},{"id":"coconut-rice-pudding","name":"Coconut rice pudding","category":"DESSERT"},{"id":"sparkling-water","name":"Sparkling water","category":"DRINK"},{"id":"lemonade","name":"Lemonade","category":"DRINK"},{"id":"iced-tea","name":"Iced tea","category":"DRINK"},{"id":"lentil-rice-bake","name":"Lentil and vegetable rice bake","category":"MAIN"},{"id":"chickpea-potato-casserole","name":"Chickpea and potato casserole","category":"MAIN"},{"id":"chicken-rice-tray","name":"Herb chicken and rice tray","category":"MAIN"},{"id":"vegetable-pasta-tray","name":"Vegetable and cheese pasta tray","category":"MAIN"},{"id":"grilled-lentil-patties","name":"Grilled lentil and potato patties","category":"MAIN"},{"id":"grilled-chickpea-peppers","name":"Grilled chickpea-stuffed peppers","category":"MAIN"},{"id":"grilled-tofu-rice","name":"Grilled tofu skewers with rice","category":"MAIN"},{"id":"picnic-chickpea-quinoa","name":"Chickpea quinoa picnic bowls","category":"MAIN"},{"id":"picnic-chicken-rice","name":"Chicken and rice picnic salad","category":"MAIN"},{"id":"picnic-lentil-wraps","name":"Lentil and vegetable wraps","category":"MAIN"},{"id":"picnic-bean-corn-wraps","name":"Black bean corn tortilla wraps","category":"MAIN"},{"id":"brunch-chickpea-hash","name":"Chickpea breakfast hash","category":"MAIN"},{"id":"brunch-vegetable-frittata","name":"Potato and spinach frittata","category":"MAIN"},{"id":"brunch-avocado-bean-toast","name":"Avocado and chickpea toast","category":"MAIN"},{"id":"brunch-tofu-scramble","name":"Tofu scramble and rice bowls","category":"MAIN"},{"id":"herb-potato-salad","name":"Lemon herb potato salad","category":"SIDE"},{"id":"carrot-cabbage-slaw","name":"Carrot and cabbage slaw","category":"SIDE"},{"id":"cucumber-chickpea-salad","name":"Cucumber and chickpea salad","category":"SIDE"},{"id":"grilled-corn","name":"Grilled corn on the cob","category":"SIDE"},{"id":"brunch-breakfast-potatoes","name":"Roasted breakfast potatoes","category":"SIDE"},{"id":"brunch-spinach-mushrooms","name":"Savory spinach and mushrooms","category":"SIDE"},{"id":"brunch-citrus-grapes","name":"Orange and grape fruit salad","category":"SIDE"},{"id":"brunch-apple-side","name":"Fresh apple wedges","category":"SIDE"},{"id":"gathering-fruit-cups","name":"Apple and orange fruit cups","category":"DESSERT"},{"id":"apple-oat-squares","name":"Apple oat squares","category":"DESSERT"},{"id":"buffet-chickpea-dip","name":"Lemon chickpea dip and vegetables","category":"APPETIZER"},{"id":"buffet-tomato-skewers","name":"Tomato and cucumber skewers","category":"APPETIZER"},{"id":"bbq-lemon-herb-sauce","name":"Lemon and parsley grill sauce","category":"SAUCE"},{"id":"bbq-tomato-sauce","name":"Tomato grill sauce","category":"SAUCE"}]</script>
+  <script>
+    const dishes = JSON.parse(document.getElementById("dish-data").textContent);
+    const categories = { MAIN: "Main dish", SIDE: "Side dish", APPETIZER: "Appetizer", DESSERT: "Dessert", DRINK: "Drink", SAUCE: "Sauce" };
+    const gallery = document.getElementById("dish-gallery");
+    const search = document.getElementById("dish-search");
+    const count = document.getElementById("result-count");
+    const emptyState = document.getElementById("empty-state");
+    const dialog = document.getElementById("dish-dialog");
+    const dialogImage = document.getElementById("dialog-image");
+    const dialogPending = document.getElementById("dialog-pending");
+    let openedFrom;
+
+    function imagePath(dish) { return `/images/dishes/${dish.id}.webp`; }
+    function normalize(value) { return value.toLocaleLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/-/g, " ").trim(); }
+
+    function openDish(dish, trigger) {
+      openedFrom = trigger;
+      document.getElementById("dialog-title").textContent = dish.name;
+      const category = document.getElementById("dialog-category");
+      category.textContent = categories[dish.category] || "Dish";
+      category.dataset.category = dish.category;
+      dialogPending.hidden = true;
+      dialogImage.hidden = false;
+      dialogImage.alt = dish.name;
+      dialogImage.src = imagePath(dish);
+      dialog.showModal();
+    }
+
+    const cards = dishes.map((dish) => {
+      const item = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "dish-card";
+      button.setAttribute("aria-label", `View ${dish.name}`);
+      button.setAttribute("aria-haspopup", "dialog");
+      const picture = document.createElement("span");
+      picture.className = "picture";
+      const pending = document.createElement("span");
+      pending.className = "pending";
+      pending.hidden = true;
+      pending.textContent = "Illustration coming soon";
+      const image = document.createElement("img");
+      image.alt = "";
+      image.width = 300;
+      image.height = 300;
+      image.loading = "lazy";
+      image.decoding = "async";
+      image.addEventListener("error", () => { image.hidden = true; pending.hidden = false; });
+      image.src = imagePath(dish);
+      picture.append(pending, image);
+      const copy = document.createElement("span");
+      copy.className = "card-copy";
+      const category = document.createElement("span");
+      category.className = "category";
+      category.dataset.category = dish.category;
+      category.textContent = categories[dish.category] || "Dish";
+      const name = document.createElement("span");
+      name.className = "dish-name";
+      name.textContent = dish.name;
+      copy.append(category, name);
+      button.append(picture, copy);
+      button.addEventListener("click", () => openDish(dish, button));
+      item.append(button);
+      gallery.append(item);
+      return { item, searchName: normalize(dish.name) };
+    });
+
+    search.addEventListener("input", () => {
+      const query = normalize(search.value);
+      let visible = 0;
+      for (const card of cards) {
+        const matches = card.searchName.includes(query);
+        card.item.hidden = !matches;
+        if (matches) visible++;
+      }
+      count.textContent = `${visible} of ${dishes.length} dishes`;
+      emptyState.hidden = visible !== 0;
+      gallery.setAttribute("aria-label", query ? "Matching dish pictures" : "All dish pictures");
+    });
+
+    dialogImage.addEventListener("error", () => { dialogImage.hidden = true; dialogPending.hidden = false; });
+    document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+    dialog.addEventListener("close", () => { if (openedFrom) openedFrom.focus(); });
+    count.textContent = `${dishes.length} of ${dishes.length} dishes`;
+  </script>
+</body>
+</html>

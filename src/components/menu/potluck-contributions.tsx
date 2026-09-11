@@ -4,6 +4,7 @@ import { formatMoney } from "@/lib/format";
 import { compareMenuDishes, contributionCostCents, contributionSummary, formatServings } from "@/lib/menu-presentation";
 import { Badge } from "@/components/ui/badge";
 import { PotluckContributionControls } from "@/components/menu/potluck-contribution-controls";
+import { FoodIcon } from "@/components/menu/food-icon";
 
 export function PotluckContributions({ plan, guests, guestId, isHost, hasShopping }: {
   plan: MenuPlan;
@@ -38,7 +39,7 @@ export function PotluckContributions({ plan, guests, guestId, isHost, hasShoppin
           return (
             <article className="card contribution-card" data-contribution-dish-id={planDish.id} key={planDish.id ?? dish.id}>
               <div className="card-heading">
-                <div><h3>{dish.name}</h3><p className="muted">{formatServings(servings)} · {formatMoney(contributionCostCents(planDish))} estimate</p></div>
+                <div><h3 className="food-name"><FoodIcon dish={dish} /><span>{dish.name}</span></h3><p className="muted">{formatServings(servings)} · {formatMoney(contributionCostCents(planDish))} estimate</p></div>
                 <Badge tone={contributionReady ? "success" : contributionGuestId ? "info" : "neutral"}>{contributionReady ? "Ready to bring" : contributionGuestId ? "Getting ready" : "Shared groceries"}</Badge>
               </div>
               <p>{owner ? <><strong>{owner.name}</strong> is bringing this dish.</> : "No contributor yet. Its ingredients are included in shared shopping."}</p>
