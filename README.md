@@ -16,7 +16,7 @@ This repository supports Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, and share
 - Unique browser guest accounts with private rooms, full host controls, and **Save my rooms** through GitHub when OAuth is configured
 - Strictly isolated CI-local test identity for automated tests
 - Deny-by-default host/guest authorization and tokenless hashed guest sessions
-- Clear first-room guidance and an Add my preferences action for hosts trying the workflow
+- Room creation collects the creator's meal preferences and saves them as a participant alongside the room
 - Guest join form and a separate saved meal response for each room in the same browser
 - Constraint summary for diets, allergies, likes, budget, and spice
 - Deterministic menus with distinct structures for all seven meal formats
@@ -111,13 +111,13 @@ Managed staging setup, recovery, and remote acceptance are defined in [`docs/STA
 
 1. Open `/`.
 2. Choose **Continue as guest**. This opens your dashboard with a new private browser account; GitHub is not required.
-3. Create a room and choose a meal format. Set the planned guest count and an optional total budget.
-4. Choose **Add my preferences** from the room overview or the empty Plans page. Submit your meal preferences so you can participate and vote as well as host.
+3. Create a room and choose a meal format. Set the planned guest count (including yourself) and an optional total budget, then fill in **Your meal preferences** before choosing **Create room**.
+4. Your response appears in the guest list with a **Host** label and is included in menu planning. Choose **My preferences** to review or update it before voting starts.
 5. Open **Plans** and choose **Generate plans**. Review the menus and save a Like, Neutral, or Veto with a reason.
 6. Choose **Finalize plan** on the menu you want.
 7. Open **Shopping** to review groceries, assign items, and mark purchases. If public sharing was enabled for the room, its final menu can also be shared using the room's Share link.
 
-To plan with other people, copy the room's invite link and send it to them before generating plans. They can submit preferences without a host account. A host who wants to vote should add their own meal preferences before moving to voting.
+To plan with other people, copy the room's invite link and send it to them before generating plans. They can submit preferences without a host account. Creators can vote using the response saved during room creation. For older rooms without a creator response, use **Add my preferences** before moving to voting.
 
 Guest host access stays in the same browser for up to seven days. Choose **Save my rooms** to link the current host account to GitHub when OAuth is configured. This is the path to retain those rooms through an account you can return to across devices; real GitHub callback validation remains pending. Without that link, ending the guest session, clearing cookies, or losing the session removes access to that anonymous account's rooms. The app asks for confirmation before ending a guest session.
 

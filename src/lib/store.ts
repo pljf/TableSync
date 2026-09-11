@@ -466,30 +466,66 @@ export async function getPublicRoom(roomId: string): Promise<PublicRoomView | nu
   };
 }
 
+function roomCreateData(actor: HostActor, input: CreateRoomInput) {
+  return {
+    hostId: actor.userId,
+    title: input.title,
+    description: input.description,
+    eventType: input.eventType,
+    dateTime: input.dateTime ? new Date(input.dateTime) : undefined,
+    location: input.location,
+    totalBudgetCents: input.totalBudgetCents,
+    expectedGuests: input.expectedGuests,
+    status: "COLLECTING_PREFERENCES",
+    inviteToken: crypto.randomUUID(),
+    isPublicShareable: input.isPublicShareable ?? false,
+    activities: {
+      create: {
+        actorName: "Host",
+        type: "ROOM_CREATED",
+        message: `Created ${input.title}.`
+      }
+    }
+  } satisfies Prisma.DinnerRoomUncheckedCreateInput;
+}
+
 export async function createRoom(actor: HostActor, input: CreateRoomInput): Promise<DinnerRoom> {
+  const room = await prisma.dinnerRoom.create({ data: roomCreateData(actor, input) });
+  return mapRoom(room);
+}
+
+export async function createRoomWithHostPreferences(
+  actor: HostActor,
+  input: CreateRoomInput,
+  creator: Omit<JoinRoomInput, "token" | "submissionKey">
+): Promise<{ room: DinnerRoom; sessionToken: string }> {
+  const guestId = crypto.randomUUID();
+  const submissionKey = crypto.randomUUID();
+  const sessionToken = deriveGuestSessionToken(guestId, submissionKey);
+  // A nested write commits the room, creator's response and session together.
   const room = await prisma.dinnerRoom.create({
     data: {
-      hostId: actor.userId,
-      title: input.title,
-      description: input.description,
-      eventType: input.eventType,
-      dateTime: input.dateTime ? new Date(input.dateTime) : undefined,
-      location: input.location,
-      totalBudgetCents: input.totalBudgetCents,
-      expectedGuests: input.expectedGuests,
-      status: "COLLECTING_PREFERENCES",
-      inviteToken: crypto.randomUUID(),
-      isPublicShareable: input.isPublicShareable ?? false,
-      activities: {
+      ...roomCreateData(actor, input),
+      guests: {
         create: {
-          actorName: "Host",
-          type: "ROOM_CREATED",
-          message: `Created ${input.title}.`
+          id: guestId,
+          submissionKey,
+          name: creator.name,
+          email: creator.email,
+          isHostGuest: true,
+          canBring: creator.canBring,
+          preference: { create: creator.preference },
+          sessions: {
+            create: {
+              tokenHash: hashGuestSessionToken(sessionToken),
+              expiresAt: new Date(Date.now() + GUEST_SESSION_SECONDS * 1000)
+            }
+          }
         }
       }
     }
   });
-  return mapRoom(room);
+  return { room: mapRoom(room), sessionToken };
 }
 
 export async function updateRoomDetails(roomId: string, actor: HostActor, input: CreateRoomInput): Promise<DinnerRoom> {

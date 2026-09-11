@@ -75,6 +75,19 @@ describe("room navigation and empty states", () => {
     expect(otherHtml).not.toContain("Please keep my serving aside.");
     expect(otherHtml).toContain("Maya");
   });
+
+  it("identifies the creator's saved diet as the host response", () => {
+    const guest = {
+      id: "host-guest", name: "Maya", isHostGuest: true,
+      preference: { dietType: "VEGAN" }
+    } as Guest;
+    const hostHtml = renderToStaticMarkup(createElement(GuestList, { guests: [guest], hostCanManage: false }));
+    const guestHtml = renderToStaticMarkup(createElement(GuestList, { guests: [{ ...guest, isHostGuest: false }], hostCanManage: false }));
+
+    expect(hostHtml).toContain('badge badge-info">Host</span>');
+    expect(hostHtml).toContain("Vegan");
+    expect(guestHtml).not.toContain(">Host</span>");
+  });
 });
 
 describe("format selection and contribution access", () => {
