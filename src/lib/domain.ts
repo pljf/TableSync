@@ -218,10 +218,10 @@ export type GenerateMenuInput = {
   dishes: Dish[];
 };
 
-export type InviteRoomView = Pick<DinnerRoom, "id" | "title" | "eventType" | "status">;
+export type InviteRoomView = Pick<DinnerRoom, "id" | "title" | "eventType" | "status" | "createdAt">;
 
 export type PublicRoomView = {
-  room: Pick<DinnerRoom, "id" | "title" | "eventType" | "dateTime" | "location" | "totalBudgetCents">;
+  room: Pick<DinnerRoom, "id" | "title" | "eventType" | "dateTime" | "location" | "totalBudgetCents" | "createdAt">;
   finalPlan?: {
     id: string;
     title: string;

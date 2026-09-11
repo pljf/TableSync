@@ -17,6 +17,7 @@ This repository supports Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, and share
 - Strictly isolated CI-local test identity for automated tests
 - Deny-by-default host/guest authorization and tokenless hashed guest sessions
 - Room creation collects the creator's meal preferences and saves them as a participant alongside the room
+- Creators can permanently delete their rooms; rooms expire seven days after creation and are automatically cleaned up
 - Guest join form and a separate saved meal response for each room in the same browser
 - Constraint summary for diets, allergies, likes, budget, and spice
 - Deterministic menus with distinct structures for all seven meal formats
@@ -120,6 +121,10 @@ Managed staging setup, recovery, and remote acceptance are defined in [`docs/STA
 To plan with other people, copy the room's invite link and send it to them before generating plans. They can submit preferences without a host account. Creators can vote using the response saved during room creation. For older rooms without a creator response, use **Add my preferences** before moving to voting.
 
 Guest host access stays in the same browser for up to seven days. Choose **Save my rooms** to link the current host account to GitHub when OAuth is configured. This is the path to retain those rooms through an account you can return to across devices; real GitHub callback validation remains pending. Without that link, ending the guest session, clearing cookies, or losing the session removes access to that anonymous account's rooms. The app asks for confirmation before ending a guest session.
+
+Every room expires seven days (168 hours) after creation, including rooms hosted through GitHub. A notice on creation and room pages shows this policy and the expiration date. Editing a room or connecting an account does not extend its lifetime. Creators can use **Delete room** on the overview to permanently remove it sooner after confirming; guest responses, menus, votes, shopping progress, and invite/share links are removed with it. Expired rooms become inaccessible immediately and are physically deleted by the next successful daily cleanup job. This policy also applies to existing rooms when the release is deployed.
+
+For Vercel, set `CRON_SECRET` in the Production environment before deploying the included daily schedule. Other hosts can schedule `npm run ops:cleanup`. See [room retention setup](docs/deployment/room-retention.md) for configuration and cleanup timing.
 
 A browser keeps a separate meal-response session for each room. Joining another room preserves access to earlier responses, and room-specific preferences and voting use that room's participant identity. Use separate browser profiles or devices for different participants in the same room. Host-account sessions remain separate from meal-response sessions.
 

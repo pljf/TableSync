@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { GitHubSignInButton } from "@/components/auth/github-sign-in-button";
 import { GuestSignInButton } from "@/components/auth/guest-sign-in-button";
 import { TableScene } from "@/components/brand/table-scene";
+import { RoomExpiryNotice } from "@/components/rooms/room-expiry-notice";
 import { getCurrentUser } from "@/lib/auth";
 import { authEnvironment } from "@/lib/auth-environment";
 
@@ -23,14 +24,15 @@ export default async function AuthPage({ searchParams }: PageProps) {
         <article className="card form-card">
           <Link className="icon-text-button" href="/dashboard" prefetch={false}><ArrowLeft aria-hidden="true" size={16} /> Back to my rooms</Link>
           <div>
-            <p className="eyebrow">Keep your rooms</p>
+            <p className="eyebrow">Access across devices</p>
             <h1>Save my rooms</h1>
-            <p className="muted">Connect GitHub to keep the rooms you host and return from another browser or device. Your current guest account stays signed in while you connect.</p>
+            <p className="muted">Connect GitHub to access the rooms you host from another browser or device until they expire. Your current guest account stays signed in while you connect.</p>
+            <RoomExpiryNotice />
           </div>
           {query.error ? <p className="feedback error-feedback" role="alert">Saving your account was not completed. Try again or return to your rooms.</p> : null}
           <GitHubSignInButton enabled={authEnvironment.productionReady} upgrade />
           {!authEnvironment.productionReady ? <p className="feedback info-feedback" role="status">Account saving is not set up in this installation yet. Your guest session is still active; keep this browser and its cookies to return for up to 7 days.</p> : null}
-          <p className="muted">Meal responses remain saved separately in this browser for up to 30 days. Connecting GitHub saves the rooms you host; it does not transfer guest responses to another device.</p>
+          <p className="muted">Meal responses stay available in this browser until the room expires. Connecting GitHub saves access to hosted rooms; it does not transfer guest responses to another device or extend room lifetimes.</p>
         </article>
       </section>
     );

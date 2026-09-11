@@ -2,13 +2,14 @@ import { CalendarDays, CheckCheck, Plus, Users } from "lucide-react";
 import Link from "next/link";
 import { RoomCard } from "@/components/rooms/room-card";
 import { DashboardEmptyState } from "@/components/rooms/dashboard-empty-state";
+import { RoomExpiryNotice } from "@/components/rooms/room-expiry-notice";
 import { hostActorFromUser } from "@/lib/authorization";
 import { getRoomBundle, listRoomsForHost } from "@/lib/store";
 import { requireHost } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage({ searchParams }: { searchParams?: Promise<{ saved?: string }> | { saved?: string } } = {}) {
+export default async function DashboardPage({ searchParams }: { searchParams?: Promise<{ saved?: string; deleted?: string }> | { saved?: string; deleted?: string } } = {}) {
   const user = await requireHost();
   const query = searchParams ? await searchParams : {};
   const host = hostActorFromUser(user);
@@ -30,11 +31,13 @@ export default async function DashboardPage({ searchParams }: { searchParams?: P
           New room
         </Link>
       </header>
-      {query.saved === "1" && !user.isAnonymous ? <p className="feedback success-feedback" role="status">Your hosted rooms are saved to your account. Use the same GitHub account to return from another device.</p> : null}
+      {query.deleted === "1" ? <p className="feedback success-feedback" role="status">Room deleted. Its guest preferences, menus, votes, and shopping progress have been removed.</p> : null}
+      {query.saved === "1" && !user.isAnonymous ? <p className="feedback success-feedback" role="status">Your hosted rooms are linked to your account. Use the same GitHub account to return from another device until the rooms expire.</p> : null}
+      <RoomExpiryNotice />
       {user.isAnonymous ? (
         <aside className="card guest-access-note" aria-label="Guest account">
           <strong>You’re using a guest account</strong>
-          <p className="muted">You can use every planning feature. Your rooms stay available in this browser for up to 7 days. Ending your session or clearing cookies removes your access.</p>
+          <p className="muted">You can use every planning feature. Your guest session lasts up to 7 days in this browser. Ending your session or clearing cookies removes your access.</p>
           <Link className="button secondary" href="/auth?upgrade=1" prefetch={false}>Save my rooms</Link>
         </aside>
       ) : null}

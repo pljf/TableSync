@@ -24,6 +24,7 @@ describe("room creator meal preferences", () => {
     expect(html).toContain('name="dietType"');
     expect(html).toContain('name="allergies"');
     expect(html).toContain("Include yourself in the guest count.");
+    expect(html).toContain("Rooms expire 7 days after creation and are automatically deleted.");
     expect(html).toContain('aria-describedby="expected-guests-help"');
     expect(html.match(/<form>/g)).toHaveLength(1);
   });

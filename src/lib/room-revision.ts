@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { Prisma } from "@/generated/prisma/client";
 import type { RequestActors } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
+import { activeRoomWhere } from "@/lib/room-retention";
 
 // Read only revision metadata. No guest preferences, vote reasons, recipes or
 // shopping contents are loaded by the polling endpoint.
@@ -37,7 +38,7 @@ export async function getRoomRevision(roomId: string, actors: RequestActors): Pr
   if (!access.length) return null;
 
   const metadata = await prisma.dinnerRoom.findFirst({
-    where: { id: roomId, OR: access },
+    where: { id: roomId, OR: access, ...activeRoomWhere() },
     select: revisionSelect
   });
   return metadata ? createHash("sha256").update(JSON.stringify(metadata)).digest("hex") : null;

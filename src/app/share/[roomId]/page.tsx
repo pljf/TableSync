@@ -7,6 +7,7 @@ import { compareMenuDishes, formatServings, menuDishRole } from "@/lib/menu-pres
 import { eventFormats } from "@/lib/event-formats";
 import { getPublicRoom } from "@/lib/store";
 import { DietaryNote } from "@/components/menu/dietary-note";
+import { RoomExpiryNotice } from "@/components/rooms/room-expiry-notice";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export default async function SharePage({ params }: PageProps) {
         </div>
         <Badge tone="success">Finalized</Badge>
       </header>
+      <RoomExpiryNotice createdAt={view.room.createdAt} />
       <section className="metric-grid">
         <article className="metric-card">
           <CalendarDays size={20} />

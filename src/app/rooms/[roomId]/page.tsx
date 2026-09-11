@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityTimeline } from "@/components/rooms/activity-timeline";
 import { ConstraintSummary } from "@/components/rooms/constraint-summary";
+import { DeleteRoomControl } from "@/components/rooms/delete-room-control";
+import { RoomExpiryNotice } from "@/components/rooms/room-expiry-notice";
 import { RoomNavigation } from "@/components/rooms/room-navigation";
 import { RoomNextStep } from "@/components/rooms/room-next-step";
 import { RoomProgress } from "@/components/rooms/room-progress";
@@ -55,6 +57,7 @@ export default async function RoomPage({ params }: PageProps) {
         </div>
       </header>
 
+      <RoomExpiryNotice createdAt={bundle.room.createdAt} />
       <RoomProgress status={bundle.room.status} guestCount={bundle.guests.length} expectedGuests={bundle.room.expectedGuests} />
       <RoomNavigation active="overview" guestCanViewPreferences={actors.guest?.roomId === bundle.room.id} initialRevision={initialRevision ?? undefined} roomId={bundle.room.id} shareAvailable={shareAvailable} />
       <RoomNextStep room={bundle.room} guestCount={bundle.guests.length} planCount={bundle.plans.length} isHost={isHost} isRoomGuest={actors.guest?.roomId === bundle.room.id} finalPlanTitle={finalPlan?.title} shoppingCount={bundle.shopping.length} contributions={contributions} />
@@ -98,6 +101,7 @@ export default async function RoomPage({ params }: PageProps) {
           </article>
         </aside>
       </div>
+      {isHost ? <DeleteRoomControl roomId={bundle.room.id} /> : null}
     </div>
   );
 }
