@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { authEnvironment } from "@/lib/auth-environment";
 import { AuthorizationError, type GuestActor } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
+import { activeRoomWhere } from "@/lib/room-retention";
 
 export const GUEST_SESSION_COOKIE = "tablesync_guest_session";
 export const GUEST_SESSION_SECONDS = 60 * 60 * 24 * 30;
@@ -77,7 +78,7 @@ export async function getCurrentGuestActor(roomId?: string): Promise<GuestActor 
   ].filter((token): token is string => Boolean(token)))];
   for (const token of tokens) {
     const session = await prisma.guestSession.findUnique({
-      where: { tokenHash: hashGuestSessionToken(token) },
+      where: { tokenHash: hashGuestSessionToken(token), guest: { room: activeRoomWhere() } },
       include: { guest: { select: { id: true, roomId: true, name: true } } }
     });
     if (!session || session.revokedAt || session.expiresAt <= new Date()) continue;
@@ -100,7 +101,7 @@ export async function getSavedGuestRooms(): Promise<Array<{ roomId: string; room
   const guestCookies = cookieStore.getAll().filter(({ name, value }) => isGuestCookie(name) && value);
   if (guestCookies.length === 0) return [];
   const sessions = await prisma.guestSession.findMany({
-    where: { tokenHash: { in: [...new Set(guestCookies.map(({ value }) => hashGuestSessionToken(value)))] }, revokedAt: null, expiresAt: { gt: new Date() } },
+    where: { tokenHash: { in: [...new Set(guestCookies.map(({ value }) => hashGuestSessionToken(value)))] }, revokedAt: null, expiresAt: { gt: new Date() }, guest: { room: activeRoomWhere() } },
     include: { guest: { select: { roomId: true, name: true, room: { select: { title: true } } } } }
   });
   const rooms = new Map<string, { roomId: string; roomTitle: string; guestName: string }>();

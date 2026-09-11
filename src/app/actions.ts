@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { unstable_rethrow } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { ZodError } from "zod";
 import { AuthorizationError, type RequestActors } from "@/lib/authorization";
 import { requireGuestActor, setGuestSessionCookie } from "@/lib/guest-session";
@@ -14,6 +14,7 @@ import {
   castVote,
   claimShoppingItem,
   createRoomWithHostPreferences,
+  deleteRoom,
   finalizePlan,
   generatePlansForRoom,
   joinRoom,
@@ -182,6 +183,31 @@ export async function createRoomAction(
     await recordSecurityAudit({ ...audit, outcome: auditOutcome(error) });
     return { status: "error", message: mutationErrorMessage(error), mutationId: crypto.randomUUID() };
   }
+}
+
+export async function deleteRoomAction(
+  roomId: string,
+  _previousState: MutationState,
+  formData: FormData
+): Promise<MutationState> {
+  const state = await performMutation(
+    "Room deleted.",
+    { action: "delete-room", resourceType: "room", resourceId: roomId },
+    async (audit) => {
+      const host = await requireHostActor();
+      Object.assign(audit, { actorType: "HOST" as const, actorId: host.userId });
+      await enforceRateLimit({ scope: "delete-room", subject: `host:${host.userId}`, limit: 20, windowSeconds: 60 });
+      if (formData.get("confirmDataLoss") !== "on") {
+        throw new Error("Confirm that this room and all its meal responses, plans, votes, and shopping progress will be permanently deleted.");
+      }
+      await deleteRoom(roomId, host);
+      revalidatePath("/dashboard");
+      revalidatePath(`/rooms/${roomId}`);
+    }
+  );
+  // Navigate on the server before revalidation renders the now-missing room.
+  if (state.status === "success") redirect("/dashboard?deleted=1");
+  return state;
 }
 
 export async function updateRoomDetailsAction(

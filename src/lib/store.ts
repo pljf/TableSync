@@ -40,6 +40,7 @@ import { generateShoppingList } from "@/lib/shopping-engine/generate-shopping-li
 import { reconcileShoppingList } from "@/lib/shopping-engine/reconcile-shopping-list";
 import { assertWorkflowActionAllowed } from "@/lib/workflow/state-machine";
 import { Prisma } from "@/generated/prisma/client";
+import { activeRoomWhere, expiredRoomCutoff } from "@/lib/room-retention";
 
 type CreateRoomInput = {
   title: string;
@@ -336,13 +337,15 @@ async function getDishCatalog(): Promise<Dish[]> {
 async function lockRoom(tx: Prisma.TransactionClient, roomId: string): Promise<void> {
   // Every room mutation takes this lock before reading workflow state or child records.
   // Menu generation must use the same locked preference snapshot that it publishes.
-  await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
+  const rooms = await tx.$queryRaw<Array<{ createdAt: Date }>>(Prisma.sql`SELECT "createdAt" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
+  if (!rooms[0] || rooms[0].createdAt <= expiredRoomCutoff()) throw new AuthorizationError();
 }
 
 export async function listRoomsForHost(actor: HostActor): Promise<DinnerRoom[]> {
   const rooms = await prisma.dinnerRoom.findMany({
     where: {
-      hostId: actor.userId
+      hostId: actor.userId,
+      ...activeRoomWhere()
     },
     orderBy: {
       updatedAt: "desc"
@@ -356,7 +359,7 @@ export async function getRoomBundle(
   actors: RequestActors
 ): Promise<RoomBundle | null> {
   const room = await prisma.dinnerRoom.findUnique({
-    where: { id: roomId },
+    where: { id: roomId, ...activeRoomWhere() },
     include: roomBundleInclude
   });
   if (!room) return null;
@@ -367,16 +370,16 @@ export async function getRoomBundle(
 
 export async function getRoomByInviteToken(token: string): Promise<InviteRoomView | null> {
   const room = await prisma.dinnerRoom.findUnique({
-    where: { inviteToken: token },
-    select: { id: true, title: true, eventType: true, status: true, inviteExpiresAt: true }
+    where: { inviteToken: token, ...activeRoomWhere() },
+    select: { id: true, title: true, eventType: true, status: true, inviteExpiresAt: true, createdAt: true }
   });
   if (!room || (room.inviteExpiresAt && room.inviteExpiresAt <= new Date())) return null;
-  return { id: room.id, title: room.title, eventType: room.eventType, status: room.status };
+  return { id: room.id, title: room.title, eventType: room.eventType, status: room.status, createdAt: toIso(room.createdAt) };
 }
 
 export async function getGuestPreferenceContext(actor: GuestActor): Promise<{ guest: Guest; room: DinnerRoom } | null> {
   const guest = await prisma.guest.findUnique({
-    where: { id: actor.guestId },
+    where: { id: actor.guestId, room: activeRoomWhere() },
     include: {
       preference: true,
       room: true
@@ -396,11 +399,12 @@ export async function getGuestPreferenceContext(actor: GuestActor): Promise<{ gu
 
 export async function getPublicRoom(roomId: string): Promise<PublicRoomView | null> {
   const room = await prisma.dinnerRoom.findFirst({
-    where: { id: roomId, isPublicShareable: true, status: "FINALIZED" },
+    where: { id: roomId, isPublicShareable: true, status: "FINALIZED", ...activeRoomWhere() },
     select: {
       id: true,
       title: true,
       dateTime: true,
+      createdAt: true,
       eventType: true,
       location: true,
       totalBudgetCents: true,
@@ -433,6 +437,7 @@ export async function getPublicRoom(roomId: string): Promise<PublicRoomView | nu
       title: room.title,
       eventType: room.eventType,
       dateTime: room.dateTime?.toISOString(),
+      createdAt: toIso(room.createdAt),
       location: room.location ?? undefined,
       totalBudgetCents: room.totalBudgetCents ?? undefined
     },
@@ -528,6 +533,18 @@ export async function createRoomWithHostPreferences(
   return { room: mapRoom(room), sessionToken };
 }
 
+export async function deleteRoom(roomId: string, actor: HostActor): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    // Serialize deletion with room mutations and scheduled cleanup. Owners can
+    // also remove an expired room while it awaits the scheduled purge.
+    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
+    const room = await tx.dinnerRoom.findUnique({ where: { id: roomId }, select: { hostId: true } });
+    if (!room) throw new AuthorizationError();
+    assertHostOwnsResource(actor, room.hostId);
+    await tx.dinnerRoom.delete({ where: { id: roomId } });
+  });
+}
+
 export async function updateRoomDetails(roomId: string, actor: HostActor, input: CreateRoomInput): Promise<DinnerRoom> {
   return prisma.$transaction(async (tx) => {
     await lockRoom(tx, roomId);
@@ -559,7 +576,7 @@ export async function joinRoom(input: JoinRoomInput): Promise<Guest & { sessionT
   return prisma.$transaction(async (tx) => {
     await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "DinnerRoom" WHERE "inviteToken" = ${input.token} FOR UPDATE`);
     const room = await tx.dinnerRoom.findUnique({
-      where: { inviteToken: input.token },
+      where: { inviteToken: input.token, ...activeRoomWhere() },
       select: { id: true, status: true, inviteExpiresAt: true }
     });
     if (!room || (room.inviteExpiresAt && room.inviteExpiresAt <= new Date())) {

@@ -4,6 +4,7 @@ import type { DinnerRoom } from "@/lib/domain";
 import { eventTypeLabels, formatMoney } from "@/lib/format";
 import { EventDateTime } from "@/components/ui/event-date-time";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { roomExpiresAt } from "@/lib/room-retention";
 
 export function RoomCard({ room, guestCount, shoppingCount }: { room: DinnerRoom; guestCount: number; shoppingCount: number }) {
   const EventIcon = { DINNER: Utensils, HOTPOT: Soup, POTLUCK: HandHeart, BBQ: Flame, PICNIC: TreePine, BRUNCH: Coffee, OTHER: Salad }[room.eventType];
@@ -34,6 +35,7 @@ export function RoomCard({ room, guestCount, shoppingCount }: { room: DinnerRoom
           <dd>{room.location || "Location TBD"}</dd>
         </div>
       </dl>
+      <p className="muted room-expiry-notice">Expires <EventDateTime value={roomExpiresAt(room.createdAt).toISOString()} /></p>
       <div className="room-card-progress">
         <span>
           <Users aria-hidden="true" size={16} />

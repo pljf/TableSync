@@ -35,9 +35,9 @@ describe("authorized room revision metadata", () => {
 
   it("enforces owning host or current room membership in the metadata query", async () => {
     await getRoomRevision("room-1", actors);
-    expect(db.findFirst.mock.calls[0][0].where).toEqual({ id: "room-1", OR: [{ hostId: "host-1" }] });
+    expect(db.findFirst.mock.calls[0][0].where).toEqual({ id: "room-1", OR: [{ hostId: "host-1" }], createdAt: { gt: expect.any(Date) } });
     await getRoomRevision("room-1", { guest: { kind: "guest", guestId: "guest-1", roomId: "room-1", name: "Guest" } });
-    expect(db.findFirst.mock.calls[1][0].where).toEqual({ id: "room-1", OR: [{ guests: { some: { id: "guest-1" } } }] });
+    expect(db.findFirst.mock.calls[1][0].where).toEqual({ id: "room-1", OR: [{ guests: { some: { id: "guest-1" } } }], createdAt: { gt: expect.any(Date) } });
     db.findFirst.mockResolvedValue(null);
     expect(await getRoomRevision("room-1", actors)).toBeNull();
   });

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   host: vi.fn(), guest: vi.fn(), createRoom: vi.fn(), updateRoomDetails: vi.fn(), generatePlansForRoom: vi.fn(),
-  updateGuestPreferences: vi.fn(), finalizePlan: vi.fn(), audit: vi.fn(), revalidatePath: vi.fn(), setGuestSessionCookie: vi.fn()
+  updateGuestPreferences: vi.fn(), finalizePlan: vi.fn(), audit: vi.fn(), revalidatePath: vi.fn(), setGuestSessionCookie: vi.fn(), deleteRoom: vi.fn()
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
@@ -15,13 +15,14 @@ vi.mock("@/lib/rate-limit", () => ({
 vi.mock("@/lib/security-audit", () => ({ recordSecurityAudit: mocks.audit }));
 vi.mock("@/lib/store", () => ({
   createRoomWithHostPreferences: mocks.createRoom, updateRoomDetails: mocks.updateRoomDetails, generatePlansForRoom: mocks.generatePlansForRoom,
+  deleteRoom: mocks.deleteRoom,
   castVote: vi.fn(), claimShoppingItem: vi.fn(), finalizePlan: mocks.finalizePlan, joinRoom: vi.fn(), reopenPreferences: vi.fn(),
   toggleShoppingItem: vi.fn(), undoFinalization: vi.fn(), updateGuestPreferences: mocks.updateGuestPreferences
 }));
 
 import { redirect } from "next/navigation";
 import {
-  createRoomAction, generatePlansAction, updateRoomDetailsAction
+  createRoomAction, deleteRoomAction, generatePlansAction, updateRoomDetailsAction
 } from "@/app/actions";
 
 function roomForm() {
@@ -44,6 +45,7 @@ describe("room action recovery", () => {
     mocks.updateGuestPreferences.mockResolvedValue({ id: "guest-1", roomId: "room-1" });
     mocks.finalizePlan.mockResolvedValue("room-1");
     mocks.generatePlansForRoom.mockResolvedValue({ kind: "success", plans: [] });
+    mocks.deleteRoom.mockResolvedValue(undefined);
   });
 
   it("converts the entered event time and money before saving", async () => {
@@ -87,6 +89,32 @@ describe("room action recovery", () => {
       status: "success", redirectTo: "/rooms/room-1"
     });
     expect(mocks.updateRoomDetails).toHaveBeenCalledWith("room-1", expect.anything(), expect.objectContaining({ totalBudgetCents: 20000 }));
+  });
+
+  it("requires explicit confirmation before permanently deleting a room", async () => {
+    expect(await deleteRoomAction("room-1", { status: "idle" }, new FormData())).toMatchObject({
+      status: "error", message: expect.stringContaining("Confirm")
+    });
+    expect(mocks.deleteRoom).not.toHaveBeenCalled();
+  });
+
+  it("deletes through the authenticated owner and returns to the dashboard", async () => {
+    const data = new FormData();
+    data.set("confirmDataLoss", "on");
+    await expect(deleteRoomAction("room-1", { status: "idle" }, data)).rejects.toMatchObject({
+      digest: expect.stringContaining("/dashboard?deleted=1")
+    });
+    expect(mocks.deleteRoom).toHaveBeenCalledExactlyOnceWith("room-1", expect.objectContaining({ userId: "host-1" }));
+    expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({ action: "delete-room", outcome: "ALLOWED", resourceId: "room-1" }));
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("keeps a failed deletion on the room with recoverable feedback", async () => {
+    const data = new FormData();
+    data.set("confirmDataLoss", "on");
+    mocks.deleteRoom.mockRejectedValueOnce(new Error("You do not have access to this resource."));
+    expect(await deleteRoomAction("room-1", { status: "idle" }, data)).toMatchObject({ status: "error" });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
   it("does not announce voting-ready menus for a no-solution result", async () => {

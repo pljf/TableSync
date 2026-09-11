@@ -2,6 +2,7 @@ import { createRoomAction } from "@/app/actions";
 import { requireHost } from "@/lib/auth";
 import { EventFormatSelect } from "@/components/rooms/event-format-select";
 import { GuestPreferenceFields } from "@/components/rooms/guest-preference-fields";
+import { RoomExpiryNotice } from "@/components/rooms/room-expiry-notice";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { MutationForm } from "@/components/ui/mutation-form";
 import { DateTimeInput } from "@/components/ui/date-time-input";
@@ -19,6 +20,7 @@ export default async function NewRoomPage() {
           <p className="eyebrow">New gathering</p>
           <h1>Create a room</h1>
           <p className="muted">Set the scene and share your meal preferences, then invite your people.</p>
+          <RoomExpiryNotice />
         </div>
         <label>
           Title
