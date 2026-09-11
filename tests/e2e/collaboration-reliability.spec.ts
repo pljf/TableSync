@@ -2,16 +2,18 @@ import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
 import { signInAsHost } from "./host-auth";
+import { fillGuestPreferences, type GuestPreferences } from "./guest-preferences";
 
 const origin = process.env.TABLESYNC_E2E_BASE_URL ?? "http://localhost:3000";
 const marker = `TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`;
 
-async function createMeal(page: Page, title: string) {
+async function createMeal(page: Page, title: string, creator: GuestPreferences = { name: "Meal creator", diet: "OMNIVORE" }) {
   await page.goto("/rooms/new");
   await page.getByLabel("Title", { exact: true }).fill(title);
   await page.getByLabel("Description", { exact: true }).fill(marker);
   await page.getByLabel("Expected guests", { exact: true }).fill("2");
   await page.getByLabel("Total budget", { exact: true }).fill("150");
+  await fillGuestPreferences(page, creator);
   await page.getByRole("button", { name: "Create room", exact: true }).click();
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
   const roomId = new URL(page.url()).pathname.split("/").at(-1)!;
@@ -40,8 +42,24 @@ test.describe("collaboration reliability", () => {
 
   test("retains independent responses for multiple rooms in one browser", async ({ browser, page }) => {
     await signInAsHost(page);
-    const first = await createMeal(page, `First meal ${randomUUID()}`);
-    const second = await createMeal(page, `Second meal ${randomUUID()}`);
+    const first = await createMeal(page, `First meal ${randomUUID()}`, {
+      name: "First-room creator", diet: "VEGAN", allergies: "peanut", notes: "First creator note"
+    });
+    const second = await createMeal(page, `Second meal ${randomUUID()}`, {
+      name: "Second-room creator", diet: "VEGETARIAN", allergies: "sesame", notes: "Second creator note"
+    });
+    // Creating another room must retain the creator's existing room response.
+    for (const room of [first, second]) {
+      await page.goto(`/rooms/${room.roomId}`);
+      await expect(page.locator(".guest-row")).toHaveCount(1);
+      await expect(page.locator(".guest-row")).toContainText(room === first ? "First-room creator" : "Second-room creator");
+      await page.getByRole("link", { name: "My preferences", exact: true }).click();
+      await expect(page.getByRole("navigation", { name: "Your meal responses", exact: true }).getByRole("link")).toHaveCount(2);
+      await expect(page.getByLabel("Name", { exact: true })).toHaveValue(room === first ? "First-room creator" : "Second-room creator");
+      await expect(page.getByRole("combobox", { name: "Diet type", exact: true })).toHaveValue(room === first ? "VEGAN" : "VEGETARIAN");
+      await expect(page.getByLabel("Allergies", { exact: true })).toHaveValue(room === first ? "peanut" : "sesame");
+      await expect(page.getByRole("textbox", { name: "Notes", exact: true })).toHaveValue(room === first ? "First creator note" : "Second creator note");
+    }
     const guestContext = await browser.newContext({ baseURL: origin });
     try {
       const guest = await guestContext.newPage();
@@ -78,7 +96,7 @@ test.describe("collaboration reliability", () => {
     try {
       const guest = await guestContext.newPage();
       await joinMeal(guest, meal.invitation, "Shared shopper", "");
-      await expect(page.getByText("1 of 2 guests have responded.", { exact: false })).toBeVisible({ timeout: 25_000 });
+      await expect(page.getByText("2 of 2 guests have responded.", { exact: false })).toBeVisible({ timeout: 25_000 });
       await page.goto(`/rooms/${meal.roomId}/plans`);
       await save(page, () => page.getByRole("button", { name: "Generate plans", exact: true }).click());
       await expect(page.getByRole("heading", { name: "Compare menus", exact: true })).toBeVisible();

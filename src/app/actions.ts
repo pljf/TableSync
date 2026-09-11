@@ -13,7 +13,7 @@ import {
   assignPotluckContribution,
   castVote,
   claimShoppingItem,
-  createRoom,
+  createRoomWithHostPreferences,
   finalizePlan,
   generatePlansForRoom,
   joinRoom,
@@ -165,13 +165,16 @@ export async function createRoomAction(
   const audit: MutableAudit = { action: "create-room", actorType: "HOST", actorId: host.userId };
   try {
     await enforceRateLimit({ scope: "create-room", subject: `host:${host.userId}`, limit: 20, windowSeconds: 60 });
-    const room = await createRoom(host, parseRoomForm(formData));
+    const input = parseRoomForm(formData);
+    const creator = parseGuestPreferenceForm(formData);
+    const { room, sessionToken } = await createRoomWithHostPreferences(host, input, creator);
     Object.assign(audit, { resourceType: "room", resourceId: room.id });
+    await setGuestSessionCookie(sessionToken, room.id);
     await recordSecurityAudit({ ...audit, outcome: "ALLOWED" });
     revalidatePath("/dashboard");
     return {
       status: "success",
-      message: "Room created.",
+      message: "Room created and your preferences saved.",
       mutationId: crypto.randomUUID(),
       redirectTo: `/rooms/${room.id}`
     };

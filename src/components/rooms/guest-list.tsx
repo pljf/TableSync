@@ -1,5 +1,6 @@
 import type { Guest } from "@/lib/domain";
 import { dietLabels, formatMoney, spiceLabels } from "@/lib/format";
+import { Badge } from "@/components/ui/badge";
 
 export function GuestList({
   guests,
@@ -19,7 +20,7 @@ export function GuestList({
       {guests.map((guest) => (
         <div key={guest.id}>
           <div className="guest-row">
-            <div className="guest-identity"><span className="guest-avatar" aria-hidden="true">{guest.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("")}</span><strong>{guest.name}</strong></div>
+            <div className="guest-identity"><span className="guest-avatar" aria-hidden="true">{guest.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("")}</span><strong>{guest.name}</strong>{guest.isHostGuest ? <Badge tone="info">Host</Badge> : null}</div>
             <span>{dietLabels[guest.preference.dietType]}</span>
           </div>
           {hostCanManage || currentGuestId === guest.id ? (

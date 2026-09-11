@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import type { EventType } from "../../src/lib/domain";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
 import { signInAsHost } from "./host-auth";
+import { fillGuestPreferences, type GuestPreferences } from "./guest-preferences";
 
 const e2eRunMarker = `TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`;
 const browserErrors = new WeakMap<Page, string[]>();
@@ -32,7 +33,7 @@ async function submitMutation(page: Page, path: string, submit: () => Promise<vo
 
 async function createRoom(
   page: Page,
-  input: { title: string; eventType: EventType; budgetDollars: number },
+  input: { title: string; eventType: EventType; budgetDollars: number; creator?: GuestPreferences },
   captureQuality = false
 ) {
   await signInAsHost(page);
@@ -40,9 +41,13 @@ async function createRoom(
   await page.getByRole("main").getByRole("link", { name: "New room", exact: true }).click();
   await expect(page).toHaveURL(/\/rooms\/new$/);
   await expect(page.getByRole("heading", { name: "Create a room", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your meal preferences", exact: true })).toBeVisible();
+  await expect(page.getByLabel("Name", { exact: true })).toHaveAttribute("required", "");
   // The App Router streams the new route's metadata separately from its body.
   // Require the actual title before auditing the completed destination page.
   await expect(page).toHaveTitle("TableSync");
+  const creator: GuestPreferences = input.creator ?? { name: "Room creator", diet: "OMNIVORE" };
+  await fillGuestPreferences(page, creator);
   if (captureQuality) {
     await captureQualityEvidence(page, "new-room-form");
     const dateTimeInput = page.getByLabel("Date and time");
@@ -72,21 +77,23 @@ async function createRoom(
   await page.getByRole("button", { name: /create room/i }).click();
   await expect(page.getByRole("heading", { name: input.title })).toBeVisible({ timeout: 20_000 });
   await expect(page.getByRole("link", { name: "Share", exact: true })).toHaveCount(0);
-  await expect(page.getByText("0 of 2 guests have responded.", { exact: false })).toBeVisible();
-  await expect(page.getByText("No diet preferences submitted", { exact: true })).toBeVisible();
-  await expect(page.getByText("No spice preferences submitted", { exact: true })).toBeVisible();
-  await expect(page.getByText(/no guests have joined yet/i)).toBeVisible();
+  await expect(page.getByText("1 of 2 guests have responded.", { exact: false })).toBeVisible();
+  await expect(page.locator(".guest-row")).toHaveCount(1);
+  await expect(page.locator(".guest-row")).toContainText(creator.name);
+  await expect(page.getByText("No diet preferences submitted", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("No spice preferences submitted", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Overview", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("region", { name: "Room progress", exact: true }).locator('[aria-current="step"]')).toContainText("Preferences");
   const nextStep = page.getByRole("region", { name: "Next step", exact: true });
-  await expect(nextStep.locator("a.button:not(.secondary)")).toHaveText("Add my preferences");
+  await expect(nextStep.locator("a.button:not(.secondary)")).toHaveText("Open menu planning");
+  await expect(page.getByRole("link", { name: "My preferences", exact: true })).toBeVisible();
   await expect(nextStep.getByRole("link", { name: "Invite guests", exact: true })).toHaveAttribute("href", "#room-invite");
   if (captureQuality) {
     const roomUrl = page.url();
     await page.goto("/dashboard");
     await captureQualityEvidence(page, "dashboard-with-room");
     await page.goto(roomUrl);
-    await captureQualityEvidence(page, "room-overview-empty");
+    await captureQualityEvidence(page, "room-overview-creator-preferences");
     const inviteUrl = await page.getByLabel("Guest invite link").inputValue();
     expect(inviteUrl).toMatch(/^https?:\/\//);
     await page.evaluate(() => {
@@ -124,38 +131,14 @@ async function createRoom(
 async function joinGuest(
   page: Page,
   invitePath: string,
-  guest: {
-    name: string;
-    diet: "OMNIVORE" | "VEGETARIAN" | "VEGAN" | "GLUTEN_FREE";
-    allergies?: string;
-    dislikes?: string;
-    likes?: string;
-    spice?: "MILD" | "MEDIUM";
-    canBring?: boolean;
-    notes?: string;
-  },
+  guest: GuestPreferences,
   captureQuality = false
 ) {
   await page.goto(invitePath);
   if (captureQuality) {
     await captureQualityEvidence(page, "guest-join-form");
   }
-  await page.getByLabel("Name").fill(guest.name);
-  await page.getByLabel("Diet type").selectOption(guest.diet);
-  await page.getByLabel("Spice tolerance").selectOption(guest.spice ?? "MEDIUM");
-  if (guest.allergies) {
-    await page.getByLabel("Allergies").fill(guest.allergies);
-  }
-  if (guest.dislikes) {
-    await page.getByLabel("Disliked ingredients").fill(guest.dislikes);
-  }
-  if (guest.likes) {
-    await page.getByLabel("Liked ingredients", { exact: true }).fill(guest.likes);
-  }
-  if (guest.canBring) {
-    await page.getByLabel("I can bring groceries or food").check();
-  }
-  if (guest.notes) await page.getByLabel("Notes", { exact: true }).fill(guest.notes);
+  await fillGuestPreferences(page, guest);
   await page.getByRole("button", { name: /join room/i }).click();
   await expect(page.getByRole("heading", { name: "Your preferences", exact: true })).toBeVisible();
   await page.waitForLoadState("networkidle");
@@ -400,7 +383,7 @@ test.describe("fresh-room core workflows", () => {
           await expect(page).toHaveURL(new RegExp(`${path}$`));
           await expect(page.getByRole("heading", { name: destination.heading, exact: true })).toBeVisible();
           await expect(page.getByRole("region", { name: "Room progress", exact: true }).locator('[aria-current="step"]')).toContainText("Preferences");
-          await expect(page.getByRole("link", { name: "Add my preferences", exact: true })).toBeVisible();
+          await expect(page.getByRole("link", { name: "My preferences", exact: true })).toBeVisible();
           await expect(link).toHaveAttribute("aria-current", "page");
           await expect(navigation.locator('[data-pending="true"]')).toHaveCount(0);
           await expect(link.getByRole("status")).toBeEmpty();
@@ -419,7 +402,11 @@ test.describe("fresh-room core workflows", () => {
     const { roomId, invitePath } = await createRoom(page, {
       title: "Fresh Dinner Acceptance",
       eventType: "DINNER",
-      budgetDollars: 120
+      budgetDollars: 120,
+      creator: {
+        name: "Dinner Vegetarian", diet: "VEGETARIAN", likes: "tofu, rice",
+        canBring: true, notes: "Please keep a separate serving aside."
+      }
     }, captureQuality);
     await page.goto(`/rooms/${roomId}/shopping`);
     await expect(page.getByText("Waiting for a menu", { exact: true })).toBeVisible();
@@ -427,13 +414,10 @@ test.describe("fresh-room core workflows", () => {
     await expect(page.getByText("Total estimate", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: /no shopping list yet/i })).toBeVisible();
     await expect(page.getByRole("link", { name: "Share", exact: true })).toHaveCount(0);
-    const vegetarianEditPath = await joinGuest(page, invitePath, {
-      name: "Dinner Vegetarian",
-      diet: "VEGETARIAN",
-      likes: "tofu, rice",
-      canBring: true,
-      notes: "Please keep a separate serving aside."
-    }, captureQuality);
+    const vegetarianEditPath = `/preferences?roomId=${roomId}`;
+    await page.getByRole("link", { name: "My preferences", exact: true }).click();
+    await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Dinner Vegetarian");
+    await expect(page.getByRole("combobox", { name: "Diet type", exact: true })).toHaveValue("VEGETARIAN");
     await page.getByLabel("Liked ingredients", { exact: true }).fill("tofu, rice, mushrooms");
     await page.getByRole("button", { name: /save preferences/i }).click();
     await expect(page).toHaveURL(/\/preferences\?.*updated=/, { timeout: 20_000 });
@@ -450,7 +434,7 @@ test.describe("fresh-room core workflows", () => {
       allergies: "peanut",
       dislikes: "mushrooms",
       spice: "MILD"
-    });
+    }, captureQuality);
     if (captureQuality) {
       await page.goto(`/rooms/${roomId}`);
       await page.getByText("Food preferences for Dinner Vegetarian", { exact: true }).click();
@@ -517,13 +501,10 @@ test.describe("fresh-room core workflows", () => {
     const { roomId, invitePath } = await createRoom(page, {
       title: "Fresh Hotpot Acceptance",
       eventType: "HOTPOT",
-      budgetDollars: 120
-    });
-    await joinGuest(page, invitePath, {
-      name: "Hotpot Vegetarian",
-      diet: "VEGETARIAN",
-      likes: "tofu, mushrooms",
-      canBring: true
+      budgetDollars: 120,
+      creator: {
+        name: "Hotpot Vegetarian", diet: "VEGETARIAN", likes: "tofu, mushrooms", canBring: true
+      }
     });
     await joinGuest(page, invitePath, {
       name: "Hotpot Omnivore",
@@ -561,7 +542,10 @@ test.describe("fresh-room core workflows", () => {
       test.setTimeout(240_000);
       const quality = testInfo.project.name === "chromium";
       const { roomId, invitePath } = await createRoom(page, {
-        title: `Fresh ${format.label} Acceptance`, eventType: format.type, budgetDollars: 1
+        title: `Fresh ${format.label} Acceptance`, eventType: format.type, budgetDollars: 1,
+        creator: {
+          name: `${format.label} Omnivore`, diet: "OMNIVORE", dislikes: "mushrooms", spice: "MILD", canBring: true
+        }
       });
       // A separate guest browser proves contribution self-service without host authority.
       const guestContext = await browser.newContext({ baseURL: process.env.TABLESYNC_E2E_BASE_URL ?? "http://localhost:3000" });
@@ -573,9 +557,6 @@ test.describe("fresh-room core workflows", () => {
       try {
         await joinGuest(guestPage, invitePath, {
           name: `${format.label} Vegan`, diet: "VEGAN", allergies: "peanut", spice: "MILD", canBring: true
-        });
-        await joinGuest(page, invitePath, {
-          name: `${format.label} Omnivore`, diet: "OMNIVORE", dislikes: "mushrooms", spice: "MILD", canBring: true
         });
         await page.goto(`/rooms/${roomId}/plans`);
         await page.getByRole("button", { name: /generate plans/i }).click();
@@ -643,15 +624,11 @@ test.describe("fresh-room core workflows", () => {
   }
 
   test("a fresh room renders a persisted no-solution report without votable cards", async ({ page }, testInfo) => {
-    const { roomId, invitePath } = await createRoom(page, {
+    const { roomId } = await createRoom(page, {
       title: "Fresh No Solution Acceptance",
       eventType: "DINNER",
-      budgetDollars: 1
-    });
-    await joinGuest(page, invitePath, {
-      name: "Budget Constrained Guest",
-      diet: "OMNIVORE",
-      canBring: true
+      budgetDollars: 1,
+      creator: { name: "Budget Constrained Guest", diet: "OMNIVORE", canBring: true }
     });
     await page.goto(`/rooms/${roomId}/plans`);
     await page.getByRole("button", { name: /generate plans/i }).click();

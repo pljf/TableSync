@@ -1,6 +1,7 @@
 import { createRoomAction } from "@/app/actions";
 import { requireHost } from "@/lib/auth";
 import { EventFormatSelect } from "@/components/rooms/event-format-select";
+import { GuestPreferenceFields } from "@/components/rooms/guest-preference-fields";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { MutationForm } from "@/components/ui/mutation-form";
 import { DateTimeInput } from "@/components/ui/date-time-input";
@@ -9,7 +10,7 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function NewRoomPage() {
-  await requireHost();
+  const host = await requireHost();
 
   return (
     <section className="narrow-page wide">
@@ -17,7 +18,7 @@ export default async function NewRoomPage() {
         <div>
           <p className="eyebrow">New gathering</p>
           <h1>Create a room</h1>
-          <p className="muted">A good meal starts with a little planning. Set the scene, then invite your people.</p>
+          <p className="muted">Set the scene and share your meal preferences, then invite your people.</p>
         </div>
         <label>
           Title
@@ -41,15 +42,23 @@ export default async function NewRoomPage() {
             Total budget
             <input name="totalBudgetDollars" min="1" step="1" type="number" placeholder="120" />
           </label>
-          <label>
-            Expected guests
-            <input name="expectedGuests" min="2" max="50" type="number" defaultValue="6" required />
-          </label>
+          <div>
+            <label>
+              Expected guests
+              <input aria-describedby="expected-guests-help" name="expectedGuests" min="2" max="50" type="number" defaultValue="6" required />
+            </label>
+            <p className="muted" id="expected-guests-help">Include yourself in the guest count.</p>
+          </div>
           <label className="checkbox-label standalone">
             <input name="isPublicShareable" type="checkbox" />
             Public share page
           </label>
         </div>
+        <div>
+          <h2>Your meal preferences</h2>
+          <p className="muted">You are part of the meal too. Your diet, allergies, and preferences will be saved with the room and included when planning menus.</p>
+        </div>
+        <GuestPreferenceFields name={host.isAnonymous ? undefined : host.name} email={host.isAnonymous ? undefined : host.email} />
         <div className="button-row form-actions">
           <SubmitButton className="button" pendingLabel="Creating room...">
             Create room

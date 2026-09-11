@@ -44,7 +44,10 @@ test("security headers, hidden test auth, secure Cookie attributes, and Server A
         ...serverActionFields,
         title: "Cross-origin room must not exist",
         eventType: "DINNER",
-        expectedGuests: "2"
+        expectedGuests: "2",
+        name: "Cross-origin creator",
+        dietType: "OMNIVORE",
+        spiceLevel: "MEDIUM"
       }
     });
     expect(crossOrigin.status()).toBeGreaterThanOrEqual(400);

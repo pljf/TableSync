@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { expect, test, type BrowserContext, type Page, type Response, type Route } from "@playwright/test";
+import { dishCatalog } from "../../src/lib/seed-data";
+import { fillGuestPreferences, type GuestPreferences } from "./guest-preferences";
 
 const e2eRunMarker = `TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`;
 const origin = process.env.TABLESYNC_E2E_BASE_URL ?? "http://localhost:3000";
@@ -69,13 +71,15 @@ async function continueAsGuest(page: Page, path: "/" | "/auth" = "/") {
   return assertGuestSessionSecurity(page, await signInResponse);
 }
 
-async function createGuestRoom(page: Page, title: string, options: { publicShare?: boolean; retryTransportError?: boolean } = {}) {
+async function createGuestRoom(page: Page, title: string, options: { publicShare?: boolean; retryTransportError?: boolean; creator?: GuestPreferences } = {}) {
   await page.getByRole("main").getByRole("link", { name: "New room", exact: true }).click();
   await page.getByLabel("Title", { exact: true }).fill(title);
   await page.getByLabel("Description", { exact: true }).fill(e2eRunMarker);
   await page.getByRole("combobox", { name: "Event type", exact: true }).selectOption("DINNER");
   await page.getByLabel("Expected guests", { exact: true }).fill("2");
   await page.getByLabel("Total budget", { exact: true }).fill("120");
+  const creator: GuestPreferences = options.creator ?? { name: "Guest room creator", diet: "OMNIVORE" };
+  await fillGuestPreferences(page, creator);
   if (options.publicShare) await page.getByLabel("Public share page", { exact: true }).check();
   if (options.retryTransportError) {
     const rejectCreation = async (route: Route) => {
@@ -96,6 +100,9 @@ async function createGuestRoom(page: Page, title: string, options: { publicShare
       await expect(page.getByRole("combobox", { name: "Event type", exact: true })).toHaveValue("DINNER");
       await expect(page.getByLabel("Expected guests", { exact: true })).toHaveValue("2");
       await expect(page.getByLabel("Total budget", { exact: true })).toHaveValue("120");
+      await expect(page.getByLabel("Name", { exact: true })).toHaveValue(creator.name);
+      await expect(page.getByRole("combobox", { name: "Diet type", exact: true })).toHaveValue(creator.diet);
+      await expect(page.getByLabel("Allergies", { exact: true })).toHaveValue(creator.allergies ?? "");
       await expect(page.getByRole("button", { name: "Create room", exact: true })).toBeEnabled();
       await expect(page).toHaveURL(/\/rooms\/new$/);
     } finally {
@@ -145,7 +152,10 @@ test.describe("public guest access", () => {
   test("keeps rooms in a private browser session and confirms before ending access", async ({ browser, context, page }) => {
     const firstCookie = await continueAsGuest(page);
     const title = `Guest privacy ${randomUUID()}`;
-    const roomId = await createGuestRoom(page, title, { retryTransportError: true });
+    const roomId = await createGuestRoom(page, title, {
+      retryTransportError: true,
+      creator: { name: "Private room creator", diet: "VEGAN", allergies: "soy" }
+    });
     await page.reload();
     await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
     await page.goto("/demo");
@@ -202,19 +212,30 @@ test.describe("public guest access", () => {
     await continueAsGuest(page, "/auth");
     const title = `Guest dinner ${randomUUID()}`;
     const privateNote = `Private serving note ${randomUUID()}`;
-    const roomId = await createGuestRoom(page, title, { publicShare: true });
+    const roomId = await createGuestRoom(page, title, {
+      publicShare: true,
+      creator: {
+        name: "Guest host diner", diet: "VEGETARIAN", allergies: "peanut",
+        likes: "tofu, rice", notes: privateNote, canBring: true
+      }
+    });
     await expect(page.getByRole("link", { name: "Share", exact: true })).toHaveCount(0);
     const progress = page.getByRole("region", { name: "Room progress", exact: true });
     await expect(progress.locator('[aria-current="step"]')).toContainText("Preferences");
-    await expect(page.getByRole("region", { name: "Next step", exact: true }).locator("a.button:not(.secondary)")).toHaveText("Add my preferences");
-    await page.getByRole("link", { name: "Add my preferences", exact: true }).click();
-    await page.getByLabel("Name", { exact: true }).fill("Guest host diner");
-    await page.getByRole("combobox", { name: "Diet type", exact: true }).selectOption("VEGETARIAN");
-    await page.getByLabel("Liked ingredients", { exact: true }).fill("tofu, rice");
-    await page.getByLabel("Notes", { exact: true }).fill(privateNote);
-    await page.getByLabel("I can bring groceries or food", { exact: true }).check();
-    await page.getByRole("button", { name: "Join room", exact: true }).click();
+    await expect(page.getByText("1 of 2 guests have responded.", { exact: false })).toBeVisible();
+    await expect(page.locator(".guest-row")).toHaveCount(1);
+    await expect(page.locator(".guest-row")).toContainText("Guest host diner");
+    await expect(page.getByRole("region", { name: "Guest food preferences", exact: true })).toContainText("Vegetarian: 1");
+    await expect(page.getByRole("region", { name: "Guest food preferences", exact: true })).toContainText("peanut");
+    await expect(page.getByRole("region", { name: "Next step", exact: true }).locator("a.button:not(.secondary)")).toHaveText("Open menu planning");
+    await page.getByRole("link", { name: "My preferences", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Your preferences", exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Guest host diner");
+    await expect(page.getByRole("combobox", { name: "Diet type", exact: true })).toHaveValue("VEGETARIAN");
+    await expect(page.getByLabel("Allergies", { exact: true })).toHaveValue("peanut");
+    await expect(page.getByLabel("Liked ingredients", { exact: true })).toHaveValue("tofu, rice");
+    await expect(page.getByRole("textbox", { name: "Notes", exact: true })).toHaveValue(privateNote);
+    await expect(page.getByLabel("I can bring groceries or food", { exact: true })).toBeChecked();
     await page.waitForLoadState("networkidle");
     expect((await context.cookies()).some((cookie) => cookie.name === "tablesync_guest_session")).toBe(true);
 
@@ -225,6 +246,20 @@ test.describe("public guest access", () => {
       page.getByRole("button", { name: "Generate plans", exact: true }).click()
     );
     await expect(page.locator("article.plan-card")).toHaveCount(3);
+    // Validate the displayed menus against the seeded recipe ingredients, so
+    // the creator's saved diet and allergy must reach menu generation.
+    for (const card of await page.locator("article.plan-card").all()) {
+      const names = await card.locator(".dish-list li > span").allTextContents();
+      const dishes = names.map((name) => dishCatalog.find((dish) => dish.name === name));
+      expect(dishes.every(Boolean), "Every proposed dish should come from the recipe catalog").toBe(true);
+      const safeForCreator = (dish: NonNullable<typeof dishes[number]>) =>
+        dish.ingredients.every(({ ingredient }) => ingredient.category !== "MEAT_SEAFOOD");
+      expect(dishes.some((dish) => dish?.category === "MAIN" && safeForCreator(dish)), "Every menu must cover the creator's vegetarian main").toBe(true);
+      expect(dishes.some((dish) => dish?.category === "SIDE" && safeForCreator(dish)), "Every menu must cover the creator's vegetarian side").toBe(true);
+      for (const dish of dishes) {
+        expect(dish!.ingredients.flatMap(({ ingredient }) => [ingredient.name, ...ingredient.tags]).join(" ")).not.toMatch(/peanut/i);
+      }
+    }
     await expect(progress.locator('[aria-current="step"]')).toContainText("Menu & voting");
     await page.getByRole("link", { name: "Shopping", exact: true }).click();
     await expect(page.getByRole("heading", { name: "No shopping list yet", exact: true })).toBeVisible();
