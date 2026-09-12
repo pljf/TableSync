@@ -63,7 +63,7 @@ async function assertGuestSessionSecurity(page: Page, response: Response) {
 }
 
 async function continueAsGuest(page: Page, path: "/" | "/auth" = "/") {
-  await page.goto(path);
+  await page.goto(path, { waitUntil: "domcontentloaded" });
   const signInResponse = page.waitForResponse((response) =>
     response.request().method() === "POST" && new URL(response.url()).pathname === "/api/auth/sign-in/anonymous"
   );

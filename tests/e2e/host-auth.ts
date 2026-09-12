@@ -17,6 +17,6 @@ export async function signInAsHost(page: Page) {
     });
     expect(response.status()).toBe(200);
   }
-  await page.goto("/dashboard");
+  await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "Good things are on the way.", exact: true })).toBeVisible();
 }

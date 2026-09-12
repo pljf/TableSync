@@ -8,7 +8,7 @@ const origin = process.env.TABLESYNC_E2E_BASE_URL ?? "http://localhost:3000";
 const marker = `TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`;
 
 async function createMeal(page: Page, title: string, creator: GuestPreferences = { name: "Meal creator", diet: "OMNIVORE" }) {
-  await page.goto("/rooms/new");
+  await page.goto("/rooms/new", { waitUntil: "domcontentloaded" });
   await page.getByLabel("Title", { exact: true }).fill(title);
   await page.getByLabel("Description", { exact: true }).fill(marker);
   await page.getByLabel("Expected guests", { exact: true }).fill("2");
@@ -22,7 +22,7 @@ async function createMeal(page: Page, title: string, creator: GuestPreferences =
 }
 
 async function joinMeal(page: Page, invitation: string, name: string, notes: string) {
-  await page.goto(invitation);
+  await page.goto(invitation, { waitUntil: "domcontentloaded" });
   await page.getByLabel("Name", { exact: true }).fill(name);
   await page.getByRole("textbox", { name: "Notes", exact: true }).fill(notes);
   await page.getByLabel("I can bring groceries or food", { exact: true }).check();
@@ -152,12 +152,12 @@ test.describe("collaboration reliability", () => {
   });
 
   test("offers anonymous hosts a save-account path without replacing their current access", async ({ page, context }) => {
-    await page.goto("/auth");
+    await page.goto("/auth", { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: "Continue as guest", exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
     const meal = await createMeal(page, `Saved access ${randomUUID()}`);
     const before = (await context.cookies()).find((cookie) => cookie.name.endsWith("tablesync-auth.session_token"));
-    await page.goto("/dashboard");
+    await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
     await page.getByRole("link", { name: "Save my rooms", exact: true }).first().click();
     await expect(page).toHaveURL(/\/auth\?upgrade=1$/);
     await expect(page.getByRole("button", { name: "Continue as guest", exact: true })).toHaveCount(0);
@@ -188,7 +188,7 @@ test.describe("collaboration reliability", () => {
       const request = page.waitForRequest((request) => new URL(request.url()).pathname === revisionPath);
       await page.evaluate(() => window.dispatchEvent(new Event("focus")));
       await request;
-      await page.goto("/dashboard");
+      await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
       await expect(page.getByRole("heading", { name: /good things.*are on the way/i })).toBeVisible();
       release();
       await page.unrouteAll({ behavior: "wait" });
