@@ -4,9 +4,9 @@
 
 TableSync gives a group one place to plan a meal: collect dietary preferences, compare complete menus, agree on a favorite, and divide up the shopping. Built with Next.js, TypeScript, and PostgreSQL, it connects the decisions people make before a gathering with the work needed to make it happen.
 
-**[Live demo](https://tablesync-staging.vercel.app)** · [Features](#features) · [Engineering](#engineering) · [Getting started](#getting-started) · [Documentation](docs/README.md)
+**[Live demo](https://tablesync-staging.vercel.app)** · [Interactive example](https://tablesync-staging.vercel.app/preview) · [Features](#features) · [Engineering](#engineering) · [Getting started](#getting-started) · [Documentation](docs/README.md)
 
-![TableSync homepage with its shared meal planning introduction and guest access](docs/images/home.jpg)
+![TableSync homepage with a red cover, expressive typography, shared-table photography, and guest access](docs/images/editorial-home.jpg)
 
 ## From invitation to dinner
 
@@ -29,29 +29,36 @@ Supports **Dinner, Hotpot, Potluck, BBQ, Picnic, Brunch, and Other** for a share
 | **Potluck coordination** | Claim whole dishes and mark them ready. Shared groceries adjust as contributions change while preserving unaffected shopping progress. |
 | **Shared updates and public menus** | Keep active room views updated while protecting unsaved drafts. Optionally share a read-only finalized menu. |
 | **Responsive interactions** | Use the workflow on desktop or mobile, with clear progress, pending states, retry controls, and reduced-motion support. |
+| **Interactive example** | Explore sample gatherings, preferences, menus, and shopping without signing in. Example changes are temporary and reset when you leave. |
 
 ## A look inside
+
+Warm colors, expressive typography, and real photography carry through the homepage, gathering dashboard, room overview, menu planning, and shopping. The responsive layouts include section entrance animations and interactive planning steps, with reduced-motion support.
+
+Try the [interactive example](https://tablesync-staging.vercel.app/preview) to explore the interface and motion. It uses sample data; changes stay in the example and no invitations are sent.
 
 <table>
   <tr>
     <th width="50%">Compare complete menus</th>
-    <th width="50%">Turn a decision into a plan</th>
+    <th width="50%">Share the shopping</th>
   </tr>
   <tr>
     <td valign="top">
-      <a href="docs/evidence/ui/simple-menu-comparison-desktop.png"><img src="docs/evidence/ui/simple-menu-comparison-desktop.png" alt="Three dinner menus compared by changing dishes, portions, estimated cost, and guest votes" width="100%"></a>
+      <a href="docs/images/menu-planning.jpg"><img src="docs/images/menu-planning.jpg" alt="Three sample menus with real food photography, dish lists, estimated costs, and voting controls" width="100%"></a>
     </td>
     <td valign="top">
-      <a href="docs/evidence/ui/selected-menu-desktop.png"><img src="docs/evidence/ui/selected-menu-desktop.png" alt="A finalized dinner menu with selected dishes, estimated costs, and a link to the shared shopping list" width="100%"></a>
+      <a href="docs/images/shared-shopping.jpg"><img src="docs/images/shared-shopping.jpg" alt="Sample shopping list with purchase progress, ingredient quantities, shopper assignments, and filters" width="100%"></a>
     </td>
   </tr>
   <tr>
-    <td>Compare the differences that matter before choosing a menu.</td>
-    <td>Keep the selected menu in focus and move directly to shared shopping.</td>
+    <td>Compare complete menus and estimated costs, then give everyone a say.</td>
+    <td>Assign ingredients, filter the list, and see what is already purchased.</td>
   </tr>
 </table>
 
-The homepage capture is from the live demo. Planning screenshots show sample meal data; select an image to view it at full size.
+These screenshots come from a local production build. Menu and shopping screens use the interactive example and illustrative data; select an image to view it at full size.
+
+Photos offer serving inspiration and may differ from the selected menu's ingredients. See the [screenshot credits](docs/images/README.md#photography-credits), [full photo credits](https://tablesync-staging.vercel.app/photo-credits), and [interface design notes](docs/design/editorial-ui.md) for sources, licenses, and design details.
 
 ## Engineering
 
@@ -70,7 +77,7 @@ The application separates meal-planning logic from presentation and persistence 
 | Application | Next.js 16 App Router, React 19, TypeScript, Server Components and Server Actions |
 | Data and validation | PostgreSQL, Prisma 7, Zod |
 | Authentication | Better Auth anonymous accounts and optional GitHub OAuth |
-| Interface | Custom CSS, Lucide icons, responsive layouts |
+| Interface | Custom CSS, Lucide icons, locally hosted Bricolage Grotesque and Manrope fonts, WebP photography |
 | Verification | Vitest, Playwright, Axe, Lighthouse, GitHub Actions |
 
 See the [development guide](docs/development.md#architecture) for the source layout and implementation details.
@@ -132,6 +139,7 @@ Menu costs are estimates. Individual spending caps and complete religious-diet c
 - [Documentation index](docs/README.md) — all guides and supporting material.
 - [User guide](docs/user-guide.md) — preferences, voting, shopping, and Potluck contributions.
 - [Development guide](docs/development.md) — setup, environment variables, commands, and architecture.
+- [Interface design](docs/design/editorial-ui.md) — layouts, motion, accessibility, and photography.
 - [Deployment operations](docs/deployment/STAGING_OPERATIONS_RUNBOOK.md) — managed database configuration, staging acceptance, and recovery.
 - [Meal-format specification](docs/product/EVENT_FORMAT_EXPANSION.md) — menu structures and contribution rules.
 

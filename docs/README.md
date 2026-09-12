@@ -6,6 +6,7 @@ Start with the [project overview](../README.md), then choose the guide for your 
 | --- | --- |
 | [Development](development.md) | Local setup, environment variables, commands, and architecture |
 | [User guide](user-guide.md) | Guest access, rooms, menus, voting, shopping, and room expiry |
+| [Interface design](design/editorial-ui.md) | Current layouts, motion, accessibility, and photography |
 | [Meal formats](product/EVENT_FORMAT_EXPANSION.md) | Menu structures and Potluck contribution rules, with dated acceptance evidence |
 | [Operations runbook](deployment/STAGING_OPERATIONS_RUNBOOK.md) | Managed database setup, staging acceptance, recovery, and maintenance |
 | [Runtime settings](deployment/runtime.env.example) | Hosting environment template |
