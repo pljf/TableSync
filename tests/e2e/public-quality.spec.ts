@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Route } from "@playwright/test";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
 
 test.describe("public quality surfaces", () => {
@@ -15,7 +15,30 @@ test.describe("public quality surfaces", () => {
     });
     page.on("pageerror", (error) => browserErrors.push(`pageerror: ${error.message}`));
 
-    await page.goto("/");
+    // A pending photograph must not prevent us from checking usable page content.
+    // Guard against the full-load navigation waits that timed out in CI.
+    const isImage = (url: URL) => url.pathname === "/_next/image";
+    let releaseImages!: () => void;
+    const imagesReleased = new Promise<void>((resolve) => { releaseImages = resolve; });
+    const holdImage = async (route: Route) => {
+      await imagesReleased;
+      await route.continue();
+    };
+    await page.route(isImage, holdImage);
+    const imageRequested = page.waitForRequest((request) => isImage(new URL(request.url())));
+    try {
+      await Promise.all([
+        page.goto("/", { waitUntil: "domcontentloaded" }),
+        imageRequested
+      ]);
+      // Audit the destination content and streamed metadata once they are ready.
+      await expect(page).toHaveTitle("TableSync");
+      await expect(page.getByRole("heading", { level: 1, name: /Good food\.\s*Better\s*company\./ })).toBeVisible();
+      expect(await page.evaluate(() => document.readyState)).toBe("interactive");
+    } finally {
+      releaseImages();
+      await page.unrouteAll({ behavior: "wait" });
+    }
     await expectNoAccessibilityViolations(page, "home");
     const skipLink = page.getByRole("link", { name: /skip to main content/i });
     if (testInfo.project.name === "webkit") {
@@ -33,11 +56,15 @@ test.describe("public quality surfaces", () => {
       await captureResponsiveEvidence(page, "home");
     }
 
-    await page.goto("/auth");
+    await page.goto("/auth", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveTitle("TableSync");
+    await expect(page.getByRole("heading", { name: "Come on in.", exact: true })).toBeVisible();
     await expectNoAccessibilityViolations(page, "authentication");
     if (testInfo.project.name === "chromium") await captureResponsiveEvidence(page, "authentication");
 
-    await page.goto("/auth?error=access_denied&callbackURL=https%3A%2F%2Fattacker.invalid");
+    await page.goto("/auth?error=access_denied&callbackURL=https%3A%2F%2Fattacker.invalid", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveTitle("TableSync");
+    await expect(page.getByRole("heading", { name: "Come on in.", exact: true })).toBeVisible();
     await expect(page.locator(".error-feedback[role='alert']")).toHaveText(
       "Sign-in was not completed. No session was created; please try again."
     );
@@ -45,7 +72,8 @@ test.describe("public quality surfaces", () => {
     await expect(page.getByText(/attacker\.invalid/i)).toHaveCount(0);
     await expectNoAccessibilityViolations(page, "authentication-error-recovery");
 
-    await page.goto("/demo");
+    await page.goto("/demo", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveTitle("TableSync");
     await expect(page.getByRole("heading", { name: "Come on in.", exact: true })).toBeVisible();
     await expectNoAccessibilityViolations(page, "guest-entry");
 
