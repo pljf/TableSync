@@ -34,4 +34,3 @@ describe("editorial landing connects to the real product", () => {
     expect(html).toContain('<button disabled="">Continue as guest</button>');
   });
 });
-

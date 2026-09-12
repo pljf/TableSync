@@ -19,4 +19,3 @@ export default function PhotoCreditsPage() {
     <p className="photo-credits-note">Photos have been resized, converted to WebP and cropped to fit the page. No generative edits were used. Each CC BY-SA photograph remains available under its linked CC BY-SA license; these terms apply to the photograph itself.</p>
   </div>;
 }
-

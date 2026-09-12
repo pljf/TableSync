@@ -101,4 +101,3 @@ export function GatheringPreview() {
  </MotionScene>;
 }
 function LayoutIcon({size=18,...props}:{size?:number;"aria-hidden"?:boolean|"true"|"false"}) {return <Clipboard size={size} {...props}/>;}
-

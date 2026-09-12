@@ -93,4 +93,3 @@ export default async function DashboardPage({ searchParams }: { searchParams?: P
     </MotionScene>
   );
 }
-

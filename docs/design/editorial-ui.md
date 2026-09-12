@@ -24,4 +24,3 @@ Photos offer serving inspiration: pictured ingredients can differ from a selecte
 Route props follow the installed Next.js Promise-only `params` and `searchParams` contracts; existing awaits preserve runtime behavior. Direct test invocations and dashboard heading assertions follow those contracts and the new visible title.
 
 The original preview was reviewed at desktop, tablet and phone widths, including reduced motion and core example interactions. Production adoption receives code review, unit tests, lint and a production build; the repository CI runs its database and browser suites against this branch.
-

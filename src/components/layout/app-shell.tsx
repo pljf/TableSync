@@ -19,4 +19,3 @@ export function AppShell({ children, user }: { children: ReactNode; user?: User 
     <InteractionEffects />
   </div>;
 }
-

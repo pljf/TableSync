@@ -80,7 +80,7 @@ test("security headers, hidden test auth, secure Cookie attributes, and Server A
   await expect(submitSignOut).toBeEnabled();
   expect((await context.cookies()).some((cookie) => cookie.name === sessionCookie!.name && cookie.value === sessionCookie!.value),
     "A failed sign-out must retain the existing host session").toBe(true);
-  await expect(page.getByRole("heading", { name: /your meal rooms/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /good things.*are on the way/i })).toBeVisible();
   await page.unroute("**/api/auth/sign-out");
 });
 

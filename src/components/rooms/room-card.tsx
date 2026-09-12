@@ -62,4 +62,3 @@ export function RoomCard({ room, guestCount, shoppingCount, featured = false, in
     </article>
   );
 }
-

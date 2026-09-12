@@ -176,4 +176,3 @@ export default async function ShoppingPage({ params }: PageProps) {
     </MotionScene>
   );
 }
-

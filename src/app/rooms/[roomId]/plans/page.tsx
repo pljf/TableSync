@@ -196,4 +196,3 @@ export default async function RoomPlansPage({ params }: PageProps) {
     </MotionScene>
   );
 }
-
