@@ -48,10 +48,10 @@ export default async function RoomPage({ params }: PageProps) {
   return (
     <MotionScene className="page-stack live-room-overview" sceneKey={bundle.room.id}>
       {isHost ? <Link className="workspace-back" href="/dashboard" prefetch={false}><ArrowLeft size={16} aria-hidden="true" />My gatherings</Link> : null}
-      <header className="live-room-header" data-reveal>
+      <header className="live-room-header">
         <div>
           <p className="live-section-label">{eventTypeLabels[bundle.room.eventType]} · A place for everyone</p>
-          <h1>{bundle.room.title}</h1>
+          <h1 data-reveal>{bundle.room.title}</h1>
           <p className="muted">{bundle.room.description || eventFormats[bundle.room.eventType].description}</p>
           <div className="button-row">
             <StatusBadge status={bundle.room.status} />
@@ -60,7 +60,7 @@ export default async function RoomPage({ params }: PageProps) {
             ) : null}
           </div>
         </div>
-        <div className="live-room-header-photo">
+        <div className="live-room-header-photo" data-reveal="photo">
           <Image src={photo.src} alt={photo.alt} width={420} height={340} sizes="(max-width: 760px) 1px, 220px" />
         </div>
       </header>
@@ -93,17 +93,17 @@ export default async function RoomPage({ params }: PageProps) {
         </article>
       </section>
 
-      <div className="room-workspace" data-reveal>
+      <div className="room-workspace">
         <div className="room-main">
           <ConstraintSummary guests={bundle.guests} eventType={bundle.room.eventType} />
           <article className="card">
-            <h2>Guests</h2>
+            <h2 data-reveal>Guests</h2>
             <GuestList guests={bundle.guests} hostCanManage={isHost} currentGuestId={actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined} />
           </article>
         </div>
         <aside className="room-sidebar" aria-label="Invitations and activity">
           {isHost && invitePath ? <div id="room-invite"><InviteLink path={invitePath} /></div> : null}
-          <article className="card">
+          <article className="card" data-reveal>
             <h2>Activity</h2>
             <ActivityTimeline events={bundle.activities.slice(0, 6)} />
           </article>

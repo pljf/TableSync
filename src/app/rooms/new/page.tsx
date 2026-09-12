@@ -28,9 +28,9 @@ export default async function NewRoomPage() {
         <p>Pick a day, bring your people, and give your next gathering a home.</p>
         <Image src={photo.src} alt={photo.alt} width={600} height={500} sizes="(max-width: 900px) 1px, 40vw" />
       </header>
-      <div className="live-new-room-fields" data-reveal data-delay="130">
+      <div className="live-new-room-fields">
       <MutationForm action={createRoomAction} className="card form-card live-new-room-form">
-        <div>
+        <div data-reveal data-delay="130">
           <p className="eyebrow">New gathering</p>
           <h2>Create a room</h2>
           <p className="muted">Set the scene and share your meal preferences, then invite your people.</p>

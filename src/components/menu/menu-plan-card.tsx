@@ -46,14 +46,14 @@ export function MenuPlanCard({
   const photo = photographedDish ? dishPhotography(photographedDish.dish.id) : undefined;
 
   return (
-    <article className={`card plan-card editorial-plan ${finalized ? "selected" : ""} ${featured ? "featured-plan" : ""}`} data-plan-id={plan.id} data-reveal="" data-delay={Math.min((optionNumber ?? 1) - 1, 3) * 65} id={`menu-plan-${plan.id}`} tabIndex={-1}>
+    <article className={`card plan-card editorial-plan ${finalized ? "selected" : ""} ${featured ? "featured-plan" : ""}`} data-plan-id={plan.id} id={`menu-plan-${plan.id}`} tabIndex={-1}>
       {photo && photographedDish ? (
-        <figure className="plan-card-visual">
+        <figure className="plan-card-visual" data-reveal="photo" data-delay={Math.min((optionNumber ?? 1) - 1, 3) * 65}>
           <Image src={photo.src} alt={photo.alt} fill sizes={featured ? "(max-width: 760px) 100vw, 1100px" : "(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 380px"} />
           <figcaption>{menuDishRole(photographedDish.dish, eventType)} · Serving inspiration</figcaption>
         </figure>
       ) : (
-        <div className="plan-card-visual plan-card-visual-empty" aria-hidden="true">
+        <div className="plan-card-visual plan-card-visual-empty" data-reveal="photo" data-delay={Math.min((optionNumber ?? 1) - 1, 3) * 65} aria-hidden="true">
           <Utensils size={42} strokeWidth={1.25} />
           <span>{plan.dishes.length} dishes, one table</span>
         </div>

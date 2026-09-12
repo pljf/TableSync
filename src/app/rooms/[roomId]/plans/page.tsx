@@ -101,8 +101,8 @@ export default async function RoomPlansPage({ params }: PageProps) {
       </header>
       <RoomProgress status={bundle.room.status} guestCount={bundle.guests.length} expectedGuests={bundle.room.expectedGuests} />
       <RoomNavigation active="plans" guestCanViewPreferences={isGuest} initialRevision={initialRevision ?? undefined} roomId={bundle.room.id} shareAvailable={shareAvailable} />
-      <section className="card action-panel planning-action" data-reveal="" data-delay="70">
-        <div>
+      <section className="card action-panel planning-action">
+        <div data-reveal data-delay="70">
           <h2>{actionPanel.heading}</h2>
           <p className="muted">{actionPanel.description}</p>
           <p className="muted">{eventFormats[bundle.room.eventType].structure}</p>

@@ -84,9 +84,9 @@ export default async function DashboardPage({ searchParams }: { searchParams?: P
       ) : (
         <DashboardEmptyState />
       )}
-      <div className="live-dashboard-note" data-reveal>
+      <div className="live-dashboard-note">
         <Heart size={23} aria-hidden="true" />
-        <p>The best part of any plan is the people in it.</p>
+        <p data-reveal>The best part of any plan is the people in it.</p>
         <Link href="/rooms/new" prefetch={false}>Make another plan <ArrowRight size={16} aria-hidden="true" /></Link>
       </div>
       <RoomExpiryNotice />

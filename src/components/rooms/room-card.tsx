@@ -16,9 +16,9 @@ export function RoomCard({ room, guestCount, shoppingCount, featured = false, in
   const photo = roomPhoto(room.eventType);
 
   return (
-    <article className={`card room-card live-gathering-card${featured ? " is-featured" : ""}`} aria-labelledby={titleId} data-reveal data-delay={Math.min(index, 3) * 90}>
+    <article className={`card room-card live-gathering-card${featured ? " is-featured" : ""}`} aria-labelledby={titleId}>
       <div className="live-gathering-photo">
-        <Image src={photo.src} alt={photo.alt} width={700} height={460} sizes={featured ? "(max-width: 900px) 100vw, 55vw" : "(max-width: 760px) 100vw, 180px"} />
+        <Image src={photo.src} alt={photo.alt} width={700} height={460} sizes={featured ? "(max-width: 900px) 100vw, 55vw" : "(max-width: 760px) 100vw, 180px"} data-reveal="photo" data-delay={Math.min(index, 3) * 90} />
         <span className="live-occasion-label"><EventIcon aria-hidden="true" size={15} />{eventTypeLabels[room.eventType]}</span>
       </div>
       <div className="live-gathering-content">
