@@ -1,8 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 36 36" fill="none">
   <title>TableSync</title>
-  <path d="M32 3C16.54 3 4 15.54 4 31V53A8 8 0 0 0 12 61H52A8 8 0 0 0 60 53V31C60 15.54 47.46 3 32 3Z" fill="#365640"/>
-  <g stroke="#FFFEF9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M18 16V28C18 32 20.5 34 24 34C27.5 34 30 32 30 28V16M24 16V49"/>
-    <path d="M45 16C39 20 36 26 36 35H45M45 16V49"/>
+  <!--
+    Utensils icon from Lucide, used in this SVG and the generated favicon.ico.
+    ISC License
+    Copyright (c) 2026 Lucide Icons and Contributors
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted, provided that the above
+    copyright notice and this permission notice appear in all copies.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  -->
+  <circle cx="18" cy="18" r="18" fill="#C93621"/>
+  <g transform="translate(8 8) scale(0.8333333333)" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+    <path d="M7 2v20"/>
+    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
   </g>
 </svg>
