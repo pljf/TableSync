@@ -26,8 +26,8 @@ export default async function DashboardPage({ searchParams }: { searchParams?: P
           <p className="live-section-label">Your meal rooms</p>
           <h1 className="live-dashboard-title">Good things<br /><em>are on the way.</em></h1>
         </div>
-        <div className="live-dashboard-intro" data-reveal data-delay="140">
-          <p>Your favorite people. Something delicious. A reason to get together.</p>
+        <div className="live-dashboard-intro">
+          <p data-reveal data-delay="140">Your favorite people. Something delicious. A reason to get together.</p>
           <Link className="button" href="/rooms/new" prefetch={false}>
             <Plus aria-hidden="true" size={18} />
             New room
