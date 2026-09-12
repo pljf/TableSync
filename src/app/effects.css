@@ -189,7 +189,7 @@ button[aria-busy="true"] {
 .dietary-note > svg { margin-top: 3px; color: var(--info); }
 .dietary-note p { margin: 0; font-size: .78rem; line-height: 1.65; }
 .guest-end-confirmation { transform-origin: top right; animation: confirmation-open 200ms var(--ease-out) both; }
-details[open].destructive-control > form { animation: feedback-appear 200ms var(--ease-out) both; }
+details[open].destructive-control > p { animation: feedback-appear 200ms var(--ease-out) both; }
 .plan-card { animation: feedback-appear 320ms var(--ease-out) both; }
 .plan-card:nth-child(2) { animation-delay: 45ms; }
 .plan-card:nth-child(3) { animation-delay: 90ms; }
