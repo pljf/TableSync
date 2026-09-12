@@ -37,7 +37,7 @@ describe("room lifetime and deletion UI", () => {
 
   it.each(["DRAFT", "COLLECTING_PREFERENCES", "PLANNING", "VOTING", "FINALIZED", "ARCHIVED"] as RoomStatus[])("lets the creator delete a room in %s with an explicit data-loss confirmation", async (status) => {
     useRoom(status);
-    const html = renderToStaticMarkup(await RoomPage({ params: { roomId: room.id } }));
+    const html = renderToStaticMarkup(await RoomPage({ params: Promise.resolve({ roomId: room.id }) }));
 
     expect(html).toContain('<summary>Delete room</summary>');
     const confirmation = html.match(/<input\b[^>]*\bname="confirmDataLoss"[^>]*>/)?.[0];
@@ -55,7 +55,7 @@ describe("room lifetime and deletion UI", () => {
     { host: { userId: "another-host" }, guest: { roomId: room.id, guestId: "guest-1", name: "Sam" } }
   ])("shows expiry but no deletion control for a participant who does not own the room", async (actors) => {
     mocks.actors.mockResolvedValue(actors);
-    const html = renderToStaticMarkup(await RoomPage({ params: { roomId: room.id } }));
+    const html = renderToStaticMarkup(await RoomPage({ params: Promise.resolve({ roomId: room.id }) }));
 
     expect(html).not.toContain("Delete room");
     expect(html).not.toContain('name="confirmDataLoss"');
@@ -63,7 +63,7 @@ describe("room lifetime and deletion UI", () => {
   });
 
   it("shows each dashboard room's creation-based expiry and confirms deletion", async () => {
-    const html = renderToStaticMarkup(await DashboardPage({ searchParams: { deleted: "1" } }));
+    const html = renderToStaticMarkup(await DashboardPage({ searchParams: Promise.resolve({ deleted: "1" }) }));
 
     expect(html).toContain(policy);
     expect(html).toContain('dateTime="2026-09-17T15:30:00.000Z"');
@@ -71,7 +71,7 @@ describe("room lifetime and deletion UI", () => {
   });
 
   it("makes account-linked rooms' expiry clear after saving across devices", async () => {
-    const html = renderToStaticMarkup(await DashboardPage({ searchParams: { saved: "1" } }));
+    const html = renderToStaticMarkup(await DashboardPage({ searchParams: Promise.resolve({ saved: "1" }) }));
 
     expect(html).toContain("return from another device until the rooms expire");
     expect(html).toContain(policy);

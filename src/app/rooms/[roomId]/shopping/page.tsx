@@ -10,11 +10,12 @@ import { getRequestActors } from "@/lib/request-actors";
 import { getRoomRevision } from "@/lib/room-revision";
 import { getRoomBundle } from "@/lib/store";
 import { contributionSummary } from "@/lib/menu-presentation";
+import { MotionScene } from "@/components/layout/motion-scene";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  params: Promise<{ roomId: string }> | { roomId: string };
+  params: Promise<{ roomId: string }>;
 };
 
 export default async function ShoppingPage({ params }: PageProps) {
@@ -104,10 +105,10 @@ export default async function ShoppingPage({ params }: PageProps) {
                   };
 
   return (
-    <div className="page-stack">
-      <header className="page-header">
+    <MotionScene className="page-stack shopping-page" sceneKey={`shopping-${bundle.room.id}-${bundle.room.status}`}>
+      <header className="page-header live-workflow-heading" data-reveal="">
         <div>
-          <p className="eyebrow">Shopping workflow</p>
+          <p className="eyebrow">A little teamwork, a full table</p>
           <h1>{bundle.room.title}</h1>
         </div>
         <Badge tone={allContributed ? "success" : !hasShopping ? "neutral" : unassigned === 0 ? "success" : "warning"}>
@@ -131,19 +132,19 @@ export default async function ShoppingPage({ params }: PageProps) {
       ) : null}
       {hasShopping ? (
         <>
-          <section className="metric-grid shopping-metrics">
-            <article className="metric-card">
+          <section className="metric-grid shopping-metrics" aria-label="Shopping progress" data-reveal="" data-delay="70">
+            <article className="metric-card shopping-total">
               <ShoppingCart size={20} />
               <span>{contributions ? "Shared grocery estimate" : "Total estimate"}</span>
               <strong>{formatMoney(total)}</strong>
             </article>
-            <article className="metric-card">
+            <article className="metric-card shopping-per-person">
               <Users size={20} />
               <span>{contributions ? "Shared groceries per person" : "Cost per person"}</span>
               <strong>{formatMoney(Math.round(total / plannedGuests))}</strong>
               <small>Based on {plannedGuests} planned guests</small>
             </article>
-            <article className="metric-card">
+            <article className="metric-card shopping-purchased">
               <CheckCheck size={20} />
               <span>Purchased</span>
               <strong>
@@ -172,7 +173,7 @@ export default async function ShoppingPage({ params }: PageProps) {
           </div>
         </article>
       )}
-    </div>
+    </MotionScene>
   );
 }
 

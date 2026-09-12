@@ -1,32 +1,16 @@
 "use client";
 
-import { LayoutDashboard, Plus } from "lucide-react";
+import { ArrowUpRight, LayoutDashboard, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import "@/lib/document-lifecycle";
 
-const destinations = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/rooms/new", label: "New room", icon: Plus }
-];
-
-export function MainNavigation() {
+export function MainNavigation({ signedIn = false }: { signedIn?: boolean }) {
   const pathname = usePathname();
-
-  return (
-    <nav className="nav-links" aria-label="Main navigation">
-      {destinations.map(({ href, label, icon: Icon }) => (
-        <Link
-          aria-current={pathname === href ? "page" : undefined}
-          className={`main-nav-link${pathname === href ? " is-active" : ""}`}
-          href={href}
-          key={href}
-          prefetch={false}
-        >
-          <Icon aria-hidden="true" size={16} />
-          <span>{label}</span>
-        </Link>
-      ))}
-    </nav>
-  );
+  const marketing = pathname === "/" || pathname === "/auth";
+  if (marketing && !signedIn) return <nav className="nav-links new-navigation" aria-label="Main navigation"><Link href="/#how-it-works">How it works</Link><Link href="/preview">Explore an example <ArrowUpRight size={15} aria-hidden="true" /></Link></nav>;
+  return <nav className="nav-links new-navigation workspace-navigation" aria-label="Main navigation">
+    <Link href="/dashboard" prefetch={false} aria-current={pathname === "/dashboard" ? "page" : undefined}><LayoutDashboard size={16} aria-hidden="true" />My gatherings</Link>
+    <Link href="/rooms/new" prefetch={false} aria-current={pathname === "/rooms/new" ? "page" : undefined}><Plus size={16} aria-hidden="true" />New gathering</Link>
+  </nav>;
 }

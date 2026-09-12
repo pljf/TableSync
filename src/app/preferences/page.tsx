@@ -14,7 +14,7 @@ import { canPerformWorkflowAction } from "@/lib/workflow/state-machine";
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  searchParams?: Promise<{ saved?: string; updated?: string; roomId?: string }> | { saved?: string; updated?: string; roomId?: string };
+  searchParams?: Promise<{ saved?: string; updated?: string; roomId?: string }>;
 };
 
 export default async function GuestPreferencePage({ searchParams }: PageProps) {

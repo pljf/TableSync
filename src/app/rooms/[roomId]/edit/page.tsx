@@ -11,7 +11,7 @@ import { canPerformWorkflowAction } from "@/lib/workflow/state-machine";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditRoomPage({ params }: { params: Promise<{ roomId: string }> | { roomId: string } }) {
+export default async function EditRoomPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = await params;
   const host = await requireHostActor();
   const bundle = await getRoomBundle(roomId, { host });

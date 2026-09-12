@@ -14,7 +14,7 @@ import { eventFormats } from "@/lib/event-formats";
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  params: Promise<{ token: string }> | { token: string };
+  params: Promise<{ token: string }>;
 };
 
 export default async function JoinPage({ params }: PageProps) {

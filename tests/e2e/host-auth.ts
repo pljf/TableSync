@@ -18,5 +18,5 @@ export async function signInAsHost(page: Page) {
     expect(response.status()).toBe(200);
   }
   await page.goto("/dashboard");
-  await expect(page.getByRole("heading", { name: "Your meal rooms", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Good things are on the way.", exact: true })).toBeVisible();
 }

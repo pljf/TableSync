@@ -1,0 +1,29 @@
+/* Shared production surfaces use the same editorial system as the example. */
+.topbar.site-header{width:min(var(--page-width),calc(100% - 2 * var(--page-gutter)))}
+.nav-links.new-navigation{border:0;background:transparent;border-radius:0;padding:0}
+.new-navigation a{border-bottom:2px solid transparent}
+.new-navigation a[aria-current="page"]{color:var(--primary);border-bottom-color:var(--primary)}
+.page-stack,.narrow-page{width:min(var(--page-width),calc(100% - 2 * var(--page-gutter)))}
+.narrow-page{max-width:620px}.narrow-page.wide{max-width:820px}
+.page-stack.compact-stack{width:100%}
+.page-header>.button{flex-shrink:0}.narrow-page>.page-header{margin-bottom:24px}
+.icon-text-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:44px;min-height:44px;padding:10px 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:var(--primary);font-size:13px;line-height:1.4;cursor:pointer}
+.tab-nav{gap:24px;padding:0;border-bottom:1px solid var(--border)}
+.tab-nav a{padding:12px 4px;margin-bottom:-1px;border-radius:0;border-bottom:2px solid transparent}
+.tab-nav a[aria-current="page"]{color:var(--primary);background:transparent;border-bottom-color:var(--primary)}
+.tab-nav a:hover{background:transparent;border-bottom-color:var(--border)}
+.form-card{border-top:1px solid var(--border);padding:32px;gap:24px}
+.form-card>div:first-child{border:0}
+.photo-credits-page{width:min(1100px,calc(100% - 2 * var(--page-gutter)))}
+.gather-actions>.auth-action-stack{width:auto}
+.gather-actions .auth-action-stack .action-feedback{max-width:330px}
+.auth-story .auth-story-title,.auth-story .auth-story-title em{color:var(--text)}
+.auth-story .auth-story-copy>p{color:#465039}
+@media(max-width:760px){
+ .topbar.site-header:has(.workspace-navigation){flex-wrap:wrap}
+ .workspace-navigation{display:flex;order:3;flex-basis:100%;justify-content:space-between;border-top:1px solid var(--border);padding-top:5px;gap:14px}
+ .workspace-navigation a{font-size:12px;min-height:44px}
+ .page-stack,.narrow-page,.narrow-page.wide{width:calc(100% - 2 * var(--page-gutter))}
+ .page-stack.compact-stack{width:100%}.tab-nav{gap:16px}
+ .form-card{padding:24px 20px}.photo-credits-page{padding-inline:0}
+}
