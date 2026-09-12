@@ -149,6 +149,7 @@ details[open] .faq-minus{display:block}
 .decision-card h2{font-weight:600}
 .decision-card .muted{color:#5b674c}
 .decision-card .button{background:var(--primary);color:white}
+.decision-card .button:not(.secondary):is(:hover,:focus-visible){background:var(--primary-strong);color:white}
 .decision-card .button.secondary{color:#3c502b;border-color:#c3cea9}
 .decision-symbol{background:#dce6b4;color:#40522d}
 .metric-card{background:transparent;border:0;border-radius:0;border-right:1px solid var(--border);min-height:85px}
