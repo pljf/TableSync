@@ -9,7 +9,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { authEnvironment } from "@/lib/auth-environment";
 
 type PageProps = {
-  searchParams?: Promise<{ error?: string; upgrade?: string }> | { error?: string; upgrade?: string };
+  searchParams?: Promise<{ error?: string; upgrade?: string }>;
 };
 
 export default async function AuthPage({ searchParams }: PageProps) {

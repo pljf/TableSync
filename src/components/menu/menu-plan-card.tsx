@@ -1,4 +1,5 @@
 import { Ban, CheckCircle2, CircleMinus, Heart, Utensils } from "lucide-react";
+import Image from "next/image";
 import type { EventType, Guest, MenuPlan } from "@/lib/domain";
 import { finalizePlanAction } from "@/app/actions";
 import { formatMoney } from "@/lib/format";
@@ -9,6 +10,7 @@ import { VoteForm } from "@/components/menu/vote-form";
 import { VetoReasons } from "@/components/menu/veto-reasons";
 import { MutationForm } from "@/components/ui/mutation-form";
 import { FoodIcon } from "@/components/menu/food-icon";
+import { dishPhotography } from "@/lib/dish-photography";
 
 function voteCount(plan: MenuPlan, value: "LIKE" | "NEUTRAL" | "VETO") {
   return plan.votes.filter((vote) => vote.value === value).length;
@@ -40,9 +42,22 @@ export function MenuPlanCard({
   const finalized = plan.status === "FINALIZED";
   const orderedDishes = [...plan.dishes].sort((left, right) => compareMenuDishes(left.dish, right.dish, eventType));
   const currentVote = currentGuestId ? plan.votes.find((vote) => vote.guestId === currentGuestId) : undefined;
+  const photographedDish = orderedDishes.find(({ dish }) => dishPhotography(dish.id));
+  const photo = photographedDish ? dishPhotography(photographedDish.dish.id) : undefined;
 
   return (
-    <article className={`card plan-card ${finalized ? "selected" : ""} ${featured ? "featured-plan" : ""}`} data-plan-id={plan.id} id={`menu-plan-${plan.id}`} tabIndex={-1}>
+    <article className={`card plan-card editorial-plan ${finalized ? "selected" : ""} ${featured ? "featured-plan" : ""}`} data-plan-id={plan.id} id={`menu-plan-${plan.id}`} tabIndex={-1}>
+      {photo && photographedDish ? (
+        <figure className="plan-card-visual" data-reveal="photo" data-delay={Math.min((optionNumber ?? 1) - 1, 3) * 65}>
+          <Image src={photo.src} alt={photo.alt} fill sizes={featured ? "(max-width: 760px) 100vw, 1100px" : "(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 380px"} />
+          <figcaption>{menuDishRole(photographedDish.dish, eventType)} · Serving inspiration</figcaption>
+        </figure>
+      ) : (
+        <div className="plan-card-visual plan-card-visual-empty" data-reveal="photo" data-delay={Math.min((optionNumber ?? 1) - 1, 3) * 65} aria-hidden="true">
+          <Utensils size={42} strokeWidth={1.25} />
+          <span>{plan.dishes.length} dishes, one table</span>
+        </div>
+      )}
       <div className="card-heading">
         <div>
           <p className="eyebrow">{featured ? "Chosen for your table" : optionNumber ? `Menu option ${String(optionNumber).padStart(2, "0")}` : "At your table"}</p>
@@ -86,6 +101,7 @@ export function MenuPlanCard({
           </li>
         ))}
       </ul>
+      {photo ? <p className="menu-photo-note">Photos are serving inspiration. Follow the menu ingredients for dietary needs.</p> : null}
       {plan.warnings.length > 0 ? (
         <div className="warning-list">
           {plan.warnings.map((warning) => (

@@ -36,7 +36,7 @@ async function assertGuestSessionSecurity(page: Page, response: Response) {
   }
   expect(sessionResponse.status()).toBe(200);
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 20_000 });
-  await expect(page.getByRole("heading", { name: "Your meal rooms", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Good things are on the way.", exact: true })).toBeVisible();
   const cookie = await sessionCookie(page.context());
   expect(cookie ? { httpOnly: cookie.httpOnly, secure: cookie.secure } : undefined)
     .toEqual({ httpOnly: true, secure: origin.startsWith("https:") });
@@ -420,6 +420,6 @@ test.describe("public guest access", () => {
     expect((await sessionCookie(context))?.value === cookie!.value, "A rejected cross-site request must preserve the existing session").toBe(true);
     await rejectedSignOutNavigation;
     await page.goto("/dashboard");
-    await expect(page.getByRole("heading", { name: "Your meal rooms", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Good things are on the way.", exact: true })).toBeVisible();
   });
 });

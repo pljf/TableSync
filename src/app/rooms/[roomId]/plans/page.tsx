@@ -18,13 +18,14 @@ import { PotluckContributions } from "@/components/menu/potluck-contributions";
 import { EventPreparationNotes } from "@/components/menu/event-preparation-notes";
 import { eventFormats } from "@/lib/event-formats";
 import { eventTypeLabels } from "@/lib/format";
+import { MotionScene } from "@/components/layout/motion-scene";
 import "@/app/menu-review.css";
 import "@/app/menu-preparation.css";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  params: Promise<{ roomId: string }> | { roomId: string };
+  params: Promise<{ roomId: string }>;
 };
 
 export default async function RoomPlansPage({ params }: PageProps) {
@@ -90,8 +91,8 @@ export default async function RoomPlansPage({ params }: PageProps) {
         };
 
   return (
-    <div className="page-stack plans-page">
-      <header className="page-header">
+    <MotionScene className="page-stack plans-page live-menu-page" sceneKey={`menus-${bundle.room.id}-${bundle.room.status}`}>
+      <header className="page-header live-workflow-heading" data-reveal="">
         <div>
           <p className="eyebrow">{eventTypeLabels[bundle.room.eventType]} menu plans</p>
           <h1>{bundle.room.title}</h1>
@@ -101,7 +102,7 @@ export default async function RoomPlansPage({ params }: PageProps) {
       <RoomProgress status={bundle.room.status} guestCount={bundle.guests.length} expectedGuests={bundle.room.expectedGuests} />
       <RoomNavigation active="plans" guestCanViewPreferences={isGuest} initialRevision={initialRevision ?? undefined} roomId={bundle.room.id} shareAvailable={shareAvailable} />
       <section className="card action-panel planning-action">
-        <div>
+        <div data-reveal data-delay="70">
           <h2>{actionPanel.heading}</h2>
           <p className="muted">{actionPanel.description}</p>
           <p className="muted">{eventFormats[bundle.room.eventType].structure}</p>
@@ -192,7 +193,6 @@ export default async function RoomPlansPage({ params }: PageProps) {
       )}
       {isPotluck && bundle.room.status === "FINALIZED" && finalPlan ? <div id="potluck-contributions"><PotluckContributions plan={finalPlan} guests={bundle.guests} guestId={actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined} isHost={isHost} hasShopping={bundle.shopping.length > 0} /></div> : null}
       {bundle.room.status === "FINALIZED" && finalPlan ? <MenuPreparation plan={finalPlan} eventType={bundle.room.eventType} guests={bundle.guests} /> : null}
-    </div>
+    </MotionScene>
   );
 }
-

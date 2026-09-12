@@ -25,7 +25,7 @@ export function ConstraintSummary({ guests, eventType = "DINNER" }: { guests: Gu
   );
 
   return (
-    <section className="grid two constraint-summary" aria-label="Guest food preferences">
+    <section className="grid two constraint-summary" aria-label="Guest food preferences" data-reveal>
       <article className="card">
         <div className="section-title">
           <Leaf size={18} />

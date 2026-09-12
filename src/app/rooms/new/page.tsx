@@ -7,18 +7,32 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { MutationForm } from "@/components/ui/mutation-form";
 import { DateTimeInput } from "@/components/ui/date-time-input";
 import Link from "next/link";
+import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
+import { MotionScene } from "@/components/layout/motion-scene";
+import { photoForDish } from "@/lib/photo-library";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewRoomPage() {
   const host = await requireHost();
+  const photo = photoForDish("table-preparation");
 
   return (
-    <section className="narrow-page wide">
-      <MutationForm action={createRoomAction} className="card form-card">
-        <div>
+    <MotionScene className="page-stack live-new-room" sceneKey="new-room">
+      <Link className="workspace-back" href="/dashboard" prefetch={false}><ArrowLeft size={16} aria-hidden="true" />My gatherings</Link>
+      <div className="live-new-room-layout">
+      <header className="live-new-room-intro" data-reveal>
+        <p className="live-section-label">Make room for the good times</p>
+        <h1>Something good<br /><em>starts here.</em></h1>
+        <p>Pick a day, bring your people, and give your next gathering a home.</p>
+        <Image src={photo.src} alt={photo.alt} width={600} height={500} sizes="(max-width: 900px) 1px, 40vw" />
+      </header>
+      <div className="live-new-room-fields">
+      <MutationForm action={createRoomAction} className="card form-card live-new-room-form">
+        <div data-reveal data-delay="130">
           <p className="eyebrow">New gathering</p>
-          <h1>Create a room</h1>
+          <h2>Create a room</h2>
           <p className="muted">Set the scene and share your meal preferences, then invite your people.</p>
           <RoomExpiryNotice />
         </div>
@@ -70,7 +84,8 @@ export default async function NewRoomPage() {
           </Link>
         </div>
       </MutationForm>
-    </section>
+      </div>
+      </div>
+    </MotionScene>
   );
 }
-

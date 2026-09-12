@@ -189,7 +189,7 @@ test.describe("collaboration reliability", () => {
       await page.evaluate(() => window.dispatchEvent(new Event("focus")));
       await request;
       await page.goto("/dashboard");
-      await expect(page.getByRole("heading", { name: /your meal rooms/i })).toBeVisible();
+      await expect(page.getByRole("heading", { name: /good things.*are on the way/i })).toBeVisible();
       release();
       await page.unrouteAll({ behavior: "wait" });
       const resumed = page.waitForResponse((response) => new URL(response.url()).pathname === revisionPath);

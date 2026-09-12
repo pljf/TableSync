@@ -13,7 +13,7 @@ import { FoodIcon } from "@/components/menu/food-icon";
 export const dynamic = "force-dynamic";
 
 type PageProps = {
-  params: Promise<{ roomId: string }> | { roomId: string };
+  params: Promise<{ roomId: string }>;
 };
 
 export default async function SharePage({ params }: PageProps) {
