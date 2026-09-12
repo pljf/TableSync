@@ -212,7 +212,7 @@ async function voteFinalizeAndShop(
   const shoppingPath = await page.getByRole("link", { name: /^shopping$/i }).getAttribute("href");
   expect(shoppingPath).toBe(`/rooms/${roomId}/shopping`);
   await page.goto(shoppingPath!, { waitUntil: "domcontentloaded" });
-  await expect(page.getByText("Shopping workflow", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("region", { name: "Shopping progress", exact: true })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("link", { name: "Shopping", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("group", { name: "Filter shopping items" })).toBeVisible();
   await page.getByRole("button", { name: /^purchased 0$/i }).click();

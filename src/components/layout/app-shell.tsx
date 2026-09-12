@@ -15,7 +15,8 @@ export function AppShell({ children, user }: { children: ReactNode; user?: User 
       <div className="topbar-actions">{user ? <SignOutButton isGuest={user.isAnonymous} /> : <Link className="icon-text-button" href="/auth" prefetch={false}>Get started <ArrowUpRight aria-hidden="true" size={15} /></Link>}</div>
     </header>
     <main id="main-content">{children}</main>
-    <footer className="footer"><Link href="/" className="footer-brand"><Utensils aria-hidden="true" size={17} />TableSync</Link><span>Good food. Better together.</span><Link className="footer-photo-link" href="/photo-credits">Photo credits</Link></footer>
+    {/* Keep persistent footer links from starting speculative requests as a document departs. */}
+    <footer className="footer"><Link href="/" className="footer-brand" prefetch={false}><Utensils aria-hidden="true" size={17} />TableSync</Link><span>Good food. Better together.</span><Link className="footer-photo-link" href="/photo-credits" prefetch={false}>Photo credits</Link></footer>
     <InteractionEffects />
   </div>;
 }

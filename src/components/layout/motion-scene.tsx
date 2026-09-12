@@ -38,12 +38,13 @@ export function MotionScene({ children, className, sceneKey = "scene" }: {
           if (!entry.isIntersecting) return;
           const element = entry.target as HTMLElement;
           const photo = element.dataset.reveal === "photo";
+          // Animate position and framing, keeping text readable throughout entry.
           const animation = element.animate(photo ? [
-            { clipPath: "inset(18% 5% 18% 5%)", transform: "scale(.94) rotate(3deg)", opacity: .4 },
-            { clipPath: "inset(0% 0% 0% 0%)", transform: "scale(1) rotate(0deg)", opacity: 1 }
+            { clipPath: "inset(18% 5% 18% 5%)", transform: "scale(.94) rotate(3deg)" },
+            { clipPath: "inset(0% 0% 0% 0%)", transform: "scale(1) rotate(0deg)" }
           ] : [
-            { transform: "translateY(34px)", opacity: 0 },
-            { transform: "translateY(0)", opacity: 1 }
+            { transform: "translateY(34px)" },
+            { transform: "translateY(0)" }
           ], { duration: photo ? 950 : 700, delay: Number(element.dataset.delay ?? 0), easing: "cubic-bezier(.16,1,.3,1)", fill: "backwards" });
           animations.add(animation);
           animation.onfinish = () => animations.delete(animation);

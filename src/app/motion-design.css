@@ -188,13 +188,14 @@
 .new-room-form{border-radius:5px;box-shadow:12px 12px 0 #e8eead}
 @keyframes title-unfold{from{transform:translateY(115%) rotate(3deg)}to{transform:translateY(0) rotate(0)}}
 @keyframes photo-unfold{from{clip-path:inset(45% 0 45% 0);transform:rotate(13deg) scale(.92)}to{clip-path:inset(0);transform:rotate(7deg) scale(1)}}
-@keyframes stamp-arrive{from{opacity:0;transform:rotate(65deg) scale(.45)}to{opacity:1;transform:rotate(9deg) scale(1)}}
-@keyframes ticket-arrive{from{opacity:0;transform:translateY(70px) rotate(12deg)}to{opacity:1;transform:translateY(0) rotate(-5deg)}}
-@keyframes element-arrive{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-@keyframes scene-change{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes dish-turn{from{opacity:0;transform:translateX(50px) rotate(20deg) scale(.85)}to{opacity:1;transform:translateX(0) rotate(0) scale(1)}}
+/* Text-bearing entrances retain full contrast during every animation frame. */
+@keyframes stamp-arrive{from{transform:rotate(65deg) scale(.45)}to{transform:rotate(9deg) scale(1)}}
+@keyframes ticket-arrive{from{transform:translateY(70px) rotate(12deg)}to{transform:translateY(0) rotate(-5deg)}}
+@keyframes element-arrive{from{transform:translateY(24px)}to{transform:translateY(0)}}
+@keyframes scene-change{from{transform:translateY(14px)}to{transform:translateY(0)}}
+@keyframes dish-turn{from{transform:translateX(50px) rotate(20deg) scale(.85)}to{transform:translateX(0) rotate(0) scale(1)}}
 @keyframes vote-pop{0%{transform:scale(.6) rotate(-15deg)}55%{transform:scale(1.3) rotate(4deg)}100%{transform:scale(1) rotate(0)}}
-@keyframes count-arrive{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes count-arrive{from{transform:translateY(8px)}to{transform:translateY(0)}}
 @keyframes underline-in{from{transform:scaleX(.1);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
 @media(max-width:1100px){
  .gather-hero{padding-inline:34px;min-height:690px}.gather-copy h1{font-size:90px}.gather-visual{right:29px;width:43%;height:480px;top:120px}.gather-invitation{min-width:305px;left:0;padding:16px;bottom:-22px}.gather-photo-note{width:113px;height:113px;right:-8px}.gather-copy>p{max-width:300px;font-size:14px}.gather-actions{gap:3px 16px}.hero-edition{font-size:9px}.hero-scroll{left:34px;right:34px}.occasion-stage{padding:35px}.occasion-dish{width:290px}.how-content{gap:45px}.how-step strong{font-size:27px}.how-step{grid-template-columns:30px 1fr 20px;gap:14px}.demo-gathering-card{grid-template-columns:125px 1fr}.demo-gathering-card>div{padding:20px}.demo-gathering-card h2{font-size:25px}.gathering-card-image>.pill{font-size:10px;padding:4px 6px}.demo-gathering-card:first-child h2{font-size:35px}.candidate-photo>img{height:220px}

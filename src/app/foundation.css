@@ -113,7 +113,7 @@ button[aria-busy="true"] { cursor: wait; }
 .guest-identity { display: flex; align-items: center; gap: 11px; min-width: 0; }
 .guest-identity strong { font-size: 0.92rem; overflow-wrap: anywhere; }
 .guest-row > span { color: var(--muted); font-size: 0.78rem; }
-.guest-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%; background: #e5e9d8; color: var(--primary); font-size: 0.68rem; font-weight: 700; }
+.guest-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%; background: #e5e9d8; color: var(--primary-strong); font-size: 0.68rem; font-weight: 700; }
 .guest-list > div:nth-child(3n+2) .guest-avatar { background: #f2e1d4; color: #915035; }
 .guest-list > div:nth-child(3n+3) .guest-avatar { background: #e2eae9; color: #416568; }
 .guest-list summary { min-height: 44px; padding: 12px 0 8px; color: var(--muted); font-size: 0.79rem; cursor: pointer; }
