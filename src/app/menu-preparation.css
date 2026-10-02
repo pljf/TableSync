@@ -1,15 +1,48 @@
 .plans-page .menu-preparation { min-width: 0; padding: 24px; scroll-margin-top: 24px; box-shadow: none; }
-.plans-page .menu-preparation h2 { font: 400 1.7rem/1.2 var(--display); }
-.plans-page .menu-preparation header > p:last-child { margin: 10px 0 20px; font-size: 0.85rem; }
+.plans-page .menu-preparation h2 { font: 600 1.7rem/1.2 var(--display); letter-spacing: -0.025em; }
+.plans-page .menu-preparation h3 { font: 600 1.25rem/1.3 var(--display); letter-spacing: -0.02em; }
+.plans-page .menu-preparation h4 { margin: 24px 0 8px; font-size: 0.875rem; font-weight: 650; }
+.plans-page .menu-preparation header > p:last-child { max-width: 72ch; margin: 10px 0 24px; font-size: 0.875rem; line-height: 1.65; }
+.plans-page .preparation-order { margin-bottom: 32px; }
+.plans-page .preparation-order > p { max-width: 72ch; margin: 10px 0 16px; font-size: 0.875rem; line-height: 1.65; }
+.plans-page .preparation-phase { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; padding: 18px 0; border-top: 1px solid var(--border); }
+.plans-page .preparation-phase h4 { margin: 0; }
+.plans-page .preparation-phase ul { display: grid; gap: 14px; list-style: none; margin: 0; padding: 0; max-width: 72ch; }
+.plans-page .preparation-phase li { min-width: 0; overflow-wrap: anywhere; font-size: 0.875rem; line-height: 1.65; }
+.plans-page .preparation-phase strong { display: block; margin-bottom: 2px; font-weight: 600; }
+.plans-page .preparation-phase li > span { color: var(--muted); }
+.plans-page .preparation-dishes > h3 { margin-bottom: 12px; }
 .plans-page .preparation-dish { border-top: 1px solid var(--border); min-width: 0; }
-.plans-page .preparation-dish summary { cursor: pointer; padding: 16px 0; min-height: 44px; overflow-wrap: anywhere; }
-.plans-page .preparation-dish-name { font-weight: 600; font-size: 0.9rem; }
-.plans-page .preparation-dish-meta { display: block; padding-top: 6px; font-size: 0.8rem; }
-.plans-page .preparation-dish > p, .plans-page .preparation-footnote { font-size: 0.8rem; line-height: 1.6; }
+.plans-page .preparation-dish[open] { padding-bottom: 24px; }
+.plans-page .preparation-dish summary, .plans-page .preparation-safety summary { cursor: pointer; padding: 16px 0; min-height: 44px; overflow-wrap: anywhere; }
+.plans-page .preparation-dish-name { font-weight: 600; font-size: 0.95rem; }
+.plans-page .preparation-dish-meta { display: block; padding-top: 6px; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.plans-page .preparation-dish > p, .plans-page .preparation-guide > p, .plans-page .preparation-footnote { max-width: 72ch; font-size: 0.875rem; line-height: 1.65; }
 .plans-page .preparation-dish .dish-list { margin: 12px 0 20px; }
 .plans-page .preparation-dish .dish-list li { gap: 16px; }
 .plans-page .preparation-dish .dish-list small { flex-shrink: 0; }
-.plans-page .preparation-footnote { margin: 16px 0 0; }
+.plans-page .preparation-guide { max-width: 72ch; margin-top: 24px; }
+.plans-page .preparation-steps { margin: 18px 0 0; padding-left: 24px; }
+.plans-page .preparation-steps li { padding-left: 6px; margin: 14px 0; font-size: 1rem; line-height: 1.75; }
+.plans-page .preparation-steps li::marker { color: var(--primary-strong); font-weight: 650; }
+.plans-page .preparation-notice { color: var(--primary-strong); font-size: 0.875rem; line-height: 1.65; font-weight: 600; margin: 16px 0; }
+.plans-page .preparation-references { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.plans-page .preparation-references h4 { margin-top: 0; }
+.plans-page .preparation-references > p, .plans-page .preparation-references li { font-size: 0.875rem; line-height: 1.65; }
+.plans-page .preparation-references ul { list-style: none; padding: 0; margin: 16px 0 0; }
+.plans-page .preparation-references li + li { margin-top: 16px; }
+.plans-page .preparation-references li p { margin: 4px 0 0; }
+.plans-page .preparation-references a, .plans-page .preparation-source-links a { color: var(--primary-strong); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.plans-page .preparation-references a:hover, .plans-page .preparation-source-links a:hover { color: var(--text); }
+.plans-page .preparation-safety { margin-top: 8px; border-top: 1px solid var(--border); }
+.plans-page .preparation-safety summary { font-weight: 600; font-size: 0.95rem; }
+.plans-page .preparation-safety > ul { max-width: 72ch; margin: 8px 0 16px; padding-left: 20px; font-size: 0.875rem; line-height: 1.75; }
+.plans-page .preparation-safety > ul > li + li { margin-top: 12px; }
+.plans-page .preparation-safety > p { font-size: 0.875rem; }
+.plans-page .preparation-safety .preparation-source-links { display: flex; flex-wrap: wrap; gap: 8px 20px; list-style: none; padding: 0; }
+.plans-page .preparation-safety .preparation-source-links > li { margin: 0; }
+.plans-page .preparation-footnote { margin: 20px 0 0; }
 @media (max-width: 700px) {
   .plans-page .menu-preparation { padding: 22px 20px; }
+  .plans-page .preparation-phase { grid-template-columns: minmax(0, 1fr); gap: 10px; }
 }

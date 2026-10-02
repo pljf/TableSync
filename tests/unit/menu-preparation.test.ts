@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { MenuPreparation } from "@/components/menu/menu-preparation";
 import type { EventType, MenuPlan, MenuPlanDish } from "@/lib/domain";
+import { dishCatalog } from "@/lib/seed-data";
 import { preparationIngredients } from "@/lib/menu-preparation";
 import { generateShoppingList } from "@/lib/shopping-engine/generate-shopping-list";
 
@@ -43,7 +44,7 @@ describe("menu preparation", () => {
     expect(html).toContain("About 15 min");
     expect(html).toContain("375 g");
     expect(html).toContain("Keep spicy sauce separate.");
-    expect(html).toContain("Cooking steps aren’t included yet");
+    expect(html).toContain("Cooking guidance is not available for this recipe");
     expect(html).not.toMatch(/<details[^>]*\bopen(?:=|\s|>)/);
   });
 
@@ -64,5 +65,57 @@ describe("menu preparation", () => {
 
   it("does not present an unselected option as a meal to prepare", () => {
     expect(renderToStaticMarkup(createElement(MenuPreparation, { plan: { ...plan, status: "REJECTED" }, eventType: "DINNER", guests: [] }))).toBe("");
+  });
+
+  it("renders authored steps and labels publisher techniques with their recipe differences", () => {
+    const recipe = dishCatalog.find((item) => item.id === "chicken-rice-tray")!;
+    const selected = { ...plan, dishes: [{ dish: recipe, servings: 6 }] };
+    const html = renderToStaticMarkup(createElement(MenuPreparation, { plan: selected, eventType: "DINNER", guests: [] }));
+    expect(html).toContain("Suggested preparation order");
+    expect(html).toContain("Start ahead");
+    expect(html).toContain("TableSync preparation notes");
+    expect(html).toContain('aria-label="Preparation steps for Herb chicken and rice tray"');
+    expect(html).toContain("74°C / 165°F");
+    expect(html).toContain("https://www.recipetineats.com/oven-baked-chicken-and-rice/");
+    expect(html).toContain("bone-in chicken");
+    expect(html).toContain("butter (dairy)");
+    expect(html).toContain("ingredients and cooking time do not match");
+    expect(html).toContain('target="_blank" rel="noopener noreferrer"');
+    expect(html).toContain("(opens in a new tab)");
+    expect(html).toContain("shopping amounts; use seasonings to taste");
+    expect(html).toContain("Safe cooking temperatures");
+    expect(html).toContain('aria-label="Food safety reminders"');
+    expect(html).toContain('aria-label="Official food safety sources"');
+    expect(html).not.toMatch(/<details[^>]*\bopen(?:=|\s|>)/);
+  });
+
+  it("keeps all contributed instructions visible while reporting that the host has no shared cooking tasks", () => {
+    const recipe = dishCatalog.find((item) => item.id === "chicken-rice-tray")!;
+    const contributed = { ...plan, dishes: [{ dish: recipe, servings: 6, contributionGuestId: "missing-guest" }] };
+    const html = renderToStaticMarkup(createElement(MenuPreparation, { plan: contributed, eventType: "POTLUCK", guests: [] }));
+    expect(html).toContain("Every dish is assigned to a contributor");
+    expect(html).toContain("A contributor is bringing this dish");
+    expect(html).toContain('aria-label="Preparation steps for Herb chicken and rice tray"');
+    expect(html.split('class="preparation-dishes"')[0]).not.toContain("Herb chicken and rice tray");
+    expect(html).not.toContain("included in shared shopping");
+  });
+
+  it("asks for the recipe owner's instructions when a built-in recipe has changed", () => {
+    const recipe = dishCatalog.find((item) => item.id === "chicken-rice-tray")!;
+    const selected = { ...plan, dishes: [{ dish: { ...recipe, name: "My chicken tray" }, servings: 6 }] };
+    const html = renderToStaticMarkup(createElement(MenuPreparation, { plan: selected, eventType: "DINNER", guests: [] }));
+    expect(html).toContain("Find this dish");
+    expect(html).toContain("Cooking guidance is not available");
+    expect(html).not.toContain('aria-label="Preparation steps for');
+    expect(html).not.toContain("https://www.recipetineats.com");
+  });
+
+  it("surfaces incomplete packaged recipes before their cooking steps", () => {
+    const recipe = dishCatalog.find((item) => item.id === "brownies")!;
+    const selected = { ...plan, dishes: [{ dish: recipe, servings: 6 }] };
+    const html = renderToStaticMarkup(createElement(MenuPreparation, { plan: selected, eventType: "DINNER", guests: [] }));
+    expect(html).toContain("Package directions required");
+    expect(html).toContain("not necessarily a complete brownie recipe");
+    expect(html.indexOf("Package directions required")).toBeLessThan(html.indexOf('aria-label="Preparation steps'));
   });
 });
