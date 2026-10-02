@@ -197,11 +197,13 @@ async function voteFinalizeAndShop(
   await page.getByRole("link", { name: "Prepare this menu", exact: true }).click();
   const preparation = page.getByRole("region", { name: "Prepare this menu", exact: true });
   await expect(preparation).toBeInViewport();
-  const recipes = preparation.locator("details");
+  const recipes = preparation.locator("details.preparation-dish");
   await expect(recipes).toHaveCount(await first.locator(".dish-list li").count());
   const firstRecipe = recipes.first();
   await firstRecipe.locator("summary").press("Enter");
-  await expect(firstRecipe.getByRole("list")).toBeVisible();
+  await expect(firstRecipe.getByRole("list", { name: /^Ingredients for / })).toBeVisible();
+  await expect(firstRecipe.getByRole("list", { name: /^Preparation steps for / })).toBeVisible();
+  await expect(preparation.getByRole("heading", { name: "Suggested preparation order" })).toBeVisible();
   await expect(firstRecipe).toContainText(/servings? · About \d+ min/);
   await expect(firstRecipe.locator(".dish-list li").first()).toContainText(/\d/);
   if (captureQuality) await captureQualityEvidence(page, "menu-preparation");
