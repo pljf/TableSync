@@ -31,7 +31,7 @@ describe("save hosted rooms without ending the guest session", () => {
     expect(html).not.toContain("button disabled");
     expect(html).toContain("does not transfer guest responses to another device");
     expect(html).toContain("or extend room lifetimes");
-    expect(html).toContain("Rooms expire 7 days after creation and are automatically deleted.");
+    expect(html).toContain("Rooms stay available for at least 7 days after creation or until 3 days after the gathering, whichever is later, then are automatically deleted.");
   });
   it("keeps the account-saving retry page open after a provider error", async () => {
     const html = await markup({ upgrade: "1", error: "provider" });

@@ -24,7 +24,7 @@ const faq = [
   ["Do my guests need an account?", "No. Share your room’s invitation link and guests can add their meal preferences. You can also start hosting with a guest account."],
   ["Can I plan around allergies and dietary needs?", "Yes. Guests can share allergies, dietary preferences, likes, dislikes, and spice tolerance. TableSync uses those details when suggesting menus and explains conflicts when a suitable plan can’t be found."],
   ["How does the shared shopping list work?", "Once you choose a menu, ingredients are combined into a shared list. Assign groceries, let guests claim items, and mark them purchased. For potlucks, people can also claim whole dishes."],
-  ["How long does a gathering stay available?", "Rooms expire seven days after creation. Guest host access stays in the current browser; clearing cookies or ending that session removes access unless you have linked your hosted rooms to GitHub."]
+  ["How long does a gathering stay available?", "Rooms expire seven days after creation or three days after the gathering, whichever is later. Undated gatherings expire after seven days. Guest host access stays in the current browser; clearing cookies or ending that session removes access unless you have linked your hosted rooms to GitHub."]
 ];
 
 export function LandingExperience({ primaryAction, createHref }: { primaryAction: ReactNode; createHref: string }) {

@@ -1,5 +1,5 @@
 import { prisma } from "../src/lib/prisma";
-import { expiredRoomCutoff, ROOM_RETENTION_DAYS } from "../src/lib/room-retention";
+import { expiredRoomWhere, ROOM_EVENT_GRACE_DAYS, ROOM_RETENTION_DAYS } from "../src/lib/room-retention";
 
 function boundedInteger(value: string | undefined, fallback: number, min: number, max: number): number {
   const parsed = Number(value ?? fallback);
@@ -18,7 +18,7 @@ const revokedCutoff = new Date(now.getTime() - revokedSessionRetentionDays * 86_
 const rateLimitCutoff = BigInt(now.getTime() - rateLimitRetentionHours * 3_600_000);
 
 const [rooms, auditEvents, rateLimits, hostSessions, guestSessions, verifications] = await prisma.$transaction([
-  prisma.dinnerRoom.deleteMany({ where: { createdAt: { lte: expiredRoomCutoff(now) } } }),
+  prisma.dinnerRoom.deleteMany({ where: expiredRoomWhere(now) }),
   prisma.securityAuditEvent.deleteMany({ where: { occurredAt: { lt: auditCutoff } } }),
   prisma.rateLimit.deleteMany({ where: { lastRequest: { lt: rateLimitCutoff } } }),
   prisma.session.deleteMany({ where: { expiresAt: { lt: now } } }),
@@ -35,6 +35,7 @@ console.log(
     completedAt: now.toISOString(),
     retention: {
       roomRetentionDays: ROOM_RETENTION_DAYS,
+      roomEventGraceDays: ROOM_EVENT_GRACE_DAYS,
       auditRetentionDays,
       rateLimitRetentionHours,
       revokedSessionRetentionDays

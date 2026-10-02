@@ -46,7 +46,7 @@ describe("operational cleanup room retention", () => {
     await import("../../scripts/cleanup-operational-data");
 
     expect(database.roomDeleteMany).toHaveBeenCalledExactlyOnceWith({
-      where: { createdAt: { lte: new Date("2026-09-04T05:00:00.000Z") } }
+      where: { AND: [{ createdAt: { lte: new Date("2026-09-04T05:00:00.000Z") } }, { OR: [{ dateTime: null }, { dateTime: { lte: new Date("2026-09-08T05:00:00.000Z") } }] }] }
     });
     expect(database.transaction).toHaveBeenCalledOnce();
     expect(database.transaction.mock.calls[0][0]).toHaveLength(6);
@@ -54,6 +54,7 @@ describe("operational cleanup room retention", () => {
       completedAt: "2026-09-11T05:00:00.000Z",
       retention: {
         roomRetentionDays: 7,
+        roomEventGraceDays: 3,
         auditRetentionDays: 90,
         rateLimitRetentionHours: 24,
         revokedSessionRetentionDays: 30

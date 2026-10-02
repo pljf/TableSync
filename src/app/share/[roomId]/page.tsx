@@ -35,7 +35,7 @@ export default async function SharePage({ params }: PageProps) {
         </div>
         <Badge tone="success">Finalized</Badge>
       </header>
-      <RoomExpiryNotice createdAt={view.room.createdAt} />
+      <RoomExpiryNotice createdAt={view.room.createdAt} dateTime={view.room.dateTime} />
       <section className="metric-grid">
         <article className="metric-card">
           <CalendarDays size={20} />

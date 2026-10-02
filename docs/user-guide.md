@@ -37,7 +37,7 @@ Visible room pages check for shared changes every eight seconds while preserving
 
 ## Room expiry and deletion
 
-Every room expires **seven days (168 hours) after creation**, including rooms hosted through GitHub. Creation and room pages show this policy and the expiration date. Editing a room or connecting an account does not extend its lifetime.
+Every room expires **seven days (168 hours) after creation or three days (72 hours) after its scheduled gathering, whichever is later**, including rooms hosted through GitHub. Undated rooms expire seven days after creation. Creation and room pages show this policy and the expiration date. Changing the gathering date updates its expiration; editing other details or connecting an account does not extend it. Session lifetimes are separate from room retention: a saved account can sign in again to access its retained rooms, while anonymous host access still belongs to its current browser session.
 
 Creators can use **Delete room** on the overview to permanently remove a room sooner after confirming. This removes its guest responses, menus, votes, shopping progress, and invite/share links.
 

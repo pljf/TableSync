@@ -5,7 +5,7 @@ import { signInAsHost } from "./host-auth";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
 
 const origin = process.env.TABLESYNC_E2E_BASE_URL ?? "http://localhost:3000";
-const expiryNotice = "Rooms expire 7 days after creation and are automatically deleted.";
+const expiryNotice = "Rooms stay available for at least 7 days after creation or until 3 days after the gathering, whichever is later, then are automatically deleted.";
 const confirmationLabel = "I understand that this room and all its data will be permanently deleted.";
 
 test("only the creator can confirm permanent deletion, and every room link stops working", async ({ browser, page }) => {

@@ -130,7 +130,7 @@ Stop the development server before database and browser tests against the bundle
 
 ## Usage notes
 
-Rooms expire **seven days after creation**, including rooms linked to GitHub. Hosts can delete them sooner, and scheduled cleanup removes expired records. Anonymous host access belongs to the current browser; clearing cookies or ending that session removes access unless the account has been linked to GitHub.
+Rooms expire **seven days after creation or three days after the gathering, whichever is later**, including rooms linked to GitHub. Undated rooms retain the seven-day lifetime. Hosts can delete them sooner, and scheduled cleanup removes expired records. Anonymous host access belongs to the current browser; clearing cookies or ending that session removes access unless the account has been linked to GitHub.
 
 Menu costs are estimates. Individual spending caps and complete religious-diet certification are not implemented. See the [user guide](docs/user-guide.md) for account behavior and the [room retention guide](docs/deployment/room-retention.md) for expiry and cleanup timing.
 

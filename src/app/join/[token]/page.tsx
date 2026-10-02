@@ -33,7 +33,7 @@ export default async function JoinPage({ params }: PageProps) {
           <p className="eyebrow">Guest preferences closed</p>
           <h1>{room.title} is no longer accepting responses</h1>
           <p className="muted">The host has moved this room to voting or finalized the menu.</p>
-          <RoomExpiryNotice createdAt={room.createdAt} />
+          <RoomExpiryNotice createdAt={room.createdAt} dateTime={room.dateTime} />
           {alreadyJoined ? <Link className="button secondary" href={`/rooms/${room.id}`} prefetch={false}>Return to your room</Link> : null}
         </article>
       </section>
@@ -50,7 +50,7 @@ export default async function JoinPage({ params }: PageProps) {
           <h1>Share your meal preferences</h1>
           <p className="muted">Help your host put together a meal you can enjoy. No account needed.</p>
           <p className="muted">{eventFormats[room.eventType].description}</p>
-          <RoomExpiryNotice createdAt={room.createdAt} />
+          <RoomExpiryNotice createdAt={room.createdAt} dateTime={room.dateTime} />
         </div>
         {alreadyJoined ? (
           <div className="feedback info-feedback">
