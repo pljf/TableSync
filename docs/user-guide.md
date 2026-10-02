@@ -14,7 +14,13 @@
 
 Creators can vote using the response saved during room creation. For an older room without a creator response, choose **Add my preferences** before moving to voting.
 
-The menu planner considers diets, allergies, preferences, budget, and spice tolerance. Individual spending caps and complete religious-diet certification rules are not implemented. Costs are estimates.
+The menu planner considers diets, allergies, preferences, the room budget, and spice tolerance. Complete religious-diet certification rules are not implemented. Costs are estimates.
+
+## Shopping budgets and estimates
+
+Automatic shopping assignments respect the saved **Budget comfort** of guests who volunteered to bring groceries. Claimed Potluck dishes count toward the contributor's comfort before shared groceries are assigned. Items that do not fit any volunteer's remaining comfort stay **Unassigned**; review assignments, adjust budget comfort, or revise the menu. Guests without a stated comfort limit can cover remaining costs.
+
+Assignment totals show the estimate against each stated comfort limit. Manual claims, reassignments, or preserved assignments can exceed comfort, and the shopping page shows that excess. Ingredient estimates allocate recipe costs using quantities and indicative unit costs; recipes with unsupported ingredients or units use equal shares. These amounts cover recipe portions, so full packages and local checkout prices may cost more. Budget comfort does not guarantee a retailer checkout cap. See [shopping estimates](shopping-estimates.md) for the allocation rules and limitations.
 
 ## Potluck contributions
 
@@ -43,7 +49,7 @@ Visible room pages check for shared changes every eight seconds while preserving
 
 ## Room expiry and deletion
 
-Every room expires **seven days (168 hours) after creation**, including rooms hosted through GitHub. Creation and room pages show this policy and the expiration date. Editing a room or connecting an account does not extend its lifetime.
+Every room expires **seven days (168 hours) after creation or three days (72 hours) after its scheduled gathering, whichever is later**, including rooms hosted through GitHub. Undated rooms expire seven days after creation. Creation and room pages show this policy and the expiration date. Changing the gathering date updates its expiration; editing other details or connecting an account does not extend it. Session lifetimes are separate from room retention: a saved account can sign in again to access its retained rooms, while anonymous host access still belongs to its current browser session.
 
 Creators can use **Delete room** on the overview to permanently remove a room sooner after confirming. This removes its guest responses, menus, votes, shopping progress, and invite/share links.
 

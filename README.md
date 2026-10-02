@@ -130,9 +130,11 @@ Stop the development server before database and browser tests against the bundle
 
 ## Usage notes
 
-Rooms expire **seven days after creation**, including rooms linked to GitHub. Hosts can delete them sooner, and scheduled cleanup removes expired records. Anonymous host access belongs to the current browser; clearing cookies or ending that session removes access unless the account has been linked to GitHub.
+Rooms expire **seven days after creation or three days after the gathering, whichever is later**, including rooms linked to GitHub. Undated rooms retain the seven-day lifetime. Hosts can delete them sooner, and scheduled cleanup removes expired records. Anonymous host access belongs to the current browser; clearing cookies or ending that session removes access unless the account has been linked to GitHub.
 
-Menu costs are estimates. Individual spending caps and complete religious-diet certification are not implemented. See the [user guide](docs/user-guide.md) for account behavior and the [room retention guide](docs/deployment/room-retention.md) for expiry and cleanup timing.
+Menu and ingredient costs estimate recipe portions. Automatic shopping assignments respect saved budget comfort, including claimed Potluck dishes, and leave items unassigned when they do not fit. Manual or preserved assignments can exceed comfort; full-package retailer checkout costs are not guaranteed to stay within it.
+
+Complete religious-diet certification is not implemented. See the [user guide](docs/user-guide.md) for account behavior and the [room retention guide](docs/deployment/room-retention.md) for expiry and cleanup timing.
 
 ## Documentation
 

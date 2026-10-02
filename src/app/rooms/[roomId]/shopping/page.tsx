@@ -10,6 +10,7 @@ import { getRequestActors } from "@/lib/request-actors";
 import { getRoomRevision } from "@/lib/room-revision";
 import { getRoomBundle } from "@/lib/store";
 import { contributionSummary } from "@/lib/menu-presentation";
+import { potluckContributionCosts, summarizeShoppingBudgets } from "@/lib/shopping-engine/budget-summary";
 import { MotionScene } from "@/components/layout/motion-scene";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,9 @@ export default async function ShoppingPage({ params }: PageProps) {
   const hasShopping = bundle.shopping.length > 0;
   const revisionPaused = bundle.room.status === "VOTING" && (hasShopping || bundle.plans.some((plan) => plan.dishes.some((dish) => dish.contributionGuestId)));
   const finalPlan = bundle.plans.find((plan) => plan.status === "FINALIZED");
+  const budgetGuests = bundle.guests.map(({ id, name, canBring, preference }) => ({ id, name, canBring, maxBudgetCents: preference.maxBudgetCents }));
+  const contributionCosts = potluckContributionCosts(bundle.room, finalPlan);
+  const budgetSummary = summarizeShoppingBudgets(bundle.shopping, budgetGuests, contributionCosts);
   const contributions = bundle.room.eventType === "POTLUCK" && finalPlan ? contributionSummary(finalPlan.dishes) : undefined;
   const allContributed = bundle.room.status === "FINALIZED" && Boolean(contributions && contributions.totalDishes > 0 && contributions.claimedDishes === contributions.totalDishes);
   const plannedGuests = Math.max(bundle.room.expectedGuests ?? bundle.guests.length, bundle.guests.length, 1);
@@ -126,6 +130,7 @@ export default async function ShoppingPage({ params }: PageProps) {
             <div><dt>Contributed food estimate</dt><dd>{formatMoney(contributions.contributedCostCents)}</dd></div>
             <div><dt>Shared grocery estimate</dt><dd>{formatMoney(total)}</dd></div>
           </dl>
+          {!hasShopping ? budgetSummary.totals.filter(({ overByCents }) => overByCents > 0).map(({ guest, overByCents }) => <p className="shopping-budget-status" key={guest.id} role="status">{guest.name} is {formatMoney(overByCents)} above budget comfort. Review contributed dishes.</p>) : null}
           <Link className="button secondary" href={bundle.room.status === "FINALIZED" ? `${plansHref}#potluck-contributions` : plansHref} prefetch={false}>
             {bundle.room.status !== "FINALIZED" ? "View saved menus" : isHost ? "Manage dish contributions" : "View dish contributions"}
           </Link>
@@ -160,8 +165,10 @@ export default async function ShoppingPage({ params }: PageProps) {
               <progress aria-label="Items purchased" max={bundle.shopping.length} value={purchased} />
             </article>
           </section>
+          <p className="muted shopping-estimate-note">Recipe estimates are split by ingredient quantities and indicative unit costs. Recipes with unsupported ingredients or units use equal shares. These are approximate recipe portions; full packs and local checkout prices may cost more.</p>
           <ShoppingList
-            guests={bundle.guests.map(({ id, name }) => ({ id, name }))}
+            guests={budgetGuests}
+            contributionCosts={contributionCosts}
             guestId={bundle.room.status === "FINALIZED" && actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined}
             hostCanManage={isHost && bundle.room.status === "FINALIZED"}
             items={bundle.shopping}

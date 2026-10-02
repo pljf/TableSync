@@ -42,7 +42,7 @@ import { reconcileShoppingList } from "@/lib/shopping-engine/reconcile-shopping-
 import { reconcileContributions } from "@/lib/menu-engine/reconcile-contributions";
 import { assertWorkflowActionAllowed } from "@/lib/workflow/state-machine";
 import { Prisma } from "@/generated/prisma/client";
-import { activeRoomWhere, expiredRoomCutoff } from "@/lib/room-retention";
+import { activeRoomWhere, roomExpiresAt } from "@/lib/room-retention";
 
 type CreateRoomInput = {
   title: string;
@@ -339,8 +339,8 @@ async function getDishCatalog(): Promise<Dish[]> {
 async function lockRoom(tx: Prisma.TransactionClient, roomId: string): Promise<void> {
   // Every room mutation takes this lock before reading workflow state or child records.
   // Menu generation must use the same locked preference snapshot that it publishes.
-  const rooms = await tx.$queryRaw<Array<{ createdAt: Date }>>(Prisma.sql`SELECT "createdAt" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
-  if (!rooms[0] || rooms[0].createdAt <= expiredRoomCutoff()) throw new AuthorizationError();
+  const rooms = await tx.$queryRaw<Array<{ createdAt: Date; dateTime: Date | null }>>(Prisma.sql`SELECT "createdAt", "dateTime" FROM "DinnerRoom" WHERE "id" = ${roomId} FOR UPDATE`);
+  if (!rooms[0] || roomExpiresAt(rooms[0].createdAt, rooms[0].dateTime) <= new Date()) throw new AuthorizationError();
 }
 
 export async function listRoomsForHost(actor: HostActor): Promise<DinnerRoom[]> {
@@ -373,10 +373,10 @@ export async function getRoomBundle(
 export async function getRoomByInviteToken(token: string): Promise<InviteRoomView | null> {
   const room = await prisma.dinnerRoom.findUnique({
     where: { inviteToken: token, ...activeRoomWhere() },
-    select: { id: true, title: true, eventType: true, status: true, inviteExpiresAt: true, createdAt: true }
+    select: { id: true, title: true, eventType: true, status: true, inviteExpiresAt: true, createdAt: true, dateTime: true }
   });
   if (!room || (room.inviteExpiresAt && room.inviteExpiresAt <= new Date())) return null;
-  return { id: room.id, title: room.title, eventType: room.eventType, status: room.status, createdAt: toIso(room.createdAt) };
+  return { id: room.id, title: room.title, eventType: room.eventType, status: room.status, createdAt: toIso(room.createdAt), dateTime: room.dateTime?.toISOString() };
 }
 
 export async function getGuestPreferenceContext(actor: GuestActor): Promise<{ guest: Guest; room: DinnerRoom } | null> {
