@@ -63,7 +63,7 @@ export default async function NewRoomPage({ searchParams }: {
                 </label>
                 <label>
                   Total budget
-                  <input name="totalBudgetDollars" min="1" step="1" type="number" placeholder="120" />
+                  <input max="1000000" name="totalBudgetDollars" min="0.01" step="0.01" type="number" placeholder="120" />
                 </label>
               </div>
               <OptionalCreationFields title="Location, description & sharing" section="gathering">

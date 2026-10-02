@@ -58,7 +58,7 @@ export function GuestPreferenceFields({ name, email, eventType, progressive = fa
   const budgetField = (
     <label>
       Budget comfort
-      <input name="maxBudgetDollars" min="1" step="1" type="number" placeholder="20" />
+      <input max="1000000" name="maxBudgetDollars" min="0.01" step="0.01" type="number" placeholder="20" />
     </label>
   );
   const notesField = (

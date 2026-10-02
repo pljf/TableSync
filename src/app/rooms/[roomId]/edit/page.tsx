@@ -44,7 +44,7 @@ export default async function EditRoomPage({ params }: { params: Promise<{ roomI
           <EventFormatSelect value={room.eventType} />
           <label>Date and time<DateTimeInput value={room.dateTime} /></label>
           <label>Location<input defaultValue={room.location} maxLength={200} name="location" /></label>
-          <label>Total budget<input defaultValue={room.totalBudgetCents === undefined ? undefined : room.totalBudgetCents / 100} max="1000000" min="1" name="totalBudgetDollars" step="0.01" type="number" /></label>
+          <label>Total budget<input defaultValue={room.totalBudgetCents === undefined ? undefined : room.totalBudgetCents / 100} max="1000000" min="0.01" name="totalBudgetDollars" step="0.01" type="number" /></label>
           <label>Expected guests<input defaultValue={room.expectedGuests ?? 6} max="50" min="2" name="expectedGuests" required type="number" /></label>
           <label className="checkbox-label standalone"><input defaultChecked={room.isPublicShareable} name="isPublicShareable" type="checkbox" />Public share page</label>
         </div>
