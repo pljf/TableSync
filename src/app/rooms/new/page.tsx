@@ -56,7 +56,7 @@ export default async function NewRoomPage() {
           </label>
           <label>
             Total budget
-            <input name="totalBudgetDollars" min="1" step="1" type="number" placeholder="120" />
+            <input name="totalBudgetDollars" max="1000000" min="0.01" step="0.01" type="number" placeholder="120" />
           </label>
           <div>
             <label>

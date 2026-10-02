@@ -48,6 +48,25 @@ describe("room form validation", () => {
     expect(createRoomSchema.parse({ ...validRoom, totalBudgetDollars: "12.34" }).totalBudgetDollars).toBe(12.34);
   });
 
+
+  it("accepts positive cent amounts through the same budget schema for rooms and guests", () => {
+    const validGuest = { name: "Guest", dietType: "OMNIVORE", spiceLevel: "NONE" };
+    for (const amount of ["0.01", "0.50", "12.34", "25.50", "1000000"]) {
+      expect(createRoomSchema.parse({ ...validRoom, totalBudgetDollars: amount }).totalBudgetDollars).toBe(Number(amount));
+      expect(joinRoomSchema.parse({ ...validGuest, maxBudgetDollars: amount }).maxBudgetDollars).toBe(Number(amount));
+    }
+    expect(createRoomSchema.parse(validRoom).totalBudgetDollars).toBeUndefined();
+    expect(joinRoomSchema.parse(validGuest).maxBudgetDollars).toBeUndefined();
+  });
+
+  it("keeps zero, negative, sub-cent and over-limit budgets invalid for both forms", () => {
+    const validGuest = { name: "Guest", dietType: "OMNIVORE", spiceLevel: "NONE" };
+    for (const amount of ["0", "-0.01", "0.001", "12.345", "1000000.01"]) {
+      expect(createRoomSchema.safeParse({ ...validRoom, totalBudgetDollars: amount }).success).toBe(false);
+      expect(joinRoomSchema.safeParse({ ...validGuest, maxBudgetDollars: amount }).success).toBe(false);
+    }
+  });
+
   it("keeps room text fields within their persistence limits", () => {
     expect(() => createRoomSchema.parse({ ...validRoom, title: "x".repeat(121) })).toThrow(
       "Use at most 120 characters"

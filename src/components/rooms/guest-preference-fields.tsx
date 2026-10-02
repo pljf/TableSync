@@ -52,7 +52,7 @@ export function GuestPreferenceFields({
         </label>
         <label>
           Budget comfort
-          <input name="maxBudgetDollars" min="1" step="1" type="number" placeholder="20" />
+          <input name="maxBudgetDollars" max="1000000" min="0.01" step="0.01" type="number" placeholder="20" />
         </label>
       </div>
       <DietaryNote />

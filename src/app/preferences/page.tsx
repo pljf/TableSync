@@ -71,7 +71,7 @@ export default async function GuestPreferencePage({ searchParams }: PageProps) {
               <label>Allergies<input defaultValue={guest.preference.allergies.join(", ")} maxLength={2000} name="allergies" /></label>
               <label>Disliked ingredients<input defaultValue={guest.preference.dislikes.join(", ")} maxLength={2000} name="dislikes" /></label>
               <label>Liked ingredients<input defaultValue={guest.preference.likes.join(", ")} maxLength={2000} name="likes" /></label>
-              <label>Budget comfort<input defaultValue={guest.preference.maxBudgetCents ? guest.preference.maxBudgetCents / 100 : undefined} min="1" name="maxBudgetDollars" step="1" type="number" /></label>
+              <label>Budget comfort<input defaultValue={guest.preference.maxBudgetCents ? guest.preference.maxBudgetCents / 100 : undefined} max="1000000" min="0.01" name="maxBudgetDollars" step="0.01" type="number" /></label>
             </div>
             <DietaryNote />
             <label>Notes<textarea defaultValue={guest.preference.notes} maxLength={2000} name="notes" rows={3} /></label>
