@@ -551,18 +551,26 @@ test.describe("fresh-room core workflows", () => {
           name: `${format.label} Vegan`, diet: "VEGAN", allergies: "peanut", spice: "MILD", canBring: true
         });
         await page.goto(`/rooms/${roomId}/plans`);
-        await page.getByRole("button", { name: /generate plans/i }).click();
+        await submitMutation(page, `/rooms/${roomId}/plans`, () =>
+          page.getByRole("button", { name: /generate plans/i }).click()
+        );
         await expect(page.getByRole("heading", { name: /no safe plan is ready yet/i })).toBeVisible();
         await expect(page.locator("article.plan-card")).toHaveCount(0);
         await expect(page.getByText(`No accepted ${format.label} plan`, { exact: false })).toBeVisible();
         await page.reload();
         await expect(page.getByRole("heading", { name: /no safe plan is ready yet/i })).toBeVisible();
         if (quality) await captureQualityEvidence(page, `${format.type.toLowerCase()}-no-solution`);
-        await page.getByRole("link", { name: "Edit room details or budget", exact: true }).click();
+        await Promise.all([
+          page.waitForURL((url) => url.pathname === `/rooms/${roomId}/edit`, { waitUntil: "networkidle" }),
+          page.getByRole("link", { name: "Edit room details or budget", exact: true }).click()
+        ]);
         await expect(page.getByLabel("Event type")).toHaveValue(format.type);
         if (quality) await captureQualityEvidence(page, `${format.type.toLowerCase()}-edit-room`);
         await page.getByLabel("Total budget", { exact: true }).fill("240");
-        await page.getByRole("button", { name: "Save room details", exact: true }).click();
+        await Promise.all([
+          page.waitForURL((url) => url.pathname === `/rooms/${roomId}`, { waitUntil: "networkidle" }),
+          page.getByRole("button", { name: "Save room details", exact: true }).click()
+        ]);
         await expect(page.getByRole("heading", { name: `Fresh ${format.label} Acceptance`, exact: true })).toBeVisible();
         await generatePlans(page, roomId);
         await expect(page.getByText(format.note, { exact: true })).toBeVisible();
@@ -623,7 +631,9 @@ test.describe("fresh-room core workflows", () => {
       creator: { name: "Budget Constrained Guest", diet: "OMNIVORE", canBring: true }
     });
     await page.goto(`/rooms/${roomId}/plans`);
-    await page.getByRole("button", { name: /generate plans/i }).click();
+    await submitMutation(page, `/rooms/${roomId}/plans`, () =>
+      page.getByRole("button", { name: /generate plans/i }).click()
+    );
 
     await expect(page.getByRole("heading", { name: /no safe plan is ready yet/i })).toBeVisible();
     await expect(page.getByRole("region", { name: "Room progress", exact: true }).locator('[aria-current="step"]')).toContainText("Menu & voting");
@@ -636,7 +646,10 @@ test.describe("fresh-room core workflows", () => {
     await page.reload();
     await expect(page.getByRole("heading", { name: /no safe plan is ready yet/i })).toBeVisible();
     await expect(page.getByText("Planning", { exact: true })).toBeVisible();
-    await page.getByRole("link", { name: "Edit room details or budget", exact: true }).click();
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === `/rooms/${roomId}/edit`, { waitUntil: "networkidle" }),
+      page.getByRole("link", { name: "Edit room details or budget", exact: true }).click()
+    ]);
     await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Fresh No Solution Acceptance");
     await expect(page.getByLabel("Total budget", { exact: true })).toHaveValue("1");
     if (testInfo.project.name === "chromium") {
@@ -644,10 +657,16 @@ test.describe("fresh-room core workflows", () => {
     }
     await page.getByLabel("Total budget", { exact: true }).fill("120");
     await page.getByLabel("Date and time", { exact: true }).fill("2026-12-11T19:30");
-    await page.getByRole("button", { name: "Save room details", exact: true }).click();
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === `/rooms/${roomId}`, { waitUntil: "networkidle" }),
+      page.getByRole("button", { name: "Save room details", exact: true }).click()
+    ]);
     await expect(page.getByRole("heading", { name: "Fresh No Solution Acceptance", exact: true })).toBeVisible();
     await expect(page.getByText("Budget Constrained Guest", { exact: true })).toBeVisible();
-    await page.getByRole("link", { name: "Edit room", exact: true }).click();
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === `/rooms/${roomId}/edit`, { waitUntil: "networkidle" }),
+      page.getByRole("link", { name: "Edit room", exact: true }).click()
+    ]);
     await expect(page.getByLabel("Date and time", { exact: true })).toHaveValue("2026-12-11T19:30");
     await expect(page.getByLabel("Total budget", { exact: true })).toHaveValue("120");
     await generatePlans(page, roomId);
