@@ -119,10 +119,10 @@ export async function getCurrentUser(): Promise<User | null> {
   };
 }
 
-export async function requireHost(): Promise<User> {
+export async function requireHost(authDestination = "/auth"): Promise<User> {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/auth");
+    redirect(authDestination);
   }
   return user;
 }

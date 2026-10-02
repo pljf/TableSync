@@ -1,19 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
 import { photoForDish } from "@/lib/photo-library";
+import { creationHref } from "@/lib/creation-intent";
+import type { EventType } from "@/lib/domain";
 import Link from "next/link";
 import { MotionScene } from "@/components/layout/motion-scene";
 import { ArrowRight, ArrowUpRight, Check, CheckCheck, ChevronRight, Coffee, Flame, HandHeart, Leaf, Link2, Minus, Plus, ShoppingBag, Soup, TreePine, Users, Utensils, Vote } from "lucide-react";
 
-const formats = [
-  { label: "Dinner", icon: Utensils, title: "Saturday supper", dish: "chickpea-curry", food: "Chickpea curry", note: "Something for everyone at the table." },
-  { label: "Hotpot", icon: Soup, title: "Hotpot at ours", dish: "mushroom-hotpot-broth", food: "Mushroom hotpot", note: "Pick a broth. Gather your favorite people." },
-  { label: "Potluck", icon: HandHeart, title: "Bring a little something", dish: "vegetarian-pasta-bake", food: "Vegetarian pasta bake", note: "Everyone brings a dish. Everything comes together." },
-  { label: "BBQ", icon: Flame, title: "Backyard barbecue", dish: "bbq-chicken-skewers", food: "Chicken skewers", note: "Fire up the grill. We’ll sort the rest." },
-  { label: "Picnic", icon: TreePine, title: "Lunch in the sunshine", dish: "picnic-lentil-wraps", food: "Vegetable picnic wraps", note: "A blanket, a basket, and a shared plan." },
-  { label: "Brunch", icon: Coffee, title: "A slow Sunday brunch", dish: "brunch-avocado-bean-toast", food: "Avocado toast", note: "Make room for a slower kind of morning." }
+const formats: { label: string; eventType: EventType; icon: typeof Utensils; title: string; dish: string; food: string; note: string }[] = [
+  { label: "Dinner", eventType: "DINNER", icon: Utensils, title: "Saturday supper", dish: "chickpea-curry", food: "Chickpea curry", note: "Something for everyone at the table." },
+  { label: "Hotpot", eventType: "HOTPOT", icon: Soup, title: "Hotpot at ours", dish: "mushroom-hotpot-broth", food: "Mushroom hotpot", note: "Pick a broth. Gather your favorite people." },
+  { label: "Potluck", eventType: "POTLUCK", icon: HandHeart, title: "Bring a little something", dish: "vegetarian-pasta-bake", food: "Vegetarian pasta bake", note: "Everyone brings a dish. Everything comes together." },
+  { label: "BBQ", eventType: "BBQ", icon: Flame, title: "Backyard barbecue", dish: "bbq-chicken-skewers", food: "Chicken skewers", note: "Fire up the grill. We’ll sort the rest." },
+  { label: "Picnic", eventType: "PICNIC", icon: TreePine, title: "Lunch in the sunshine", dish: "picnic-lentil-wraps", food: "Vegetable picnic wraps", note: "A blanket, a basket, and a shared plan." },
+  { label: "Brunch", eventType: "BRUNCH", icon: Coffee, title: "A slow Sunday brunch", dish: "brunch-avocado-bean-toast", food: "Avocado toast", note: "Make room for a slower kind of morning." }
 ];
 const steps = [
   { title: "Make room for everyone.", text: "One link brings your people together. Get their favorites, dietary needs, and allergies in one place.", icon: Users },
@@ -27,7 +29,12 @@ const faq = [
   ["How long does a gathering stay available?", "Rooms expire seven days after creation or three days after the gathering, whichever is later. Undated gatherings expire after seven days. Guest host access stays in the current browser; clearing cookies or ending that session removes access unless you have linked your hosted rooms to GitHub."]
 ];
 
-export function LandingExperience({ primaryAction, createHref }: { primaryAction: ReactNode; createHref: string }) {
+const subscribeToHydration = () => () => {};
+const hydratedSnapshot = () => true;
+const serverHydratedSnapshot = () => false;
+
+export function LandingExperience({ primaryAction }: { primaryAction: ReactNode }) {
+  const hydrated = useSyncExternalStore(subscribeToHydration, hydratedSnapshot, serverHydratedSnapshot);
   const [format, setFormat] = useState(0);
   const [step, setStep] = useState(1);
   const [liked, setLiked] = useState(false);
@@ -83,9 +90,9 @@ export function LandingExperience({ primaryAction, createHref }: { primaryAction
 
     <section className="occasion-section" aria-labelledby="occasion-title">
       <div className="occasion-intro" data-reveal><span className="editorial-label">01 / PICK YOUR KIND OF GOOD TIME</span><h2 id="occasion-title">Your people.<br /><em>Your kind of table.</em></h2><p>Big occasions. Just-because dinners. There’s a plan for all of them.</p></div>
-      <div className="occasion-options" aria-label="Choose a gathering format">{formats.map(({label,icon:Icon},index) => <button key={label} className={format===index?"occasion-option active":"occasion-option"} aria-pressed={format===index} onClick={()=>setFormat(index)}><Icon size={25} strokeWidth={1.6} aria-hidden="true" /><span>{label}</span></button>)}</div>
+      <div className="occasion-options" aria-label="Choose a gathering format">{formats.map(({label,icon:Icon},index) => <button key={label} disabled={!hydrated} className={format===index?"occasion-option active":"occasion-option"} aria-pressed={format===index} onClick={()=>setFormat(index)}><Icon size={25} strokeWidth={1.6} aria-hidden="true" /><span>{label}</span></button>)}</div>
       <div className="occasion-stage" data-reveal="photo">
-        <div className="occasion-stage-copy" key={active.label}><span className="editorial-label">ON THE TABLE / {active.label.toUpperCase()}</span><h3>{active.title}</h3><p>{active.note}</p><Link className="text-link" href={createHref}>Make it a plan <ArrowUpRight size={20} aria-hidden="true"/></Link></div>
+        <div className="occasion-stage-copy" key={active.label}><span className="editorial-label">ON THE TABLE / {active.label.toUpperCase()}</span><h3>{active.title}</h3><p>{active.note}</p><Link className="text-link" href={creationHref(active.eventType)}>Make it a plan <ArrowUpRight size={20} aria-hidden="true"/></Link></div>
         <div className="occasion-dish" key={active.dish}><Image src={photoForDish(active.dish).src} alt={photoForDish(active.dish).alt} width={512} height={512} sizes="(max-width:760px) 80vw, 430px"/><span className="dish-caption">{active.food}</span></div>
         <span className="occasion-counter" aria-hidden="true">0{format+1}<small> / 06</small></span>
       </div>
@@ -115,6 +122,6 @@ export function LandingExperience({ primaryAction, createHref }: { primaryAction
       <div className="promise-copy"><h2>A seat for every taste.</h2><p>The vegetarian. The spice lover. The friend who always brings dessert. Good gatherings make room for all of them.</p><ul><li><Check size={18} aria-hidden="true" /> Dietary needs considered from the start</li><li><Check size={18} aria-hidden="true" /> Menus shaped around your group and budget</li><li><Check size={18} aria-hidden="true" /> Everyone gets a say, and a way to help</li></ul><Link className="text-link" href="/preview?tab=people">Meet your example table <ArrowRight size={17} aria-hidden="true" /></Link></div>
     </section>
     <section className="gather-faq" data-reveal aria-labelledby="faq-title"><div><span className="editorial-label">THE LITTLE DETAILS</span><h2 id="faq-title">Before you<br /><em>pull up a chair.</em></h2></div><div>{faq.map(([q,a])=><details key={q}><summary>{q}<Plus className="faq-plus" size={18} aria-hidden="true"/><Minus className="faq-minus" size={18} aria-hidden="true"/></summary><p>{a}</p></details>)}</div></section>
-    <section className="gather-final" data-reveal><span className="editorial-label">A LITTLE PLAN. A GREAT EVENING.</span><div><h2>See you<br /><em>at the table.</em></h2><Link className="button" href={createHref}>Let’s make a plan <ChevronRight size={19} aria-hidden="true" /></Link></div><span className="final-wordmark" aria-hidden="true">TableSync</span></section>
+    <section className="gather-final" data-reveal><span className="editorial-label">A LITTLE PLAN. A GREAT EVENING.</span><div><h2>See you<br /><em>at the table.</em></h2><Link className="button" href={creationHref(active.eventType)}>Let’s make a plan <ChevronRight size={19} aria-hidden="true" /></Link></div><span className="final-wordmark" aria-hidden="true">TableSync</span></section>
   </MotionScene>;
 }

@@ -11,5 +11,5 @@ export default async function HomePage() {
   const action = user
     ? <Link className="button" href="/dashboard" prefetch={false}>Open your gatherings <ArrowRight size={17} aria-hidden="true" /></Link>
     : <GuestSignInButton className="button" disabled={!authEnvironment.sessionReady} />;
-  return <LandingExperience primaryAction={action} createHref="/rooms/new" />;
+  return <LandingExperience primaryAction={action} />;
 }

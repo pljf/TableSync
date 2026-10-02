@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
+import { openOptionalCreationFields } from "./creation-fields";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
 import { signInAsHost } from "./host-auth";
 import { fillGuestPreferences, type GuestPreferences } from "./guest-preferences";
@@ -10,6 +11,7 @@ const marker = `TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`;
 async function createMeal(page: Page, title: string, creator: GuestPreferences = { name: "Meal creator", diet: "OMNIVORE" }) {
   await page.goto("/rooms/new", { waitUntil: "domcontentloaded" });
   await page.getByLabel("Title", { exact: true }).fill(title);
+  await openOptionalCreationFields(page, "gathering");
   await page.getByLabel("Description", { exact: true }).fill(marker);
   await page.getByLabel("Expected guests", { exact: true }).fill("2");
   await page.getByLabel("Total budget", { exact: true }).fill("150");

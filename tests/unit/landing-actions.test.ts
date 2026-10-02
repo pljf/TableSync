@@ -16,9 +16,17 @@ describe("editorial landing connects to the real product", () => {
   it("starts the guest flow and sends both planning calls to the real creation route", async () => {
     const html = renderToStaticMarkup(await HomePage());
     expect(html).toContain(">Continue as guest</button>");
-    expect(html.match(/href="\/rooms\/new"/g)).toHaveLength(2);
+    expect(html.match(/href="\/rooms\/new\?eventType=DINNER"/g)).toHaveLength(2);
+    expect(html).not.toContain('href="/rooms/new"');
     expect(html).not.toContain('href="/preview?view=new"');
     expect(html).toContain("Interactive example");
+  });
+
+  it("keeps occasion buttons disabled until their client handlers are ready", async () => {
+    const html = renderToStaticMarkup(await HomePage());
+    const buttons = html.match(/<button[^>]*class="occasion-option[^"]*"[^>]*>/g);
+    expect(buttons).toHaveLength(6);
+    for (const button of buttons ?? []) expect(button).toContain('disabled=""');
   });
 
   it("opens the actual host dashboard for a signed-in user", async () => {
