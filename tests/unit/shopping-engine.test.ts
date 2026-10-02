@@ -42,7 +42,8 @@ describe("shopping engine", () => {
     const before = structuredClone(plan);
     const items = generateShoppingList({ room: potluck, guests: demoGuests, plan });
     const remaining = generateShoppingList({ room: potluck, guests: demoGuests, plan: { ...plan, dishes: plan.dishes.slice(1) } });
-    expect(items).toEqual(remaining);
+    const groceriesOnly = (list: typeof items) => list.map((item) => ({ ...item, assignedToGuestId: undefined }));
+    expect(groceriesOnly(items)).toEqual(groceriesOnly(remaining));
     expect(items.find((item) => item.ingredient.id === "rice")?.quantity).toBe(4.5);
     const expectedSharedCost = plan.dishes.slice(1).reduce((sum, item) =>
       sum + Math.round(item.dish.estimatedCostCents * item.servings / item.dish.baseServings), 0);

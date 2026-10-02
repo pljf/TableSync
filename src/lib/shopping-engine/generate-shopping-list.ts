@@ -1,6 +1,7 @@
 import type { GeneratedShoppingItem, GenerateShoppingInput, Ingredient } from "@/lib/domain";
 import { assignShoppingItems } from "@/lib/shopping-engine/assign-items";
 import { allocateIngredientCosts } from "@/lib/shopping-engine/ingredient-costs";
+import { potluckContributionCosts } from "@/lib/shopping-engine/budget-summary";
 
 type MergeRecord = {
   ingredient: Ingredient;
@@ -52,6 +53,6 @@ export function generateShoppingList(input: GenerateShoppingInput): GeneratedSho
       return category || a.ingredient.name.localeCompare(b.ingredient.name) || a.ingredient.id.localeCompare(b.ingredient.id) || a.unit.localeCompare(b.unit);
     });
 
-  return assignShoppingItems(items, guests);
+  return assignShoppingItems(items, guests, potluckContributionCosts(input.room, plan));
 }
 

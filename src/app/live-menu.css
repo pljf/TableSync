@@ -120,3 +120,10 @@
   .plan-card-visual > img { transition: none; }
   .editorial-plan:hover .plan-card-visual > img { transform: none; }
 }
+
+.shopping-page .shopping-estimate-note { max-width: 75ch; font-size: 12px; line-height: 1.7; }
+.shopping-page .shopping-tools .tag-list .badge { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.shopping-page .shopping-budget-status:empty { display: none; }
+.shopping-page .shopping-budget-status { color: #754221; max-width: 75ch; font-size: 13px; line-height: 1.7; }
+.shopping-page .shopping-budget-status p { margin: 0 0 8px; }
+.shopping-page .shopping-budget-status p:last-child { margin-bottom: 0; }
