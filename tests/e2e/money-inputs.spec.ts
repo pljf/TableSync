@@ -55,7 +55,11 @@ test("accepts and retains cent-precision room budgets and guest comfort through 
   const roomId = new URL(page.url()).pathname.split("/").at(-1)!;
   const invitation = await page.getByLabel("Guest invite link").inputValue();
   await expect(page.locator(".metric-card").filter({ has: page.getByText("Budget", { exact: true }) })).toContainText("$0.50");
-  await expect(page.locator(".guest-row")).toContainText("$25.50");
+  await page.getByRole("link", { name: "My preferences", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Your preferences", exact: true })).toBeVisible();
+  await expect(page.getByLabel("Budget comfort", { exact: true })).toHaveValue("25.5");
+  await page.goto(`/rooms/${roomId}`, { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
 
   const guestContext = await browser.newContext({ baseURL: origin });
   try {
