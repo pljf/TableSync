@@ -153,6 +153,7 @@ export default async function ShoppingPage({ params }: PageProps) {
               <progress aria-label="Items purchased" max={bundle.shopping.length} value={purchased} />
             </article>
           </section>
+          <p className="muted shopping-estimate-note">Recipe estimates are split by ingredient quantities and indicative unit costs. Recipes with unsupported ingredients or units use equal shares. These are approximate recipe portions; full packs and local checkout prices may cost more.</p>
           <ShoppingList
             guests={bundle.guests.map(({ id, name }) => ({ id, name }))}
             guestId={actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined}
