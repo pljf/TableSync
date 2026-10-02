@@ -3,17 +3,19 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { photoForDish } from "@/lib/photo-library";
+import { creationHref } from "@/lib/creation-intent";
+import type { EventType } from "@/lib/domain";
 import Link from "next/link";
 import { MotionScene } from "@/components/layout/motion-scene";
 import { ArrowRight, ArrowUpRight, Check, CheckCheck, ChevronRight, Coffee, Flame, HandHeart, Leaf, Link2, Minus, Plus, ShoppingBag, Soup, TreePine, Users, Utensils, Vote } from "lucide-react";
 
-const formats = [
-  { label: "Dinner", icon: Utensils, title: "Saturday supper", dish: "chickpea-curry", food: "Chickpea curry", note: "Something for everyone at the table." },
-  { label: "Hotpot", icon: Soup, title: "Hotpot at ours", dish: "mushroom-hotpot-broth", food: "Mushroom hotpot", note: "Pick a broth. Gather your favorite people." },
-  { label: "Potluck", icon: HandHeart, title: "Bring a little something", dish: "vegetarian-pasta-bake", food: "Vegetarian pasta bake", note: "Everyone brings a dish. Everything comes together." },
-  { label: "BBQ", icon: Flame, title: "Backyard barbecue", dish: "bbq-chicken-skewers", food: "Chicken skewers", note: "Fire up the grill. We’ll sort the rest." },
-  { label: "Picnic", icon: TreePine, title: "Lunch in the sunshine", dish: "picnic-lentil-wraps", food: "Vegetable picnic wraps", note: "A blanket, a basket, and a shared plan." },
-  { label: "Brunch", icon: Coffee, title: "A slow Sunday brunch", dish: "brunch-avocado-bean-toast", food: "Avocado toast", note: "Make room for a slower kind of morning." }
+const formats: { label: string; eventType: EventType; icon: typeof Utensils; title: string; dish: string; food: string; note: string }[] = [
+  { label: "Dinner", eventType: "DINNER", icon: Utensils, title: "Saturday supper", dish: "chickpea-curry", food: "Chickpea curry", note: "Something for everyone at the table." },
+  { label: "Hotpot", eventType: "HOTPOT", icon: Soup, title: "Hotpot at ours", dish: "mushroom-hotpot-broth", food: "Mushroom hotpot", note: "Pick a broth. Gather your favorite people." },
+  { label: "Potluck", eventType: "POTLUCK", icon: HandHeart, title: "Bring a little something", dish: "vegetarian-pasta-bake", food: "Vegetarian pasta bake", note: "Everyone brings a dish. Everything comes together." },
+  { label: "BBQ", eventType: "BBQ", icon: Flame, title: "Backyard barbecue", dish: "bbq-chicken-skewers", food: "Chicken skewers", note: "Fire up the grill. We’ll sort the rest." },
+  { label: "Picnic", eventType: "PICNIC", icon: TreePine, title: "Lunch in the sunshine", dish: "picnic-lentil-wraps", food: "Vegetable picnic wraps", note: "A blanket, a basket, and a shared plan." },
+  { label: "Brunch", eventType: "BRUNCH", icon: Coffee, title: "A slow Sunday brunch", dish: "brunch-avocado-bean-toast", food: "Avocado toast", note: "Make room for a slower kind of morning." }
 ];
 const steps = [
   { title: "Make room for everyone.", text: "One link brings your people together. Get their favorites, dietary needs, and allergies in one place.", icon: Users },
@@ -85,7 +87,7 @@ export function LandingExperience({ primaryAction, createHref }: { primaryAction
       <div className="occasion-intro" data-reveal><span className="editorial-label">01 / PICK YOUR KIND OF GOOD TIME</span><h2 id="occasion-title">Your people.<br /><em>Your kind of table.</em></h2><p>Big occasions. Just-because dinners. There’s a plan for all of them.</p></div>
       <div className="occasion-options" aria-label="Choose a gathering format">{formats.map(({label,icon:Icon},index) => <button key={label} className={format===index?"occasion-option active":"occasion-option"} aria-pressed={format===index} onClick={()=>setFormat(index)}><Icon size={25} strokeWidth={1.6} aria-hidden="true" /><span>{label}</span></button>)}</div>
       <div className="occasion-stage" data-reveal="photo">
-        <div className="occasion-stage-copy" key={active.label}><span className="editorial-label">ON THE TABLE / {active.label.toUpperCase()}</span><h3>{active.title}</h3><p>{active.note}</p><Link className="text-link" href={createHref}>Make it a plan <ArrowUpRight size={20} aria-hidden="true"/></Link></div>
+        <div className="occasion-stage-copy" key={active.label}><span className="editorial-label">ON THE TABLE / {active.label.toUpperCase()}</span><h3>{active.title}</h3><p>{active.note}</p><Link className="text-link" href={creationHref(active.eventType)}>Make it a plan <ArrowUpRight size={20} aria-hidden="true"/></Link></div>
         <div className="occasion-dish" key={active.dish}><Image src={photoForDish(active.dish).src} alt={photoForDish(active.dish).alt} width={512} height={512} sizes="(max-width:760px) 80vw, 430px"/><span className="dish-caption">{active.food}</span></div>
         <span className="occasion-counter" aria-hidden="true">0{format+1}<small> / 06</small></span>
       </div>

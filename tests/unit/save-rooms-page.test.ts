@@ -6,11 +6,11 @@ const state = vi.hoisted(() => ({ user: vi.fn(), ready: false }));
 vi.mock("@/lib/auth", () => ({ getCurrentUser: state.user }));
 vi.mock("@/lib/auth-environment", () => ({ authEnvironment: { get productionReady() { return state.ready; }, sessionReady: true } }));
 vi.mock("@/components/brand/table-scene", () => ({ TableScene: () => null }));
-vi.mock("@/components/auth/github-sign-in-button", () => ({ GitHubSignInButton: ({ enabled, upgrade }: { enabled: boolean; upgrade?: boolean }) => createElement("button", { disabled: !enabled }, upgrade ? "Save my rooms with GitHub" : "Continue with GitHub") }));
-vi.mock("@/components/auth/guest-sign-in-button", () => ({ GuestSignInButton: () => createElement("button", null, "Continue as guest") }));
+vi.mock("@/components/auth/github-sign-in-button", () => ({ GitHubSignInButton: ({ enabled, upgrade, destination, errorDestination }: { enabled: boolean; upgrade?: boolean; destination?: string; errorDestination?: string }) => createElement("button", { disabled: !enabled, "data-destination": destination, "data-error-destination": errorDestination }, upgrade ? "Save my rooms with GitHub" : "Continue with GitHub") }));
+vi.mock("@/components/auth/guest-sign-in-button", () => ({ GuestSignInButton: ({ destination }: { destination?: string }) => createElement("button", { "data-destination": destination }, "Continue as guest") }));
 import AuthPage from "@/app/auth/page";
 
-async function markup(query: { upgrade?: string; error?: string } = {}) {
+async function markup(query: { upgrade?: string; error?: string; create?: string | string[]; eventType?: string | string[] } = {}) {
   return renderToStaticMarkup(await AuthPage({ searchParams: Promise.resolve(query) }) as ReactNode);
 }
 
@@ -37,6 +37,18 @@ describe("save hosted rooms without ending the guest session", () => {
     const html = await markup({ upgrade: "1", error: "provider" });
     expect(html).toContain("Saving your account was not completed");
     expect(html).toContain("Save my rooms with GitHub");
+  });
+  it("returns an existing host to their chosen gathering instead of the dashboard", async () => {
+    await expect(markup({ create: "1", eventType: "BRUNCH" })).rejects.toMatchObject({
+      digest: expect.stringContaining("/rooms/new?eventType=BRUNCH")
+    });
+  });
+  it("passes creation and retry destinations to both sign-in controls", async () => {
+    state.user.mockResolvedValue(null);
+    const html = await markup({ create: "1", eventType: "BBQ", error: "provider" });
+    expect(html.match(/data-destination="\/rooms\/new\?eventType=BBQ"/g)).toHaveLength(2);
+    expect(html).toContain('data-error-destination="/auth?create=1&amp;eventType=BBQ&amp;error=provider"');
+    expect(html).toContain("Sign-in was not completed");
   });
   it("keeps the existing normal signed-in redirect and does not re-upgrade permanent accounts", async () => {
     await expect(markup()).rejects.toMatchObject({ digest: expect.stringContaining("NEXT_REDIRECT") });

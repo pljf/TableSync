@@ -7,16 +7,18 @@ import { TableScene } from "@/components/brand/table-scene";
 import { RoomExpiryNotice } from "@/components/rooms/room-expiry-notice";
 import { getCurrentUser } from "@/lib/auth";
 import { authEnvironment } from "@/lib/auth-environment";
+import { signInCreationIntent } from "@/lib/creation-intent";
 
 type PageProps = {
-  searchParams?: Promise<{ error?: string; upgrade?: string }>;
+  searchParams?: Promise<{ error?: string; upgrade?: string; create?: string | string[]; eventType?: string | string[] }>;
 };
 
 export default async function AuthPage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
   const query = searchParams ? await searchParams : {};
   const upgrading = Boolean(user?.isAnonymous && query.upgrade === "1");
-  if (user && !upgrading) redirect("/dashboard");
+  const intent = signInCreationIntent(query);
+  if (user && !upgrading) redirect(intent.destination);
 
   if (upgrading) {
     return (
@@ -57,14 +59,14 @@ export default async function AuthPage({ searchParams }: PageProps) {
         {query.error ? (
           <div className="feedback error-feedback" role="alert">Sign-in was not completed. No session was created; please try again.</div>
         ) : null}
-        <GuestSignInButton disabled={!authEnvironment.sessionReady} className="button full" />
+        <GuestSignInButton disabled={!authEnvironment.sessionReady} className="button full" destination={intent.destination} />
         {!authEnvironment.sessionReady ? (
           <div className="feedback info-feedback" role="status">
             <span>Guest access is temporarily unavailable. Please try again later.</span>
           </div>
         ) : null}
         <p className="muted">Guest access stays in this browser for up to 7 days. Ending the session or clearing cookies removes your access to its rooms.</p>
-        <GitHubSignInButton enabled={authEnvironment.productionReady} />
+        <GitHubSignInButton enabled={authEnvironment.productionReady} destination={intent.destination} errorDestination={intent.errorDestination} />
         {!authEnvironment.productionReady ? <p className="muted">GitHub sign-in isn’t set up here yet. You can use all planning features as a guest.</p> : null}
         <div className="auth-panel-footer">
           <p>Invited to a meal?</p>

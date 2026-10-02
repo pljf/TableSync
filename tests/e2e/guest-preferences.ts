@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import type { DietType, SpiceLevel } from "../../src/lib/domain";
+import { openOptionalCreationFields } from "./creation-fields";
 
 export type GuestPreferences = {
   name: string;
@@ -13,6 +14,7 @@ export type GuestPreferences = {
 };
 
 export async function fillGuestPreferences(page: Page, guest: GuestPreferences) {
+  await openOptionalCreationFields(page, "preferences");
   await page.getByLabel("Name", { exact: true }).fill(guest.name);
   await page.getByRole("combobox", { name: "Diet type", exact: true }).selectOption(guest.diet);
   await page.getByRole("combobox", { name: "Spice tolerance", exact: true }).selectOption(guest.spice ?? "MEDIUM");

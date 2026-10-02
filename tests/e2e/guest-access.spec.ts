@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { expect, test, type BrowserContext, type Page, type Response, type Route } from "@playwright/test";
 import { dishCatalog } from "../../src/lib/seed-data";
+import { openOptionalCreationFields } from "./creation-fields";
 import { fillGuestPreferences, type GuestPreferences } from "./guest-preferences";
 
 const e2eRunMarker = `TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`;
@@ -74,6 +75,7 @@ async function continueAsGuest(page: Page, path: "/" | "/auth" = "/") {
 async function createGuestRoom(page: Page, title: string, options: { publicShare?: boolean; retryTransportError?: boolean; creator?: GuestPreferences } = {}) {
   await page.getByRole("main").getByRole("link", { name: "New room", exact: true }).click();
   await page.getByLabel("Title", { exact: true }).fill(title);
+  await openOptionalCreationFields(page, "gathering");
   await page.getByLabel("Description", { exact: true }).fill(e2eRunMarker);
   await page.getByRole("combobox", { name: "Event type", exact: true }).selectOption("DINNER");
   await page.getByLabel("Expected guests", { exact: true }).fill("2");
