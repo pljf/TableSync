@@ -55,6 +55,11 @@ test("example navigation stays in the example and remains usable at 320px", asyn
 test("example grocery filters and assignments preserve changes across section navigation", async ({ page }) => {
   await page.goto("/preview?tab=shopping", { waitUntil: "domcontentloaded" });
   const main = page.getByRole("main");
+  await main.getByRole("button", { name: "Unassigned", exact: true }).click();
+  await main.getByLabel("Search groceries", { exact: true }).fill("nothing matches");
+  await expect(main.getByRole("heading", { name: "Nothing on this list yet.", exact: true })).toBeVisible();
+  await expect(main.getByText("Every grocery has a shopper.", { exact: true })).toHaveCount(0);
+  await main.getByRole("button", { name: "Show everything", exact: true }).click();
   const apples = main.getByRole("checkbox", { name: "Apples Produce", exact: true });
   await apples.check();
   await main.getByLabel("Assign Apples", { exact: true }).selectOption("Jamie");
@@ -69,4 +74,8 @@ test("example grocery filters and assignments preserve changes across section na
   await main.getByRole("navigation", { name: "Gathering sections", exact: true }).getByRole("link", { name: "Shopping", exact: true }).click();
   await expect(apples).toBeChecked();
   await expect(main.getByLabel("Assign Apples", { exact: true })).toHaveValue("Jamie");
+  await main.getByLabel("Assign Rolled oats", { exact: true }).selectOption("Sam");
+  await main.getByRole("button", { name: "Unassigned", exact: true }).click();
+  await expect(main.getByRole("heading", { name: "Everyone has a part to play.", exact: true })).toBeVisible();
+  await expect(main.getByText("Every grocery has a shopper.", { exact: true })).toBeVisible();
 });

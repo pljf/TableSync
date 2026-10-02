@@ -7,3 +7,5 @@ At widths up to 420px, the four example section links use two rows so each stays
 Browser regressions cover 320px overflow, keyboard activation, both dashboard entrypoints, example creation, grocery filters, assignments and purchase state across sections. Physical-device gestures remain outside automated viewport checks.
 
 The shopping progress caption uses a darker green to meet text contrast requirements on the existing pale-green surface.
+
+Assignment-complete feedback depends on the whole list. A search with no matches does not claim all groceries are assigned.
