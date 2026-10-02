@@ -10,7 +10,7 @@
 4. Copy the room's invite link and send it to the other participants. They can submit preferences without a host account. Use **My preferences** to update your own response before voting starts.
 5. Open **Plans** and choose **Generate plans**. Compare the dishes, portions, and estimated total and per-person costs. Save a Like, Neutral, or Veto; a Veto requires a reason.
 6. Choose **Finalize plan** on your preferred menu. The final menu includes preparation details, ingredient estimates, timing, and adjustment notes. Other options remain available for reference.
-7. Open **Shopping** to review groceries, assign items, and mark purchases. If public sharing is enabled, use the room's Share link to share a read-only final menu.
+7. Open **Shopping** to review groceries, assign items, and mark purchases. Assignments and purchase checks save immediately; wait for the saved confirmation, or choose **Retry save** if a change fails. If public sharing is enabled, use the room's Share link to share a read-only final menu.
 
 Creators can vote using the response saved during room creation. For an older room without a creator response, choose **Add my preferences** before moving to voting.
 

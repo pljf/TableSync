@@ -128,9 +128,15 @@ async function submitMutation(page: Page, path: string, submit: () => Promise<vo
   await page.route(matchesPath, holdMutation);
   try {
     await submit();
-    const pendingButton = page.locator('button[aria-busy="true"]').first();
-    await expect(pendingButton).toBeVisible();
-    await expect(pendingButton).toBeDisabled();
+    const pendingForm = page.locator('form[data-state="pending"]').first();
+    const pendingButton = pendingForm.locator('button[aria-busy="true"]').first();
+    if (await pendingButton.count()) {
+      await expect(pendingButton).toBeVisible();
+      await expect(pendingButton).toBeDisabled();
+    } else {
+      await expect(pendingForm).toHaveAttribute("aria-busy", "true");
+      await expect(pendingForm.locator('input[type="checkbox"], select').first()).toBeDisabled();
+    }
     await expect(page.locator('.action-feedback[data-state="pending"][role="status"]')).toBeVisible();
     if (inspectPending) await inspectPending();
     const responsePromise = page.waitForResponse(
@@ -308,12 +314,8 @@ test.describe("public guest access", () => {
     const firstShoppingRow = page.locator("article.shopping-row").first();
     await expect(firstShoppingRow).toBeVisible();
     await expect(firstShoppingRow.locator(".assignee")).toHaveText("Guest host diner");
-    await expect(firstShoppingRow.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
-    await firstShoppingRow.getByLabel("Purchased", { exact: true }).check();
-    await expect(firstShoppingRow.getByRole("button", { name: "Save", exact: true })).toBeEnabled();
-    await submitMutation(page, `/rooms/${roomId}/shopping`, () =>
-      firstShoppingRow.getByRole("button", { name: "Save", exact: true }).click()
-    );
+    await expect(firstShoppingRow.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
+    await submitMutation(page, `/rooms/${roomId}/shopping`, () => firstShoppingRow.getByLabel("Purchased", { exact: true }).check());
     await page.reload();
     await expect(page.locator("article.shopping-row").first().getByLabel("Purchased", { exact: true })).toBeChecked();
     await expect(page.getByRole("button", { name: "Purchased 1", exact: true })).toBeVisible();
@@ -325,13 +327,12 @@ test.describe("public guest access", () => {
     await expect(completion).toHaveCount(0);
     for (let index = 1; index < itemCount; index += 1) {
       const row = shoppingRows.nth(index);
-      await row.getByLabel("Purchased", { exact: true }).check();
-      await expect(completion, "Unsaved checks must not announce completion").toHaveCount(0);
+      await expect(completion, "Unpurchased items must not announce completion").toHaveCount(0);
       if (index === itemCount - 1) {
         await expect(page.getByRole("button", { name: `Purchased ${itemCount - 1}`, exact: true })).toBeVisible();
       }
       await submitMutation(page, `/rooms/${roomId}/shopping`,
-        () => row.getByRole("button", { name: "Save", exact: true }).click(),
+        () => row.getByLabel("Purchased", { exact: true }).check(),
         async () => { await expect(completion, "A pending save must not announce completion").toHaveCount(0); }
       );
       await expect(page.getByRole("button", { name: `Purchased ${index + 1}`, exact: true })).toBeVisible();
@@ -342,10 +343,9 @@ test.describe("public guest access", () => {
     await expect(page.locator("article.shopping-row.is-purchased")).toHaveCount(itemCount);
 
     const lastShoppingRow = shoppingRows.last();
-    await lastShoppingRow.getByLabel("Purchased", { exact: true }).uncheck();
-    await expect(completion, "An unsaved change must retain confirmed completion").toBeVisible();
+    await expect(completion, "The confirmed shopping state is complete").toBeVisible();
     await submitMutation(page, `/rooms/${roomId}/shopping`,
-      () => lastShoppingRow.getByRole("button", { name: "Save", exact: true }).click(),
+      () => lastShoppingRow.getByLabel("Purchased", { exact: true }).uncheck(),
       async () => { await expect(completion).toBeVisible(); }
     );
     await expect(completion).toHaveCount(0);

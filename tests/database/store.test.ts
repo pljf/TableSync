@@ -231,17 +231,13 @@ describe("Prisma-backed store", () => {
     const concurrentClaims = await Promise.allSettled(
       Array.from({ length: 4 }, () => claimShoppingItem(firstItem.id, { host }, guest.id))
     );
-    expect(concurrentClaims.filter((result) => result.status === "fulfilled")).toHaveLength(1);
-    await expect(claimShoppingItem(firstItem.id, { host }, guest.id)).rejects.toThrow(
-      "This shopping assignment is unchanged."
-    );
+    expect(concurrentClaims.filter((result) => result.status === "fulfilled")).toHaveLength(4);
+    await expect(claimShoppingItem(firstItem.id, { host }, guest.id)).resolves.toBe(room.id);
     const concurrentToggles = await Promise.allSettled(
       Array.from({ length: 4 }, () => toggleShoppingItem(firstItem.id, { host }, true))
     );
-    expect(concurrentToggles.filter((result) => result.status === "fulfilled")).toHaveLength(1);
-    await expect(toggleShoppingItem(firstItem.id, { host }, true)).rejects.toThrow(
-      "This purchased state is unchanged."
-    );
+    expect(concurrentToggles.filter((result) => result.status === "fulfilled")).toHaveLength(4);
+    await expect(toggleShoppingItem(firstItem.id, { host }, true)).resolves.toBe(room.id);
 
     const updated = await getRoomBundle(room.id, { host });
     expect(updated?.room.status).toBe("FINALIZED");
@@ -426,6 +422,7 @@ describe("Prisma-backed store", () => {
     await expect(toggleShoppingItem(item.id, { guest: guestActor(other) }, true)).rejects.toThrow("You do not have access");
     await claimShoppingItem(item.id, { host }, other.id);
     await claimShoppingItem(item.id, { guest: guestActor(other) });
+    await expect(claimShoppingItem(item.id, { guest: guestActor(other) })).resolves.toBe(room.id);
     expect((await prisma.shoppingItem.findUniqueOrThrow({ where: { id: item.id } })).assignedToGuestId).toBeNull();
   }, 30_000);
 

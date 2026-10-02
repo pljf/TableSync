@@ -1160,7 +1160,7 @@ export async function claimShoppingItem(itemId: string, actors: RequestActors, t
       if (targetGuestId && item.assignedToGuestId && item.assignedToGuestId !== guestActor.guestId) {
         throw new AuthorizationError();
       }
-      if (!targetGuestId && item.assignedToGuestId !== guestActor.guestId) throw new AuthorizationError();
+      if (!targetGuestId && item.assignedToGuestId && item.assignedToGuestId !== guestActor.guestId) throw new AuthorizationError();
       desiredGuestId = targetGuestId ? guestActor.guestId : undefined;
     }
 
@@ -1180,7 +1180,8 @@ export async function claimShoppingItem(itemId: string, actors: RequestActors, t
       throw new AuthorizationError();
     }
     if (item.assignedToGuestId === (guest?.id ?? null)) {
-      throw new Error("This shopping assignment is unchanged.");
+      // A retry can follow a saved change whose response was lost.
+      return item.roomId;
     }
 
     await tx.shoppingItem.update({
@@ -1232,7 +1233,8 @@ export async function toggleShoppingItem(itemId: string, actors: RequestActors, 
       throw new AuthorizationError();
     }
     if (item.checked === checked) {
-      throw new Error("This purchased state is unchanged.");
+      // Desired-state saves are safe to retry after a connection failure.
+      return item.roomId;
     }
 
     await tx.shoppingItem.update({

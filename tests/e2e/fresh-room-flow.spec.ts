@@ -223,31 +223,21 @@ async function voteFinalizeAndShop(
   }
   const firstShoppingRow = page.locator("article.shopping-row").first();
   await expect(firstShoppingRow).toBeVisible();
-  await firstShoppingRow.getByLabel("Purchased").check();
+  await submitMutation(page, `/rooms/${roomId}/shopping`, () => firstShoppingRow.getByLabel("Purchased").check());
   const assignmentSelect = firstShoppingRow.getByRole("combobox", { name: /^assign /i });
   const savedAssignee = (await firstShoppingRow.locator(".assignee").innerText()).trim();
   const reassignmentName = savedAssignee === alternateGuestName
     ? (await assignmentSelect.locator("option").allTextContents()).find((name) => name !== "Unassigned" && name !== savedAssignee)
     : alternateGuestName;
   expect(reassignmentName, "The workflow needs a different guest for the reassignment check").toBeTruthy();
-  await assignmentSelect.selectOption({ label: reassignmentName! });
-  await expect(firstShoppingRow.getByRole("button", { name: /save assignment/i })).toBeEnabled();
-  await submitMutation(page, `/rooms/${roomId}/shopping`, () =>
-    firstShoppingRow.getByRole("button", { name: /save assignment/i }).click()
-  );
+  await submitMutation(page, `/rooms/${roomId}/shopping`, async () => { await assignmentSelect.selectOption({ label: reassignmentName! }); });
   await expect(firstShoppingRow.locator(".assignee")).toHaveText(reassignmentName!, { timeout: 20_000 });
   await expect(firstShoppingRow.getByLabel("Purchased")).toBeChecked();
-  await submitMutation(page, `/rooms/${roomId}/shopping`, () =>
-    firstShoppingRow.getByRole("button", { name: /^save$/i }).click()
-  );
   await expect(page).toHaveURL(new RegExp(`/rooms/${roomId}/shopping\\?updated=`), { timeout: 20_000 });
   await page.waitForLoadState("load");
   await expect(page.locator("article.shopping-row").first().getByLabel("Purchased")).toBeChecked();
   await page.getByRole("button", { name: /^purchased 1$/i }).click();
-  await firstShoppingRow.getByRole("combobox", { name: /^assign /i }).selectOption("");
-  await submitMutation(page, `/rooms/${roomId}/shopping`, () =>
-    firstShoppingRow.getByRole("button", { name: /save assignment/i }).click()
-  );
+  await submitMutation(page, `/rooms/${roomId}/shopping`, async () => { await firstShoppingRow.getByRole("combobox", { name: /^assign /i }).selectOption(""); });
   await expect(page.getByRole("button", { name: /^purchased 1$/i })).toHaveAttribute("aria-pressed", "true");
   await page.reload();
   await expect(page.locator("article.shopping-row").first().getByLabel("Purchased")).toBeChecked();
