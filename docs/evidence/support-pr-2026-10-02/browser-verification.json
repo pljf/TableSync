@@ -1,0 +1,20 @@
+{
+  "runtime": "Node 24.19.0 / Next.js 16.3.6 / Playwright 1.62.1",
+  "target": "http://localhost:3001",
+  "platform": "Windows",
+  "mode": "knowledge",
+  "completeThreeBrowserPass": false,
+  "observedCounts": { "passed": 7, "failedOrTimedOut": 4, "notCompleted": 4 },
+  "chromium": { "passed": 5, "total": 5, "checks": ["answers, follow-ups, source expansion and native new tab, reset", "network error and retry", "compound questions and action boundaries", "widget conversation and keyboard focus", "390x844 phone layout and axe with zero violations"] },
+  "firefox": {
+    "passed": ["network error and retry", "widget conversation and keyboard focus"],
+    "timeouts": [
+      { "test": "answers and sources", "stage": "awaiting first assistant reply; user message and Checking the help guides visible; source assertions not reached" },
+      { "test": "compound questions and boundaries", "stage": "setting up page; functional assertions not reached" },
+      { "test": "phone layout and accessibility", "stage": "setting up context; axe not executed" }
+    ]
+  },
+  "webkit": { "failedOrTimedOut": [{ "test": "answers and sources", "stage": "page.goto waiting for load; server-rendered page visible, controls not yet hydrated" }], "notCompleted": 4 },
+  "limitation": "The run was interrupted after the failures above. There was no final Playwright JSON report; this record summarizes observed runner output and error-context files. Assertions and timeouts were not weakened. Approximately 757 MB of 16.9 GB RAM was free during diagnosis, which does not establish the failure cause. The pull request CI must independently verify the full suite.",
+  "screenshots": ["desktop-knowledge.png", "phone-help.png"]
+}

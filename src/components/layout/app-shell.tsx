@@ -5,6 +5,7 @@ import type { User } from "@/lib/domain";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { MainNavigation } from "@/components/layout/main-navigation";
 import { InteractionEffects } from "@/components/ui/interaction-effects";
+import { SupportWidget } from "@/components/support/support-widget";
 
 export function AppShell({ children, user }: { children: ReactNode; user?: User | null }) {
   return <div className="app-shell">
@@ -17,6 +18,7 @@ export function AppShell({ children, user }: { children: ReactNode; user?: User 
     <main id="main-content">{children}</main>
     {/* Keep persistent footer links from starting speculative requests as a document departs. */}
     <footer className="footer"><Link href="/" className="footer-brand" prefetch={false}><Utensils aria-hidden="true" size={17} />TableSync</Link><span>Good food. Better together.</span><Link className="footer-photo-link" href="/photo-credits" prefetch={false}>Photo credits</Link></footer>
+    <SupportWidget />
     <InteractionEffects />
   </div>;
 }
