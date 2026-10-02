@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { EventType } from "../../src/lib/domain";
+import { openOptionalCreationFields } from "./creation-fields";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
 import { signInAsHost } from "./host-auth";
 import { fillGuestPreferences, type GuestPreferences } from "./guest-preferences";
@@ -69,6 +70,7 @@ async function createRoom(
     await dateTimeInput.evaluate((element) => element.setAttribute("name", "dateTime"));
   }
   await page.getByLabel("Title").fill(input.title);
+  await openOptionalCreationFields(page, "gathering");
   await page.getByLabel("Description").fill(e2eRunMarker);
   await page.getByLabel("Event type").selectOption(input.eventType);
   await page.getByLabel("Total budget").fill(String(input.budgetDollars));

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
+import { openOptionalCreationFields } from "./creation-fields";
 import { signInAsHost } from "./host-auth";
 import { fillGuestPreferences } from "./guest-preferences";
 import { captureResponsiveEvidence, expectNoAccessibilityViolations } from "./quality-helpers";
@@ -16,6 +17,7 @@ test("saves shopping immediately, retries failed and lost responses, and keeps p
   await signInAsHost(page);
   await page.goto("/rooms/new");
   await page.getByLabel("Title", { exact: true }).fill(`Shopping autosave ${randomUUID()}`);
+  await openOptionalCreationFields(page, "gathering");
   await page.getByLabel("Description", { exact: true }).fill(`TableSync E2E ${process.env.TABLESYNC_E2E_RUN_ID ?? "local"}`);
   await page.getByLabel("Expected guests", { exact: true }).fill("2");
   await page.getByLabel("Total budget", { exact: true }).fill("150");

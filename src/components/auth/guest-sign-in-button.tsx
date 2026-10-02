@@ -10,12 +10,14 @@ type GuestSignInButtonProps = {
   label?: string;
   className?: string;
   disabled?: boolean;
+  destination?: string;
 };
 
 export function GuestSignInButton({
   label = "Continue as guest",
   className = "button full",
-  disabled = false
+  disabled = false,
+  destination = "/dashboard"
 }: GuestSignInButtonProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -41,7 +43,7 @@ export function GuestSignInButton({
           if (resumed.error || !resumed.data?.user) throw new Error("Guest access could not start");
         }
       }
-      router.push("/dashboard");
+      router.push(destination);
       router.refresh();
     } catch {
       setError("Guest access could not start. Please try again.");

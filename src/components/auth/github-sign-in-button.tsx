@@ -5,7 +5,12 @@ import { KeyRound } from "lucide-react";
 import { ActionFeedback } from "@/components/ui/action-feedback";
 import { ButtonContent } from "@/components/ui/button-content";
 
-export function GitHubSignInButton({ enabled, upgrade = false }: { enabled: boolean; upgrade?: boolean }) {
+export function GitHubSignInButton({ enabled, upgrade = false, destination = "/dashboard", errorDestination = "/auth?error=provider" }: {
+  enabled: boolean;
+  upgrade?: boolean;
+  destination?: string;
+  errorDestination?: string;
+}) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string>();
   const started = useRef(false);
@@ -22,8 +27,8 @@ export function GitHubSignInButton({ enabled, upgrade = false }: { enabled: bool
       const { authClient } = await import("@/lib/auth-client");
       const result = await authClient.signIn.social({
         provider: "github",
-        callbackURL: upgrade ? "/dashboard?saved=1" : "/dashboard",
-        errorCallbackURL: upgrade ? "/auth?upgrade=1&error=provider" : "/auth?error=provider"
+        callbackURL: upgrade ? "/dashboard?saved=1" : destination,
+        errorCallbackURL: upgrade ? "/auth?upgrade=1&error=provider" : errorDestination
       });
       if (result.error || !result.data?.url) throw new Error("The provider did not return a sign-in destination.");
     } catch {
