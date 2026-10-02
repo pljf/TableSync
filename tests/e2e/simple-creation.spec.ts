@@ -10,7 +10,10 @@ test.describe("simple gathering creation", () => {
 
   test("keeps the chosen occasion through guest sign-in and preserves optional drafts", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await page.getByRole("button", { name: "Brunch", exact: true }).click();
+    const brunch = page.getByRole("button", { name: "Brunch", exact: true });
+    await expect(brunch).toBeEnabled();
+    await brunch.click();
+    await expect(brunch).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByRole("link", { name: "Make it a plan", exact: true })).toHaveAttribute("href", "/rooms/new?eventType=BRUNCH");
     await page.getByRole("link", { name: "Make it a plan", exact: true }).click();
     await expect(page).toHaveURL(/\/auth\?create=1&eventType=BRUNCH$/);
@@ -37,6 +40,12 @@ test.describe("simple gathering creation", () => {
     await page.getByLabel("Notes", { exact: true }).fill("Keep this draft when I close the details.");
     await page.getByLabel("Email optional", { exact: true }).fill("invalid-email");
     await preferences.locator("summary").click();
+    await page.getByLabel("Title", { exact: true }).fill("");
+    await page.getByRole("button", { name: "Create room", exact: true }).click();
+    await expect(preferences).toHaveAttribute("open", "");
+    await expect(page.getByLabel("Title", { exact: true })).toBeFocused();
+    await page.getByLabel("Title", { exact: true }).fill(title);
+    await preferences.locator("summary").click();
     await page.getByRole("button", { name: "Create room", exact: true }).click();
     await expect(preferences).toHaveAttribute("open", "");
     await expect(page.getByLabel("Email optional", { exact: true })).toBeFocused();
@@ -49,7 +58,7 @@ test.describe("simple gathering creation", () => {
     await preferences.locator("summary").click();
     await page.getByRole("button", { name: "Create room", exact: true }).click();
     await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText("Brunch", { exact: true }).first()).toBeVisible();
+    await expect(page.locator(".live-room-header .live-section-label")).toHaveText("Brunch · A place for everyone");
   });
 
   test("keeps required fields and native optional disclosures usable without JavaScript", async ({ browser, page }) => {
@@ -59,6 +68,7 @@ test.describe("simple gathering creation", () => {
     const nativePage = await nativeContext.newPage();
     try {
       await nativePage.goto("/rooms/new?eventType=BBQ", { waitUntil: "domcontentloaded" });
+      await expect(nativePage.getByRole("region", { name: "Loading page", exact: true })).toHaveCount(0);
       await expect(nativePage.getByRole("combobox", { name: "Event type", exact: true })).toHaveValue("BBQ");
       const requiredFields = nativePage.locator("form [required]");
       expect(await requiredFields.count()).toBe(3);

@@ -22,6 +22,13 @@ describe("editorial landing connects to the real product", () => {
     expect(html).toContain("Interactive example");
   });
 
+  it("keeps occasion buttons disabled until their client handlers are ready", async () => {
+    const html = renderToStaticMarkup(await HomePage());
+    const buttons = html.match(/<button[^>]*class="occasion-option[^"]*"[^>]*>/g);
+    expect(buttons).toHaveLength(6);
+    for (const button of buttons ?? []) expect(button).toContain('disabled=""');
+  });
+
   it("opens the actual host dashboard for a signed-in user", async () => {
     state.user.mockResolvedValue({ id: "host-1" });
     const html = renderToStaticMarkup(await HomePage());
