@@ -42,9 +42,11 @@ test("example navigation stays in the example and remains usable at 320px", asyn
   }
   await header.getByRole("link", { name: "My gatherings", exact: true }).click();
   await page.waitForURL("**/preview?view=dashboard", { waitUntil: "networkidle" });
+  await expect(header.getByRole("link", { name: "My gatherings", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(main.getByRole("link", { name: "New gathering", exact: true })).toBeVisible();
   await header.getByRole("link", { name: "New gathering", exact: true }).click();
   await expect(main.getByRole("button", { name: "Create example gathering" })).toBeVisible();
+  await expect(header.getByRole("link", { name: "New gathering", exact: true })).toHaveAttribute("aria-current", "page");
   await main.getByLabel("Give it a name").fill("A mobile example");
   await main.getByRole("button", { name: "Create example gathering" }).click();
   await expect(main.getByRole("heading", { name: "A mobile example", exact: true })).toBeVisible();
