@@ -25,6 +25,12 @@ For Potluck, guests can claim whole dishes and track their readiness. Claiming o
 - Ingredients no longer needed are removed.
 - Transferring a dish to another contributor leaves groceries unchanged and resets the dish's readiness.
 
+## Revise a finalized menu
+
+Choose **Revise menu** on Plans to reopen voting. The current shopping list stays visible, with shopping and contribution updates paused until a menu is finalized again. Matching ingredients retain manual assignments (including unassignments) and purchase checks. Increased quantities require another purchase check; obsolete ingredients are removed.
+
+Potluck commitments follow recipes that remain on the chosen menu. Larger portions retain the contributor but require a fresh readiness check. Contributions for recipes that are removed are cleared. Reopening guest preferences remains a destructive reset of menus, votes, shopping progress, and contributions.
+
 ## Guest accounts and saved preferences
 
 Guest host access stays in the same browser for up to seven days. When GitHub sign-in is configured, choose **Save my rooms** to connect the current account to GitHub and return to it across devices. Connecting an account does not extend room expiry.

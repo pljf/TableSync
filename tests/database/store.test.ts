@@ -273,7 +273,11 @@ describe("Prisma-backed store", () => {
     await undoFinalization(room.id, host);
     const reopenedVoting = await getRoomBundle(room.id, { host });
     expect(reopenedVoting?.room.status).toBe("VOTING");
-    expect(reopenedVoting?.shopping).toHaveLength(0);
+    expect(reopenedVoting?.shopping).toEqual(updated?.shopping);
+    await expect(toggleShoppingItem(firstItem.id, { host }, false)).rejects.toThrow("Cannot change the shopping list while the room is voting.");
+    await finalizePlan(plan.id, host);
+    expect((await getRoomBundle(room.id, { host }))?.shopping.find((item) => item.id === firstItem.id)).toMatchObject({ assignedToGuestId: guest.id, checked: true });
+    await undoFinalization(room.id, host);
     expect(reopenedVoting?.plans.find((item) => item.id === plan.id)).toMatchObject({
       status: "PROPOSED",
       votes: [expect.objectContaining({ value: "LIKE" })]

@@ -4,6 +4,7 @@ import type {
   Dish,
   EventType,
   Guest,
+  GeneratedShoppingItem,
   Ingredient,
   InviteRoomView,
   MenuGenerationResult,
@@ -38,6 +39,7 @@ import { eventFormats } from "@/lib/event-formats";
 import { prisma } from "@/lib/prisma";
 import { generateShoppingList } from "@/lib/shopping-engine/generate-shopping-list";
 import { reconcileShoppingList } from "@/lib/shopping-engine/reconcile-shopping-list";
+import { reconcileContributions } from "@/lib/menu-engine/reconcile-contributions";
 import { assertWorkflowActionAllowed } from "@/lib/workflow/state-machine";
 import { Prisma } from "@/generated/prisma/client";
 import { activeRoomWhere, expiredRoomCutoff } from "@/lib/room-retention";
@@ -930,6 +932,34 @@ export async function castVote(planId: string, actor: GuestActor, value: VoteVal
   });
 }
 
+async function persistShoppingRevision(
+  tx: Prisma.TransactionClient,
+  roomId: string,
+  existing: ShoppingItem[],
+  generated: GeneratedShoppingItem[]
+) {
+  const reconciled = reconcileShoppingList(existing, generated);
+  if (reconciled.removedIds.length > 0) {
+    await tx.shoppingItem.deleteMany({ where: { roomId, id: { in: reconciled.removedIds } } });
+  }
+  for (const item of reconciled.items) {
+    const data = {
+      quantity: item.quantity,
+      estimatedCostCents: item.estimatedCostCents ?? null,
+      assignedToGuestId: item.assignedToGuestId ?? null,
+      checked: item.checked,
+      sortOrder: item.sortOrder
+    };
+    if (item.id) {
+      await tx.shoppingItem.update({ where: { id: item.id }, data });
+    } else {
+      await tx.shoppingItem.create({ data: {
+        ...data, roomId, ingredientId: item.ingredient.id, unit: item.unit
+      } });
+    }
+  }
+}
+
 export async function finalizePlan(planId: string, actor: HostActor): Promise<string> {
   const plan = await prisma.menuPlan.findUnique({
     where: {
@@ -959,6 +989,21 @@ export async function finalizePlan(planId: string, actor: HostActor): Promise<st
     if (!selectedPlan) {
       throw new Error("Plan not found.");
     }
+    // Only the previously chosen menu has contributions. Carry commitments to
+    // the same recipes in the new choice; extra portions need a readiness check.
+    const contributions = reconcileContributions(bundle.plans.flatMap((item) => item.dishes), selectedPlan.dishes);
+    await tx.menuPlanDish.updateMany({
+      where: { plan: { roomId: bundle.room.id } },
+      data: { contributionGuestId: null, contributionReady: false }
+    });
+    for (const item of contributions) {
+      await tx.menuPlanDish.update({ where: { id: item.id }, data: {
+        contributionGuestId: item.contributionGuestId ?? null, contributionReady: item.contributionReady
+      } });
+      const dish = selectedPlan.dishes.find((dish) => dish.id === item.id)!;
+      dish.contributionGuestId = item.contributionGuestId;
+      dish.contributionReady = item.contributionReady;
+    }
     const shopping = generateShoppingList({ room: bundle.room, guests: bundle.guests, plan: selectedPlan });
     await tx.menuPlan.updateMany({
       where: {
@@ -984,22 +1029,7 @@ export async function finalizePlan(planId: string, actor: HostActor): Promise<st
         status: "FINALIZED"
       }
     });
-    await tx.shoppingItem.deleteMany({
-      where: {
-        roomId: bundle.room.id
-      }
-    });
-    await tx.shoppingItem.createMany({
-      data: shopping.map((item, index) => ({
-        roomId: bundle.room.id,
-        ingredientId: item.ingredient.id,
-        quantity: item.quantity,
-        unit: item.unit,
-        estimatedCostCents: item.estimatedCostCents,
-        assignedToGuestId: item.assignedToGuestId,
-        sortOrder: index
-      }))
-    });
+    await persistShoppingRevision(tx, bundle.room.id, bundle.shopping, shopping);
     await tx.activityEvent.createMany({
       data: [
         {
@@ -1012,7 +1042,7 @@ export async function finalizePlan(planId: string, actor: HostActor): Promise<st
           roomId: bundle.room.id,
           actorName: "TableSync",
           type: "SHOPPING_GENERATED",
-          message: "Generated and assigned the shopping list."
+          message: bundle.shopping.length > 0 ? "Updated the shopping list and kept matching assignments and purchase progress." : "Generated and assigned the shopping list."
         }
       ]
     });
@@ -1077,11 +1107,6 @@ export async function undoFinalization(roomId: string, actor: HostActor): Promis
       throw new Error("The room does not have exactly one finalized plan.");
     }
 
-    await tx.shoppingItem.deleteMany({ where: { roomId } });
-    await tx.menuPlanDish.updateMany({
-      where: { plan: { roomId } },
-      data: { contributionGuestId: null, contributionReady: false }
-    });
     await tx.menuPlan.updateMany({
       where: { roomId, status: "FINALIZED" },
       data: { status: "PROPOSED" }
@@ -1095,7 +1120,7 @@ export async function undoFinalization(roomId: string, actor: HostActor): Promis
         roomId,
         actorName: "Host",
         type: "FINALIZATION_UNDONE",
-        message: "Undid finalization and removed the shopping list, assignments, purchase state, and dish contributions."
+        message: "Reopened menu voting and kept shopping progress and dish contributions for the next menu choice."
       }
     });
   });
@@ -1306,26 +1331,7 @@ export async function assignPotluckContribution(
       const shopping = generateShoppingList({
         room: mapRoom(room), guests: room.guests.map((person) => mapGuest(person)), plan: updatedPlan
       });
-      const reconciled = reconcileShoppingList(room.shopping.map(mapShoppingItem), shopping);
-      if (reconciled.removedIds.length > 0) {
-        await tx.shoppingItem.deleteMany({ where: { roomId: room.id, id: { in: reconciled.removedIds } } });
-      }
-      for (const shoppingItem of reconciled.items) {
-        const data = {
-          quantity: shoppingItem.quantity,
-          estimatedCostCents: shoppingItem.estimatedCostCents ?? null,
-          assignedToGuestId: shoppingItem.assignedToGuestId ?? null,
-          checked: shoppingItem.checked,
-          sortOrder: shoppingItem.sortOrder
-        };
-        if (shoppingItem.id) {
-          await tx.shoppingItem.update({ where: { id: shoppingItem.id }, data });
-        } else {
-          await tx.shoppingItem.create({ data: {
-            ...data, roomId: room.id, ingredientId: shoppingItem.ingredient.id, unit: shoppingItem.unit
-          } });
-        }
-      }
+      await persistShoppingRevision(tx, room.id, room.shopping.map(mapShoppingItem), shopping);
     }
     await tx.activityEvent.createMany({
       data: [

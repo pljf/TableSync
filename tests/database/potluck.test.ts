@@ -60,6 +60,43 @@ async function fixture(eventType: EventType = "POTLUCK", finalize = true) {
 }
 
 describe("Potluck contribution persistence and authorization", () => {
+  it("keeps shopping and commitments through re-voting and reconciles a different menu atomically", async () => {
+    const { room, guests, plan, item } = await fixture();
+    await assignPotluckContribution(item.id, { host }, guests[0].id, true);
+    await setPotluckContributionReady(item.id, { host }, true);
+    const shopping = (await getRoomBundle(room.id, { host }))!.shopping;
+    const rice = shopping.find((entry) => entry.ingredient.id === "rice")!;
+    const lemonade = shopping.find((entry) => entry.ingredient.id === "lemonade")!;
+    await claimShoppingItem(rice.id, { host });
+    await toggleShoppingItem(rice.id, { host }, true);
+    await toggleShoppingItem(lemonade.id, { host }, true);
+    const saved = (await getRoomBundle(room.id, { host }))!;
+    await undoFinalization(room.id, host);
+    const paused = (await getRoomBundle(room.id, { host }))!;
+    expect(paused.shopping).toEqual(saved.shopping);
+    await expect(toggleShoppingItem(rice.id, { host }, false)).rejects.toThrow("while the room is voting");
+    await expect(setPotluckContributionReady(item.id, { guest: actor(guests[0]) }, false)).rejects.toThrow("unless a Potluck menu is finalized");
+    await finalizePlan(plan.id, host);
+    expect((await getRoomBundle(room.id, { host }))?.shopping.find((entry) => entry.id === rice.id)).toMatchObject({ checked: true, assignedToGuestId: undefined });
+    expect(await prisma.menuPlanDish.findUniqueOrThrow({ where: { id: item.id } })).toMatchObject({ contributionGuestId: guests[0].id, contributionReady: true });
+
+    await undoFinalization(room.id, host);
+    const alternative = await prisma.menuPlan.create({
+      data: {
+        roomId: room.id, title: "More rice and chicken", score: 90, estimatedCostCents: plan.estimatedCostCents * 2,
+        dishes: { create: plan.dishes.map((dish) => ({ dishId: dish.dishId, servings: dish.servings * (dish.dishId === "lemonade" ? 1 : 2) })) }
+      }, include: { dishes: true }
+    });
+    await finalizePlan(alternative.id, host);
+    const revised = (await getRoomBundle(room.id, { host }))!;
+    expect(revised.shopping.find((entry) => entry.id === lemonade.id)).toMatchObject({ checked: true, assignedToGuestId: lemonade.assignedToGuestId });
+    expect(revised.shopping.find((entry) => entry.ingredient.id === "rice")).toMatchObject({ quantity: rice.quantity * 2, checked: false, assignedToGuestId: undefined });
+    expect(revised.shopping.some((entry) => entry.id === rice.id)).toBe(false);
+    await expect(toggleShoppingItem(rice.id, { host }, true)).rejects.toThrow("You do not have access");
+    expect(await prisma.menuPlanDish.findUniqueOrThrow({ where: { id: item.id } })).toMatchObject({ contributionGuestId: null, contributionReady: false });
+    expect(await prisma.menuPlanDish.findUniqueOrThrow({ where: { id: alternative.dishes.find((dish) => dish.dishId === "chicken-taco-bowl")!.id } })).toMatchObject({ contributionGuestId: guests[0].id, contributionReady: false });
+  }, 30_000);
+
   it("confirms grocery changes and preserves unaffected progress, votes, budget and contribution readiness", async () => {
     const { room, guests, plan, item } = await fixture();
     const original = (await getRoomBundle(room.id, { host }))!;
@@ -215,7 +252,7 @@ describe("Potluck contribution persistence and authorization", () => {
     await expect(assignPotluckContribution("missing-row-id", { host }, guests[0].id, true)).rejects.toThrow("You do not have access");
   }, 30_000);
 
-  it("locks contribution changes to the finalized Potluck menu and clears ownership when returning to voting", async () => {
+  it("locks contribution changes to the finalized Potluck menu and preserves ownership when returning to voting", async () => {
     const { room, guests, plan, item } = await fixture("POTLUCK", false);
     await expect(assignPotluckContribution(item.id, { host }, guests[0].id, true)).rejects.toThrow("unless a Potluck menu is finalized");
     await finalizePlan(plan.id, host);
@@ -228,8 +265,8 @@ describe("Potluck contribution persistence and authorization", () => {
     await assignPotluckContribution(item.id, { host }, guests[0].id, true);
     await setPotluckContributionReady(item.id, { host }, true);
     await undoFinalization(room.id, host);
-    expect(await prisma.menuPlanDish.findUniqueOrThrow({ where: { id: item.id } })).toMatchObject({ contributionGuestId: null, contributionReady: false });
-    expect(await prisma.shoppingItem.count({ where: { roomId: room.id } })).toBe(0);
+    expect(await prisma.menuPlanDish.findUniqueOrThrow({ where: { id: item.id } })).toMatchObject({ contributionGuestId: guests[0].id, contributionReady: true });
+    expect(await prisma.shoppingItem.count({ where: { roomId: room.id } })).toBeGreaterThan(0);
     expect(await prisma.vote.count({ where: { planId: plan.id } })).toBe(1);
     await expect(setPotluckContributionReady(item.id, { host }, true)).rejects.toThrow("unless a Potluck menu is finalized");
     await finalizePlan(plan.id, host);

@@ -478,12 +478,12 @@ test.describe("fresh-room core workflows", () => {
 
     await voteFinalizeAndShop(page, roomId, "Dinner Allergy Guest", captureQuality);
     await page.goto(`/rooms/${roomId}/plans`);
-    await page.getByText("Undo finalization").click();
+    await page.getByText("Revise menu").click();
     if (captureQuality) {
       await captureQualityEvidence(page, "undo-finalization-confirmation");
     }
-    await page.getByLabel("I understand that all shopping progress will be deleted.").check();
-    await page.getByRole("button", { name: /undo and delete shopping progress/i }).click();
+    await page.getByLabel("I understand that shopping quantities may change when I finalize a menu.").check();
+    await page.getByRole("button", { name: /reopen menu voting/i }).click();
     await expect(page.getByText("Voting", { exact: true })).toBeVisible();
 
     await page.getByText("Reopen guest preferences").click();
@@ -604,9 +604,9 @@ test.describe("fresh-room core workflows", () => {
         await expect(guestPage.getByText(`${format.label} Vegan`, { exact: true })).toHaveCount(0);
         await expect(guestPage.getByText(`${format.label} Omnivore`, { exact: true })).toHaveCount(0);
         if (quality) await captureQualityEvidence(guestPage, `${format.type.toLowerCase()}-share`);
-        await page.getByText("Undo finalization", { exact: true }).click();
-        await page.getByLabel(/I understand that all shopping progress/).check();
-        await page.getByRole("button", { name: /undo and delete shopping progress/i }).click();
+        await page.getByText("Revise menu", { exact: true }).click();
+        await page.getByLabel(/I understand that shopping quantities may change/).check();
+        await page.getByRole("button", { name: /reopen menu voting/i }).click();
         await expect(page.getByText("Voting", { exact: true })).toBeVisible();
         await expect(page.getByRole("region", { name: "Potluck contributions", exact: true })).toHaveCount(0);
         await page.getByText("Reopen guest preferences", { exact: true }).click();
