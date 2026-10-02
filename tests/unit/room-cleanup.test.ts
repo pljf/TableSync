@@ -14,7 +14,7 @@ describe("expired room database cleanup", () => {
 
     await expect(purgeExpiredRooms(new Date("2026-09-11T05:00:00.000Z"))).resolves.toEqual({ count: 4 });
     expect(database.deleteMany).toHaveBeenCalledExactlyOnceWith({
-      where: { createdAt: { lte: new Date("2026-09-04T05:00:00.000Z") } }
+      where: { AND: [{ createdAt: { lte: new Date("2026-09-04T05:00:00.000Z") } }, { OR: [{ dateTime: null }, { dateTime: { lte: new Date("2026-09-08T05:00:00.000Z") } }] }] }
     });
   });
 
@@ -25,7 +25,7 @@ describe("expired room database cleanup", () => {
 
     await expect(purgeExpiredRooms()).resolves.toEqual({ count: 0 });
     expect(database.deleteMany).toHaveBeenCalledExactlyOnceWith({
-      where: { createdAt: { lte: new Date("2026-09-04T05:59:59.123Z") } }
+      where: { AND: [{ createdAt: { lte: new Date("2026-09-04T05:59:59.123Z") } }, { OR: [{ dateTime: null }, { dateTime: { lte: new Date("2026-09-08T05:59:59.123Z") } }] }] }
     });
   });
 

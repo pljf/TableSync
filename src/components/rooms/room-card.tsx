@@ -40,7 +40,7 @@ export function RoomCard({ room, guestCount, shoppingCount, featured = false, in
           <dd>{room.location || "Location TBD"}</dd>
         </div>
       </dl>
-      <p className="muted room-expiry-notice">Expires <EventDateTime value={roomExpiresAt(room.createdAt).toISOString()} /></p>
+      <p className="muted room-expiry-notice">Expires <EventDateTime value={roomExpiresAt(room.createdAt, room.dateTime).toISOString()} /></p>
       <div className="room-card-progress">
         <span>
           <Users aria-hidden="true" size={16} />

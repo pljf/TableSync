@@ -65,7 +65,7 @@ export default async function RoomPage({ params }: PageProps) {
         </div>
       </header>
 
-      <RoomExpiryNotice createdAt={bundle.room.createdAt} />
+      <RoomExpiryNotice createdAt={bundle.room.createdAt} dateTime={bundle.room.dateTime} />
       <RoomProgress status={bundle.room.status} guestCount={bundle.guests.length} expectedGuests={bundle.room.expectedGuests} />
       <RoomNavigation active="overview" guestCanViewPreferences={actors.guest?.roomId === bundle.room.id} initialRevision={initialRevision ?? undefined} roomId={bundle.room.id} shareAvailable={shareAvailable} />
       <RoomNextStep room={bundle.room} guestCount={bundle.guests.length} planCount={bundle.plans.length} isHost={isHost} isRoomGuest={actors.guest?.roomId === bundle.room.id} finalPlanTitle={finalPlan?.title} shoppingCount={bundle.shopping.length} contributions={contributions} />

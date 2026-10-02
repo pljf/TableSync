@@ -50,7 +50,7 @@ export default async function GuestPreferencePage({ searchParams }: PageProps) {
           ))}</div>
         </nav> : null}
         {query.saved === "1" && !query.updated ? <div className="feedback success-feedback" role="status">Preferences saved. This browser can securely update them until voting starts.</div> : null}
-        <RoomExpiryNotice createdAt={room.createdAt} />
+        <RoomExpiryNotice createdAt={room.createdAt} dateTime={room.dateTime} />
         {!canEdit ? (
           <article className="card empty-state">
             <p className="eyebrow">Preferences locked</p>

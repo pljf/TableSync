@@ -20,7 +20,7 @@ const room: DinnerRoom = {
   dateTime: "2026-09-20T17:00:00.000Z", isPublicShareable: false,
   createdAt: "2026-09-10T15:30:00.000Z", updatedAt: "2026-09-12T10:00:00.000Z"
 };
-const policy = "Rooms expire 7 days after creation and are automatically deleted.";
+const policy = "Rooms stay available for at least 7 days after creation or until 3 days after the gathering, whichever is later, then are automatically deleted.";
 
 function useRoom(status: RoomStatus = "COLLECTING_PREFERENCES") {
   mocks.bundle.mockResolvedValue({ room: { ...room, status }, plans: [], guests: [], shopping: [], activities: [] });
@@ -47,7 +47,7 @@ describe("room lifetime and deletion UI", () => {
     expect(html).toContain("This cannot be undone.");
     expect(html).toContain("Invite and share links will stop working.");
     expect(html).toContain(policy);
-    expect(html).toContain('dateTime="2026-09-17T15:30:00.000Z"');
+    expect(html).toContain('dateTime="2026-09-23T17:00:00.000Z"');
   });
 
   it.each([
@@ -62,11 +62,11 @@ describe("room lifetime and deletion UI", () => {
     expect(html).toContain(policy);
   });
 
-  it("shows each dashboard room's creation-based expiry and confirms deletion", async () => {
+  it("shows each dashboard room's event-aware expiry and confirms deletion", async () => {
     const html = renderToStaticMarkup(await DashboardPage({ searchParams: Promise.resolve({ deleted: "1" }) }));
 
     expect(html).toContain(policy);
-    expect(html).toContain('dateTime="2026-09-17T15:30:00.000Z"');
+    expect(html).toContain('dateTime="2026-09-23T17:00:00.000Z"');
     expect(html).toContain('role="status">Room deleted.');
   });
 

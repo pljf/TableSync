@@ -218,7 +218,7 @@ export type GenerateMenuInput = {
   dishes: Dish[];
 };
 
-export type InviteRoomView = Pick<DinnerRoom, "id" | "title" | "eventType" | "status" | "createdAt">;
+export type InviteRoomView = Pick<DinnerRoom, "id" | "title" | "eventType" | "status" | "createdAt" | "dateTime">;
 
 export type PublicRoomView = {
   room: Pick<DinnerRoom, "id" | "title" | "eventType" | "dateTime" | "location" | "totalBudgetCents" | "createdAt">;

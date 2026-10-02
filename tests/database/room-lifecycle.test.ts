@@ -4,6 +4,7 @@ import type { RoomStatus } from "@/lib/domain";
 import { getCurrentGuestActor, getSavedGuestRooms, guestRoomCookieName } from "@/lib/guest-session";
 import { prisma } from "@/lib/prisma";
 import { getRoomRevision } from "@/lib/room-revision";
+import { purgeExpiredRooms } from "@/lib/room-cleanup";
 import { demoHost } from "@/lib/seed-data";
 import {
   assignPotluckContribution, castVote, claimShoppingItem, createRoom, createRoomWithHostPreferences,
@@ -84,7 +85,61 @@ async function expireRoom(roomId: string) {
   vi.setSystemTime(now);
 }
 
-describe("room deletion and seven-day expiry", () => {
+describe("room deletion and event-aware expiry", () => {
+  it("retains future gatherings and authorized links until the exact post-event boundary", async () => {
+    const { room, guest } = await fixture(true);
+    const now = new Date();
+    const event = new Date(now.getTime() + 14 * 86_400_000);
+    const expiry = new Date(event.getTime() + 3 * 86_400_000);
+    await prisma.dinnerRoom.update({ where: { id: room.id }, data: {
+      createdAt: new Date(now.getTime() - 10 * 86_400_000), dateTime: event
+    } });
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(now);
+    expect((await listRoomsForHost(host)).some(({ id }) => id === room.id)).toBe(true);
+    expect(await getRoomBundle(room.id, { host })).not.toBeNull();
+    expect(await getRoomByInviteToken(room.inviteToken!)).toMatchObject({ dateTime: event.toISOString() });
+    expect(await getPublicRoom(room.id)).not.toBeNull();
+    expect(await getCurrentGuestActor(room.id)).not.toBeNull();
+    expect(await getRoomRevision(room.id, { host })).not.toBeNull();
+    // Lifetime conditions must not replace the revision endpoint's access OR.
+    expect(await getRoomRevision(room.id, { host: otherHost })).toBeNull();
+    await purgeExpiredRooms(now);
+    expect(await prisma.dinnerRoom.findUnique({ where: { id: room.id } })).not.toBeNull();
+    vi.setSystemTime(new Date(expiry.getTime() - 1));
+    expect(await getRoomBundle(room.id, { guest: guestActor(guest) })).not.toBeNull();
+    vi.setSystemTime(expiry);
+    expect(await getRoomBundle(room.id, { host })).toBeNull();
+    expect(await getRoomByInviteToken(room.inviteToken!)).toBeNull();
+    expect(await getPublicRoom(room.id)).toBeNull();
+    expect(await getCurrentGuestActor(room.id)).toBeNull();
+    expect(await getRoomRevision(room.id, { host })).toBeNull();
+    await purgeExpiredRooms(expiry);
+    expect(await prisma.dinnerRoom.findUnique({ where: { id: room.id } })).toBeNull();
+  });
+
+  it("permits joins and locked mutations after day seven while the event is still ahead", async () => {
+    const { room, joinInput } = await fixture();
+    const now = new Date();
+    const event = new Date(now.getTime() + 14 * 86_400_000);
+    await prisma.dinnerRoom.update({ where: { id: room.id }, data: {
+      createdAt: new Date(now.getTime() - 10 * 86_400_000), dateTime: event
+    } });
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(now);
+    await expect(joinRoom({ ...joinInput, submissionKey: crypto.randomUUID(), name: "Later participant" })).resolves.toMatchObject({ roomId: room.id });
+    await expect(updateRoomDetails(room.id, host, {
+      title: "Future gathering updated", eventType: "POTLUCK", expectedGuests: 3, dateTime: event.toISOString()
+    })).resolves.toMatchObject({ title: "Future gathering updated" });
+    await expect(updateRoomDetails(room.id, otherHost, {
+      title: "Unauthorized update", eventType: "POTLUCK", expectedGuests: 3, dateTime: event.toISOString()
+    })).rejects.toBeInstanceOf(AuthorizationError);
+    vi.setSystemTime(new Date(event.getTime() + 3 * 86_400_000));
+    await expect(updateRoomDetails(room.id, host, {
+      title: "Expired gathering update", eventType: "POTLUCK", expectedGuests: 3, dateTime: event.toISOString()
+    })).rejects.toThrow(unavailable);
+  });
+
   it("rejects another host and a participant without deleting the room or its responses", async () => {
     const { room, guest } = await fixture();
     await expect(deleteRoom(room.id, otherHost)).rejects.toBeInstanceOf(AuthorizationError);

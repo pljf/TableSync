@@ -185,7 +185,7 @@ Acceptance evidence belongs in `docs/evidence/staging/`. Record the run's status
 
 ## 9. Scheduled maintenance
 
-Run `npm run ops:cleanup` at least daily from a protected scheduled job. Rooms expire after seven days and are permanently deleted by the next successful cleanup, including their related room data. Defaults for operational data are 90 days for security audit events, 30 days for revoked guest sessions, and 24 hours for rate-limit counters. The command also removes expired host sessions, guest sessions, and verification records. Its output contains counts only.
+Run `npm run ops:cleanup` at least daily from a protected scheduled job. Rooms expire seven days after creation or three days after the gathering, whichever is later, and are permanently deleted by the next successful cleanup, including their related room data. Defaults for operational data are 90 days for security audit events, 30 days for revoked guest sessions, and 24 hours for rate-limit counters. The command also removes expired host sessions, guest sessions, and verification records. Its output contains counts only.
 
 On Vercel, `vercel.json` schedules a daily room cleanup through `/api/cron/rooms`; set `CRON_SECRET` in the Production environment before deployment. See [room retention deployment setup](room-retention.md) for access-expiry timing, scheduling limits, existing-room effects, and other hosts. The Vercel endpoint removes rooms only; keep the operational-data job for audit and authentication maintenance.
 
