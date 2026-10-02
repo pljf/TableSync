@@ -8,14 +8,16 @@ const marker = "TableSync E2E " + (process.env.TABLESYNC_E2E_RUN_ID ?? "local");
 test.describe("simple gathering creation", () => {
   test.setTimeout(120_000);
 
-  test("keeps the chosen occasion through guest sign-in and preserves optional drafts", async ({ page }) => {
+  test("keeps the chosen occasion from the footer through guest sign-in and preserves optional drafts", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     const brunch = page.getByRole("button", { name: "Brunch", exact: true });
     await expect(brunch).toBeEnabled();
     await brunch.click();
     await expect(brunch).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByRole("link", { name: "Make it a plan", exact: true })).toHaveAttribute("href", "/rooms/new?eventType=BRUNCH");
-    await page.getByRole("link", { name: "Make it a plan", exact: true }).click();
+    const footerPlan = page.getByRole("link", { name: "Let’s make a plan", exact: true });
+    await expect(footerPlan).toHaveAttribute("href", "/rooms/new?eventType=BRUNCH");
+    await footerPlan.click();
     await expect(page).toHaveURL(/\/auth\?create=1&eventType=BRUNCH$/);
     const sessionResponse = page.waitForResponse((response) => response.request().method() === "POST" && new URL(response.url()).pathname === "/api/auth/sign-in/anonymous");
     await page.getByRole("main").getByRole("button", { name: "Continue as guest", exact: true }).click();

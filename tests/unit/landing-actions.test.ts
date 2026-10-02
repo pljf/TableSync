@@ -16,8 +16,8 @@ describe("editorial landing connects to the real product", () => {
   it("starts the guest flow and sends both planning calls to the real creation route", async () => {
     const html = renderToStaticMarkup(await HomePage());
     expect(html).toContain(">Continue as guest</button>");
-    expect(html).toContain('href="/rooms/new?eventType=DINNER"');
-    expect(html.match(/href="\/rooms\/new"/g)).toHaveLength(1);
+    expect(html.match(/href="\/rooms\/new\?eventType=DINNER"/g)).toHaveLength(2);
+    expect(html).not.toContain('href="/rooms/new"');
     expect(html).not.toContain('href="/preview?view=new"');
     expect(html).toContain("Interactive example");
   });

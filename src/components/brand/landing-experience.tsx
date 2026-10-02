@@ -33,7 +33,7 @@ const subscribeToHydration = () => () => {};
 const hydratedSnapshot = () => true;
 const serverHydratedSnapshot = () => false;
 
-export function LandingExperience({ primaryAction, createHref }: { primaryAction: ReactNode; createHref: string }) {
+export function LandingExperience({ primaryAction }: { primaryAction: ReactNode }) {
   const hydrated = useSyncExternalStore(subscribeToHydration, hydratedSnapshot, serverHydratedSnapshot);
   const [format, setFormat] = useState(0);
   const [step, setStep] = useState(1);
@@ -122,6 +122,6 @@ export function LandingExperience({ primaryAction, createHref }: { primaryAction
       <div className="promise-copy"><h2>A seat for every taste.</h2><p>The vegetarian. The spice lover. The friend who always brings dessert. Good gatherings make room for all of them.</p><ul><li><Check size={18} aria-hidden="true" /> Dietary needs considered from the start</li><li><Check size={18} aria-hidden="true" /> Menus shaped around your group and budget</li><li><Check size={18} aria-hidden="true" /> Everyone gets a say, and a way to help</li></ul><Link className="text-link" href="/preview?tab=people">Meet your example table <ArrowRight size={17} aria-hidden="true" /></Link></div>
     </section>
     <section className="gather-faq" data-reveal aria-labelledby="faq-title"><div><span className="editorial-label">THE LITTLE DETAILS</span><h2 id="faq-title">Before you<br /><em>pull up a chair.</em></h2></div><div>{faq.map(([q,a])=><details key={q}><summary>{q}<Plus className="faq-plus" size={18} aria-hidden="true"/><Minus className="faq-minus" size={18} aria-hidden="true"/></summary><p>{a}</p></details>)}</div></section>
-    <section className="gather-final" data-reveal><span className="editorial-label">A LITTLE PLAN. A GREAT EVENING.</span><div><h2>See you<br /><em>at the table.</em></h2><Link className="button" href={createHref}>Let’s make a plan <ChevronRight size={19} aria-hidden="true" /></Link></div><span className="final-wordmark" aria-hidden="true">TableSync</span></section>
+    <section className="gather-final" data-reveal><span className="editorial-label">A LITTLE PLAN. A GREAT EVENING.</span><div><h2>See you<br /><em>at the table.</em></h2><Link className="button" href={creationHref(active.eventType)}>Let’s make a plan <ChevronRight size={19} aria-hidden="true" /></Link></div><span className="final-wordmark" aria-hidden="true">TableSync</span></section>
   </MotionScene>;
 }
