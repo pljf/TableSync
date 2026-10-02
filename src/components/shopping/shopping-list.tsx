@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { CheckCircle2, Circle } from "lucide-react";
-import type { Guest, ShoppingItem } from "@/lib/domain";
+import type { ShoppingItem } from "@/lib/domain";
+import { summarizeShoppingBudgets, type ShoppingBudgetGuest } from "@/lib/shopping-engine/budget-summary";
 import { formatMoney, humanize } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingItemControls } from "@/components/shopping/shopping-item-controls";
@@ -13,10 +14,12 @@ export function ShoppingList({
   items,
   guests,
   guestId,
-  hostCanManage
+  hostCanManage,
+  contributionCosts = {}
 }: {
   items: ShoppingItem[];
-  guests: Pick<Guest, "id" | "name">[];
+  guests: ShoppingBudgetGuest[];
+  contributionCosts?: Record<string, number>;
   guestId?: string;
   hostCanManage: boolean;
 }) {
@@ -52,14 +55,8 @@ export function ShoppingList({
     acc[key].push(item);
     return acc;
   }, {});
-  const assignmentTotals = guests
-    .map((guest) => ({
-      guest,
-      total: items
-        .filter((item) => item.assignedToGuestId === guest.id)
-        .reduce((sum, item) => sum + (item.estimatedCostCents ?? 0), 0)
-    }))
-    .filter(({ total }) => total > 0);
+  const budgetSummary = summarizeShoppingBudgets(items, guests, contributionCosts);
+  const assignmentTotals = budgetSummary.totals.filter(({ guest, total, unknownCount }) => total > 0 || unknownCount > 0 || guest.maxBudgetCents !== undefined);
 
   return (
     <div className="shopping-groups">
@@ -68,15 +65,22 @@ export function ShoppingList({
           <p className="eyebrow">Assignment totals</p>
           <div className="tag-list">
             {assignmentTotals.length > 0 ? (
-              assignmentTotals.map(({ guest, total }) => (
-                <Badge key={guest.id} tone="info">
-                  {guest.name}: {formatMoney(total)}
+              assignmentTotals.map(({ guest, total, unknownCount, overByCents }) => (
+                <Badge key={guest.id} tone={overByCents > 0 ? "warning" : "info"}>
+                  {guest.name}: {formatMoney(total)}{guest.maxBudgetCents !== undefined ? ` / ${formatMoney(guest.maxBudgetCents)} comfort` : ""}{unknownCount > 0 ? " + unpriced items" : ""}
                 </Badge>
               ))
             ) : (
               <span className="muted">No items are assigned yet</span>
             )}
           </div>
+        </div>
+        {assignmentTotals.some(({ contributionCostCents }) => contributionCostCents > 0) ? <p className="muted">Assignment totals include contributed dishes and shared groceries.</p> : null}
+        <div className="shopping-budget-status" aria-live="polite">
+          {budgetSummary.volunteerCount === 0 && budgetSummary.unassignedCount > 0 ? <p>No guests have volunteered to bring groceries. Ask a guest to opt in before assigning items.</p> : null}
+          {budgetSummary.budgetBlockedCount > 0 ? <p>{budgetSummary.budgetBlockedCount} unassigned {budgetSummary.budgetBlockedCount === 1 ? "item cannot" : "items cannot"} fit any volunteer’s remaining budget comfort. Reassign groceries, adjust budget comfort, or revise the menu.</p> : null}
+          {budgetSummary.unpricedCount > 0 ? <p>{budgetSummary.unpricedCount} unassigned {budgetSummary.unpricedCount === 1 ? "item has" : "items have"} no price estimate. Review the cost before assigning.</p> : null}
+          {assignmentTotals.filter(({ overByCents }) => overByCents > 0).map(({ guest, overByCents }) => <p key={guest.id}>{guest.name} is {formatMoney(overByCents)} above budget comfort. Review assignments or contributed dishes.</p>)}
         </div>
         <div className="shopping-filters" role="group" aria-label="Filter shopping items">
           {filterOptions.map((option) => (
@@ -128,7 +132,7 @@ export function ShoppingList({
                       <div>
                         <strong>{item.ingredient.name}</strong>
                         <span>
-                          {item.quantity} {item.unit} · {formatMoney(item.estimatedCostCents)}
+                          {item.quantity} {item.unit} · {item.estimatedCostCents === undefined ? "No price estimate" : formatMoney(item.estimatedCostCents)}
                         </span>
                       </div>
                     </div>

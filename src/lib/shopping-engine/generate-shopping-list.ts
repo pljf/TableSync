@@ -1,5 +1,7 @@
 import type { GeneratedShoppingItem, GenerateShoppingInput, Ingredient } from "@/lib/domain";
 import { assignShoppingItems } from "@/lib/shopping-engine/assign-items";
+import { allocateIngredientCosts } from "@/lib/shopping-engine/ingredient-costs";
+import { potluckContributionCosts } from "@/lib/shopping-engine/budget-summary";
 
 type MergeRecord = {
   ingredient: Ingredient;
@@ -18,16 +20,13 @@ export function generateShoppingList(input: GenerateShoppingInput): GeneratedSho
     // appear in the shared groceries (even when other dishes use them).
     if (input.room.eventType === "POTLUCK" && planDish.contributionGuestId) continue;
     const scale = planDish.servings / planDish.dish.baseServings;
-    const scaledDishCost = Math.round(planDish.dish.estimatedCostCents * (planDish.servings / planDish.dish.baseServings));
-    const ingredientCount = planDish.dish.ingredients.length;
-    const ingredientCost = Math.floor(scaledDishCost / Math.max(ingredientCount, 1));
-    const remainingCents = scaledDishCost % Math.max(ingredientCount, 1);
+    const ingredientCosts = allocateIngredientCosts(planDish.dish, planDish.servings);
 
     for (const [index, dishIngredient] of planDish.dish.ingredients.entries()) {
       const key = `${dishIngredient.ingredient.id}:${dishIngredient.unit}`;
       const previous = merged.get(key);
       const scaledQuantity = dishIngredient.quantity * scale;
-      const allocatedCost = ingredientCost + (index < remainingCents ? 1 : 0);
+      const allocatedCost = ingredientCosts[index];
 
       if (previous) {
         previous.quantity += scaledQuantity;
@@ -54,6 +53,6 @@ export function generateShoppingList(input: GenerateShoppingInput): GeneratedSho
       return category || a.ingredient.name.localeCompare(b.ingredient.name) || a.ingredient.id.localeCompare(b.ingredient.id) || a.unit.localeCompare(b.unit);
     });
 
-  return assignShoppingItems(items, guests);
+  return assignShoppingItems(items, guests, potluckContributionCosts(input.room, plan));
 }
 

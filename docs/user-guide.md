@@ -14,7 +14,13 @@
 
 Creators can vote using the response saved during room creation. For an older room without a creator response, choose **Add my preferences** before moving to voting.
 
-The menu planner considers diets, allergies, preferences, budget, and spice tolerance. Individual spending caps and complete religious-diet certification rules are not implemented. Costs are estimates.
+The menu planner considers diets, allergies, preferences, the room budget, and spice tolerance. Complete religious-diet certification rules are not implemented. Costs are estimates.
+
+## Shopping budgets and estimates
+
+Automatic shopping assignments respect the saved **Budget comfort** of guests who volunteered to bring groceries. Claimed Potluck dishes count toward the contributor's comfort before shared groceries are assigned. Items that do not fit any volunteer's remaining comfort stay **Unassigned**; review assignments, adjust budget comfort, or revise the menu. Guests without a stated comfort limit can cover remaining costs.
+
+Assignment totals show the estimate against each stated comfort limit. Manual claims, reassignments, or preserved assignments can exceed comfort, and the shopping page shows that excess. Ingredient estimates allocate recipe costs using quantities and indicative unit costs; recipes with unsupported ingredients or units use equal shares. These amounts cover recipe portions, so full packages and local checkout prices may cost more. Budget comfort does not guarantee a retailer checkout cap. See [shopping estimates](shopping-estimates.md) for the allocation rules and limitations.
 
 ## Potluck contributions
 
