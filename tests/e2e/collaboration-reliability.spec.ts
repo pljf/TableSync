@@ -137,15 +137,21 @@ test.describe("collaboration reliability", () => {
       const assignment = hostRow.getByRole("combobox");
       const savedAssignment = await assignment.inputValue();
       expect(savedAssignment).not.toBe("");
+      // A failed automatic save remains a protected draft while another shopper acts.
+      await page.route(`**/rooms/${meal.roomId}/shopping`, async (route) => {
+        if (route.request().method() === "POST" && route.request().headers()["next-action"]) await route.abort("failed");
+        else await route.continue();
+      });
       await assignment.selectOption("");
-      await guestRow.getByLabel("Purchased", { exact: true }).check();
-      await save(guest, () => guestRow.getByRole("button", { name: "Save", exact: true }).click());
+      await expect(hostRow.getByRole("alert")).toBeVisible();
+      await page.unroute(`**/rooms/${meal.roomId}/shopping`);
+      await save(guest, () => guestRow.getByLabel("Purchased", { exact: true }).check());
       // Observe an actual background check after the remote save; it must defer
       // the refresh while the host has an unsaved assignment.
       await page.waitForResponse((response) => new URL(response.url()).pathname === `/api/rooms/${meal.roomId}/revision`, { timeout: 25_000 });
       await expect(assignment).toHaveValue("");
       await expect(hostRow.getByLabel("Purchased", { exact: true })).not.toBeChecked();
-      await assignment.selectOption(savedAssignment);
+      await save(page, async () => { await assignment.selectOption(savedAssignment); });
       await page.getByRole("heading", { name: meal.title, exact: true }).click();
       await expect(hostRow.getByLabel("Purchased", { exact: true })).toBeChecked({ timeout: 25_000 });
     } finally { await guestContext.close(); }

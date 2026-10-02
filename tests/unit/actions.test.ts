@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   host: vi.fn(), guest: vi.fn(), createRoom: vi.fn(), updateRoomDetails: vi.fn(), generatePlansForRoom: vi.fn(),
-  updateGuestPreferences: vi.fn(), finalizePlan: vi.fn(), audit: vi.fn(), revalidatePath: vi.fn(), setGuestSessionCookie: vi.fn(), deleteRoom: vi.fn()
+  updateGuestPreferences: vi.fn(), finalizePlan: vi.fn(), audit: vi.fn(), revalidatePath: vi.fn(), setGuestSessionCookie: vi.fn(), deleteRoom: vi.fn(), undoFinalization: vi.fn()
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
@@ -17,12 +17,12 @@ vi.mock("@/lib/store", () => ({
   createRoomWithHostPreferences: mocks.createRoom, updateRoomDetails: mocks.updateRoomDetails, generatePlansForRoom: mocks.generatePlansForRoom,
   deleteRoom: mocks.deleteRoom,
   castVote: vi.fn(), claimShoppingItem: vi.fn(), finalizePlan: mocks.finalizePlan, joinRoom: vi.fn(), reopenPreferences: vi.fn(),
-  toggleShoppingItem: vi.fn(), undoFinalization: vi.fn(), updateGuestPreferences: mocks.updateGuestPreferences
+  toggleShoppingItem: vi.fn(), undoFinalization: mocks.undoFinalization, updateGuestPreferences: mocks.updateGuestPreferences
 }));
 
 import { redirect } from "next/navigation";
 import {
-  createRoomAction, deleteRoomAction, generatePlansAction, updateRoomDetailsAction
+  createRoomAction, deleteRoomAction, generatePlansAction, undoFinalizationAction, updateRoomDetailsAction
 } from "@/app/actions";
 
 function roomForm() {
@@ -46,6 +46,15 @@ describe("room action recovery", () => {
     mocks.finalizePlan.mockResolvedValue("room-1");
     mocks.generatePlansForRoom.mockResolvedValue({ kind: "success", plans: [] });
     mocks.deleteRoom.mockResolvedValue(undefined);
+  });
+
+  it("requires the menu-change acknowledgement before reopening voting", async () => {
+    expect(await undoFinalizationAction("room-1", { status: "idle" }, new FormData())).toMatchObject({ status: "error", message: expect.stringContaining("Confirm") });
+    expect(mocks.undoFinalization).not.toHaveBeenCalled();
+    const data = new FormData();
+    data.set("confirmShoppingChanges", "on");
+    expect(await undoFinalizationAction("room-1", { status: "idle" }, data)).toMatchObject({ status: "success", message: "Voting is open again. Shopping progress is kept." });
+    expect(mocks.undoFinalization).toHaveBeenCalledExactlyOnceWith("room-1", expect.objectContaining({ userId: "host-1" }));
   });
 
   it("converts the entered event time and money before saving", async () => {

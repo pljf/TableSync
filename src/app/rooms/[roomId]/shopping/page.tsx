@@ -34,6 +34,7 @@ export default async function ShoppingPage({ params }: PageProps) {
   const purchased = bundle.shopping.filter((item) => item.checked).length;
   const unassigned = bundle.shopping.filter((item) => !item.assignedToGuestId).length;
   const hasShopping = bundle.shopping.length > 0;
+  const revisionPaused = bundle.room.status === "VOTING" && (hasShopping || bundle.plans.some((plan) => plan.dishes.some((dish) => dish.contributionGuestId)));
   const finalPlan = bundle.plans.find((plan) => plan.status === "FINALIZED");
   const budgetGuests = bundle.guests.map(({ id, name, canBring, preference }) => ({ id, name, canBring, maxBudgetCents: preference.maxBudgetCents }));
   const contributionCosts = potluckContributionCosts(bundle.room, finalPlan);
@@ -135,6 +136,12 @@ export default async function ShoppingPage({ params }: PageProps) {
           </Link>
         </section>
       ) : null}
+      {revisionPaused ? (
+        <section className="card action-panel" role="status">
+          <div><h2>Shopping is paused while the menu changes</h2><p className="muted">Your current list and progress are kept below. When the host finalizes a menu, matching ingredients keep their assignments and purchase checks. Larger quantities need another check.</p></div>
+          <Link className="button secondary" href={plansHref} prefetch={false}>Review menus</Link>
+        </section>
+      ) : null}
       {hasShopping ? (
         <>
           <section className="metric-grid shopping-metrics" aria-label="Shopping progress" data-reveal="" data-delay="70">
@@ -162,8 +169,8 @@ export default async function ShoppingPage({ params }: PageProps) {
           <ShoppingList
             guests={budgetGuests}
             contributionCosts={contributionCosts}
-            guestId={actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined}
-            hostCanManage={isHost}
+            guestId={bundle.room.status === "FINALIZED" && actors.guest?.roomId === bundle.room.id ? actors.guest.guestId : undefined}
+            hostCanManage={isHost && bundle.room.status === "FINALIZED"}
             items={bundle.shopping}
           />
         </>

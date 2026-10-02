@@ -223,31 +223,21 @@ async function voteFinalizeAndShop(
   }
   const firstShoppingRow = page.locator("article.shopping-row").first();
   await expect(firstShoppingRow).toBeVisible();
-  await firstShoppingRow.getByLabel("Purchased").check();
+  await submitMutation(page, `/rooms/${roomId}/shopping`, () => firstShoppingRow.getByLabel("Purchased").check());
   const assignmentSelect = firstShoppingRow.getByRole("combobox", { name: /^assign /i });
   const savedAssignee = (await firstShoppingRow.locator(".assignee").innerText()).trim();
   const reassignmentName = savedAssignee === alternateGuestName
     ? (await assignmentSelect.locator("option").allTextContents()).find((name) => name !== "Unassigned" && name !== savedAssignee)
     : alternateGuestName;
   expect(reassignmentName, "The workflow needs a different guest for the reassignment check").toBeTruthy();
-  await assignmentSelect.selectOption({ label: reassignmentName! });
-  await expect(firstShoppingRow.getByRole("button", { name: /save assignment/i })).toBeEnabled();
-  await submitMutation(page, `/rooms/${roomId}/shopping`, () =>
-    firstShoppingRow.getByRole("button", { name: /save assignment/i }).click()
-  );
+  await submitMutation(page, `/rooms/${roomId}/shopping`, async () => { await assignmentSelect.selectOption({ label: reassignmentName! }); });
   await expect(firstShoppingRow.locator(".assignee")).toHaveText(reassignmentName!, { timeout: 20_000 });
   await expect(firstShoppingRow.getByLabel("Purchased")).toBeChecked();
-  await submitMutation(page, `/rooms/${roomId}/shopping`, () =>
-    firstShoppingRow.getByRole("button", { name: /^save$/i }).click()
-  );
   await expect(page).toHaveURL(new RegExp(`/rooms/${roomId}/shopping\\?updated=`), { timeout: 20_000 });
   await page.waitForLoadState("load");
   await expect(page.locator("article.shopping-row").first().getByLabel("Purchased")).toBeChecked();
   await page.getByRole("button", { name: /^purchased 1$/i }).click();
-  await firstShoppingRow.getByRole("combobox", { name: /^assign /i }).selectOption("");
-  await submitMutation(page, `/rooms/${roomId}/shopping`, () =>
-    firstShoppingRow.getByRole("button", { name: /save assignment/i }).click()
-  );
+  await submitMutation(page, `/rooms/${roomId}/shopping`, async () => { await firstShoppingRow.getByRole("combobox", { name: /^assign /i }).selectOption(""); });
   await expect(page.getByRole("button", { name: /^purchased 1$/i })).toHaveAttribute("aria-pressed", "true");
   await page.reload();
   await expect(page.locator("article.shopping-row").first().getByLabel("Purchased")).toBeChecked();
@@ -478,12 +468,12 @@ test.describe("fresh-room core workflows", () => {
 
     await voteFinalizeAndShop(page, roomId, "Dinner Allergy Guest", captureQuality);
     await page.goto(`/rooms/${roomId}/plans`);
-    await page.getByText("Undo finalization").click();
+    await page.getByText("Revise menu").click();
     if (captureQuality) {
       await captureQualityEvidence(page, "undo-finalization-confirmation");
     }
-    await page.getByLabel("I understand that all shopping progress will be deleted.").check();
-    await page.getByRole("button", { name: /undo and delete shopping progress/i }).click();
+    await page.getByLabel("I understand that shopping quantities may change when I finalize a menu.").check();
+    await page.getByRole("button", { name: /reopen menu voting/i }).click();
     await expect(page.getByText("Voting", { exact: true })).toBeVisible();
 
     await page.getByText("Reopen guest preferences").click();
@@ -604,9 +594,9 @@ test.describe("fresh-room core workflows", () => {
         await expect(guestPage.getByText(`${format.label} Vegan`, { exact: true })).toHaveCount(0);
         await expect(guestPage.getByText(`${format.label} Omnivore`, { exact: true })).toHaveCount(0);
         if (quality) await captureQualityEvidence(guestPage, `${format.type.toLowerCase()}-share`);
-        await page.getByText("Undo finalization", { exact: true }).click();
-        await page.getByLabel(/I understand that all shopping progress/).check();
-        await page.getByRole("button", { name: /undo and delete shopping progress/i }).click();
+        await page.getByText("Revise menu", { exact: true }).click();
+        await page.getByLabel(/I understand that shopping quantities may change/).check();
+        await page.getByRole("button", { name: /reopen menu voting/i }).click();
         await expect(page.getByText("Voting", { exact: true })).toBeVisible();
         await expect(page.getByRole("region", { name: "Potluck contributions", exact: true })).toHaveCount(0);
         await page.getByText("Reopen guest preferences", { exact: true }).click();

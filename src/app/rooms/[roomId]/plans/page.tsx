@@ -74,7 +74,7 @@ export default async function RoomPlansPage({ params }: PageProps) {
       ? {
           heading: "Voting is open",
           description: isHost
-            ? "Compare the menus and guest votes below, then finalize one menu to create the shopping list automatically."
+            ? "Compare the menus and guest votes below, then finalize one menu. Matching shopping assignments and purchase checks are kept; larger quantities need another check."
             : canVote
               ? "Review each complete menu and save a Like, Neutral, or reasoned Veto. The host will finalize a menu to open shopping."
               : "Guests who joined this room can vote. The host will finalize a menu to open shopping."
@@ -143,7 +143,7 @@ export default async function RoomPlansPage({ params }: PageProps) {
       {isHost && bundle.room.status === "VOTING" ? (
         <details className="card destructive-control">
           <summary>Reopen guest preferences</summary>
-          <p className="muted">This permanently removes every generated plan and all votes in this room.</p>
+          <p className="muted">This permanently removes every generated plan, all votes, any saved shopping progress, and dish contributions in this room.</p>
           <MutationForm action={reopenPreferencesAction.bind(null, bundle.room.id)}>
             <label className="checkbox-label standalone">
               <input name="confirmDataLoss" type="checkbox" required />
@@ -157,17 +157,17 @@ export default async function RoomPlansPage({ params }: PageProps) {
       ) : null}
       {isHost && bundle.room.status === "FINALIZED" ? (
         <details className="card destructive-control">
-          <summary>Undo finalization</summary>
+          <summary>Revise menu</summary>
           <p className="muted">
-            This returns the room to voting and deletes the shopping list, assignments, and purchase checks.{isPotluck ? " All contribution ownership and readiness will also be cleared." : ""} Plans and votes stay.
+            Return to voting while keeping the current shopping progress. When you finalize a menu, matching ingredients keep their shoppers and purchase checks. Ingredients no longer needed are removed; larger quantities need another check.{isPotluck ? " Contributions follow the same recipes, and larger portions need a new readiness check." : ""} Plans and votes stay.
           </p>
           <MutationForm action={undoFinalizationAction.bind(null, bundle.room.id)}>
             <label className="checkbox-label standalone">
-              <input name="confirmDataLoss" type="checkbox" required />
-              I understand that all shopping progress{isPotluck ? " and contributions" : ""} will be deleted.
+              <input name="confirmShoppingChanges" type="checkbox" required />
+              I understand that shopping quantities may change when I finalize a menu.
             </label>
-            <SubmitButton className="button danger" pendingLabel="Undoing finalization...">
-              Undo and delete shopping progress
+            <SubmitButton className="button secondary" pendingLabel="Opening voting...">
+              Reopen menu voting
             </SubmitButton>
           </MutationForm>
         </details>

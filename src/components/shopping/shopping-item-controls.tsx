@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PackageCheck, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { claimShoppingAction, toggleShoppingAction } from "@/app/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { MutationForm } from "@/components/ui/mutation-form";
@@ -42,7 +42,7 @@ export function ShoppingItemControls({
 
   return (
     <>
-      {hostCanManage ? <MutationForm action={claimShoppingAction} className="inline-form">
+      {hostCanManage ? <MutationForm action={claimShoppingAction} autoSubmit className="inline-form">
         <input name="itemId" type="hidden" value={itemId} />
         <UserPlus aria-hidden="true" size={16} />
         <select
@@ -59,15 +59,6 @@ export function ShoppingItemControls({
             </option>
           ))}
         </select>
-        <SubmitButton
-          aria-label={`Save assignment for ${itemName}`}
-          className="icon-button"
-          disabled={assignment === initialAssignment}
-          pendingLabel="Saving…"
-          title={`Save assignment for ${itemName}`}
-        >
-          <PackageCheck aria-hidden="true" size={16} />
-        </SubmitButton>
       </MutationForm> : guestCanClaim ? (
         <MutationForm action={claimShoppingAction} className="inline-form">
           <input name="itemId" type="hidden" value={itemId} />
@@ -80,7 +71,7 @@ export function ShoppingItemControls({
           <SubmitButton className="button secondary small" pendingLabel="Releasing…">Release item</SubmitButton>
         </MutationForm>
       ) : null}
-      {hostCanManage || guestCanManage ? <MutationForm action={toggleShoppingAction} className="inline-form">
+      {hostCanManage || guestCanManage ? <MutationForm action={toggleShoppingAction} autoSubmit className="inline-form">
         <input name="itemId" type="hidden" value={itemId} />
         <label className="checkbox-label">
           <input
@@ -92,9 +83,6 @@ export function ShoppingItemControls({
           />
           Purchased
         </label>
-        <SubmitButton className="button secondary small" disabled={purchased === checked} pendingLabel="Saving…" title={`Save purchased state for ${itemName}`}>
-          Save
-        </SubmitButton>
       </MutationForm> : null}
     </>
   );

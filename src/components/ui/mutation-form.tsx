@@ -64,11 +64,14 @@ export function MutationForm({
   action,
   children,
   className,
+  autoSubmit = false,
   waitForHydration = false
 }: {
   action: MutationAction;
   children: ReactNode;
   className?: string;
+  /** Save reversible single-control changes immediately; keep a no-JS fallback. */
+  autoSubmit?: boolean;
   waitForHydration?: boolean;
 }) {
   const router = useRouter();
@@ -141,19 +144,27 @@ export function MutationForm({
   return (
     <form
       action={formAction}
-      aria-busy={waitForHydration ? !ready || pending : undefined}
+      aria-busy={waitForHydration || autoSubmit ? !ready || pending : undefined}
       aria-describedby={feedbackState !== "idle" ? feedbackId : undefined}
       className={className}
       data-state={feedbackState}
-      onChange={() => setEdited(true)}
+      onChange={() => {
+        setEdited(true);
+        if (autoSubmit) {
+          // Let controlled inputs commit their value before constructing FormData.
+          queueMicrotask(() => formRef.current?.requestSubmit());
+        }
+      }}
       onSubmit={preserveSubmittedControls}
       ref={formRef}
     >
-      {waitForHydration ? (
-        <fieldset aria-label="Meal preferences" disabled={!ready} style={{ display: "contents" }}>
+      {waitForHydration || autoSubmit ? (
+        <fieldset aria-label={autoSubmit ? "Shopping change" : "Meal preferences"} disabled={!ready || (autoSubmit && pending)} style={{ display: "contents" }}>
           {children}
         </fieldset>
       ) : children}
+      {autoSubmit ? <noscript><button className="button secondary small" type="submit">Save</button></noscript> : null}
+      {autoSubmit && state.status === "error" ? <button className="button secondary small" disabled={pending} type="submit">Retry save</button> : null}
       <ActionFeedback id={feedbackId} message={pending ? pendingMessage : state.message} state={feedbackState} />
     </form>
   );

@@ -344,14 +344,14 @@ export async function undoFinalizationAction(
   formData: FormData
 ): Promise<MutationState> {
   return performMutation(
-    "Finalization undone; voting is open again.",
+    "Voting is open again. Shopping progress is kept.",
     { action: "undo-finalization", resourceType: "room", resourceId: roomId },
     async (audit) => {
     const host = await requireHostActor();
     Object.assign(audit, { actorType: "HOST" as const, actorId: host.userId });
     await enforceRateLimit({ scope: "undo-finalization", subject: `host:${host.userId}`, limit: 10, windowSeconds: 60 });
-    if (formData.get("confirmDataLoss") !== "on") {
-      throw new Error("Confirm that shopping assignments, purchase state, and dish contributions will be removed.");
+    if (formData.get("confirmShoppingChanges") !== "on") {
+      throw new Error("Confirm that changing the menu may remove unneeded ingredients and reset purchase checks for larger quantities.");
     }
     await undoFinalization(roomId, host);
     }
