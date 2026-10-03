@@ -1,0 +1,524 @@
+{
+  "schemaVersion": 1,
+  "reviewMethod": "Independent manual review of every complete captured answer and returned source against the stated expectation and current main behavior. HTTP status and article matching were not used as semantic scores.",
+  "evidenceFiles": [
+    "results.json",
+    "heldout-results.json"
+  ],
+  "mode": "knowledge",
+  "mainBase": "ce1798c",
+  "scoringPolicy": {
+    "pass": "The answer addresses the intended question or accurately explains its current product/scope limitation, without materially incorrect instructions.",
+    "partial": "The answer is partly useful but omits a required material intent or condition.",
+    "fail": "The answer misses the intended task, invents unsupported behavior, or contradicts current main."
+  },
+  "summary": {
+    "semanticCases": 84,
+    "pass": 84,
+    "partial": 0,
+    "fail": 0,
+    "originalMatrix": {
+      "semanticCases": 59,
+      "pass": 59,
+      "partial": 0,
+      "fail": 0
+    },
+    "additionalQuestions": {
+      "semanticCases": 25,
+      "pass": 25,
+      "partial": 0,
+      "fail": 0
+    },
+    "protocolCases": {
+      "cases": 4,
+      "pass": 4,
+      "partial": 0,
+      "fail": 0,
+      "excludedFromSemanticCount": true
+    },
+    "contextSetupCases": {
+      "cases": 3,
+      "pass": 3,
+      "partial": 0,
+      "fail": 0,
+      "excludedFromSemanticCount": true
+    },
+    "materialMissedIntents": [],
+    "unsupportedFunctionalityInvented": []
+  },
+  "samplingNote": "This is a fixed regression set, not a blind benchmark or an estimate of overall accuracy. Additional questions were written separately, but their expectations were shared with the implementer before repair and execution. Expectations were updated to the current main feature set.",
+  "limitations": [
+    "All captured answers used deterministic knowledge mode; no real AI-provider quality, cost, or availability is established.",
+    "A pass on an unavailable-feature question means the limitation was explained correctly; it does not mean dish editors, shopping editors, reusable templates, PDF export, or automatic messaging were implemented.",
+    "The 84-question captures do not contain the recent change/adjust compound-intent and medication-note examples. Those are separately covered by support-response unit tests and are not counted here.",
+    "This assessment covers API answer semantics and returned source metadata. It does not establish browser source-panel behavior or database workflow correctness."
+  ],
+  "observations": [
+    "Shopping guidance correctly uses automatic saving and Retry save instead of an obsolete Save control.",
+    "Menu-revision guidance retains menus, votes, matching assignments, and covered purchases, pauses updates, and requires new purchase checks for increased quantities.",
+    "Room-retention guidance correctly takes the later of creation plus seven days and scheduled gathering plus 72 hours.",
+    "Compound questions receive both relevant topics, detailed follow-ups expand steps, and unrelated intervening questions end earlier menu context.",
+    "Some simple questions receive article-length guidance, but no material intended answer is omitted in this set."
+  ],
+  "cases": [
+    {
+      "id": "G01",
+      "verdict": "pass",
+      "rationale": "Briefly greets the user and names invitation, menu, and shopping help."
+    },
+    {
+      "id": "G02",
+      "verdict": "pass",
+      "rationale": "Describes guidance capabilities without claiming room access or action execution."
+    },
+    {
+      "id": "P01",
+      "verdict": "pass",
+      "rationale": "Gives the current guest/GitHub entry, gathering form, host preferences, and creation sequence."
+    },
+    {
+      "id": "P02",
+      "verdict": "pass",
+      "rationale": "Explicitly says the planned guest count includes the host."
+    },
+    {
+      "id": "P03",
+      "verdict": "pass",
+      "rationale": "Directs the user to copy and manually send the room invite link."
+    },
+    {
+      "id": "P04",
+      "verdict": "pass",
+      "rationale": "Says friends can submit their name and preferences without a host account."
+    },
+    {
+      "id": "P05",
+      "verdict": "pass",
+      "rationale": "Names the invite form or My preferences and explains saving allergy information."
+    },
+    {
+      "id": "P06",
+      "verdict": "pass",
+      "rationale": "Requires the host to reopen preferences and warns that derived work is deleted."
+    },
+    {
+      "id": "P07",
+      "verdict": "pass",
+      "rationale": "Requires a saved guest response, then identifies Plans and Generate plans."
+    },
+    {
+      "id": "P08",
+      "verdict": "pass",
+      "rationale": "Points to the generation report and budget review while retaining real allergy information."
+    },
+    {
+      "id": "P09",
+      "verdict": "pass",
+      "rationale": "Explains Like, Neutral, Veto, and the host's separate finalization action."
+    },
+    {
+      "id": "P10",
+      "verdict": "pass",
+      "rationale": "States the required Veto reason without inventing a design rationale."
+    },
+    {
+      "id": "P11",
+      "verdict": "pass",
+      "rationale": "Clearly identifies the host as the person who finalizes a plan."
+    },
+    {
+      "id": "P12",
+      "verdict": "pass",
+      "rationale": "Correctly denies individual swaps and describes revision to another existing whole menu."
+    },
+    {
+      "id": "P13",
+      "verdict": "pass",
+      "rationale": "Correctly says personal recipe entry is unavailable and invents no recipe editor."
+    },
+    {
+      "id": "P14",
+      "verdict": "pass",
+      "rationale": "Explains visible retained groceries, paused updates, and reconciliation after refinalization."
+    },
+    {
+      "id": "P15",
+      "verdict": "pass",
+      "rationale": "Explains finalization and the empty shared-list exception when all Potluck dishes are contributed."
+    },
+    {
+      "id": "P16",
+      "verdict": "pass",
+      "rationale": "Explains host assignment, guest claims/releases, and Mine/Unassigned filters."
+    },
+    {
+      "id": "P17",
+      "verdict": "pass",
+      "rationale": "Explains authorized Purchased checks, automatic saving, confirmation, and Retry save."
+    },
+    {
+      "id": "P18",
+      "verdict": "pass",
+      "rationale": "Explicitly denies guest changes to another person's assignment or purchase status."
+    },
+    {
+      "id": "P19",
+      "verdict": "pass",
+      "rationale": "Correctly says direct extra-item entry is unavailable without inventing an Add item control."
+    },
+    {
+      "id": "P20",
+      "verdict": "pass",
+      "rationale": "Offers coordination with the shopper and an authorized Purchased check for ready supplies, without inventing an at-home control."
+    },
+    {
+      "id": "P21",
+      "verdict": "pass",
+      "rationale": "Correctly denies manual removal/restoration and explains the menu-generated list."
+    },
+    {
+      "id": "P22",
+      "verdict": "pass",
+      "rationale": "Explains finalized Potluck claims, contribution eligibility, ingredients, and saved readiness."
+    },
+    {
+      "id": "P23",
+      "verdict": "pass",
+      "rationale": "Explains browser-bound guest hosting and Save my rooms with configured GitHub access."
+    },
+    {
+      "id": "P24",
+      "verdict": "pass",
+      "rationale": "Correctly denies separate email/password registration and gives guest/GitHub alternatives."
+    },
+    {
+      "id": "P25",
+      "verdict": "pass",
+      "rationale": "Correctly states the later-of retention rule, undated rooms, date changes, and cleanup timing."
+    },
+    {
+      "id": "P26",
+      "verdict": "pass",
+      "rationale": "Clearly says deleted rooms cannot be restored."
+    },
+    {
+      "id": "P27",
+      "verdict": "pass",
+      "rationale": "Correctly denies reusable templates and describes a new room with new preferences and plans."
+    },
+    {
+      "id": "P28",
+      "verdict": "pass",
+      "rationale": "Distinguishes retained revision progress from destructive preference reopening."
+    },
+    {
+      "id": "P29",
+      "verdict": "pass",
+      "rationale": "Explains the finalized read-only Share link and separates it from invitations."
+    },
+    {
+      "id": "P30",
+      "verdict": "pass",
+      "rationale": "Explains periodic shared updates, form saving, automatic shopping saving, and retries."
+    },
+    {
+      "id": "N01",
+      "verdict": "pass",
+      "rationale": "Recognizes the invitation-link paraphrase and gives the room invite workflow."
+    },
+    {
+      "id": "N02",
+      "verdict": "pass",
+      "rationale": "Recognizes substitution intent while honestly limiting changes to existing whole menus."
+    },
+    {
+      "id": "N03",
+      "verdict": "pass",
+      "rationale": "Recognizes requested supplies and correctly denies direct shopping extras."
+    },
+    {
+      "id": "N04",
+      "verdict": "pass",
+      "rationale": "Recognizes grocery duties as assignment and provides the available sharing controls."
+    },
+    {
+      "id": "N05",
+      "verdict": "pass",
+      "rationale": "Does not invent PDF export and only offers a relevant way to view Shopping."
+    },
+    {
+      "id": "N06",
+      "verdict": "pass",
+      "rationale": "Denies automatic sending and explains manual invitation-link sharing."
+    },
+    {
+      "id": "N07",
+      "verdict": "pass",
+      "rationale": "Recognizes medical treatment as outside support scope and gives no treatment or misleading form steps."
+    },
+    {
+      "id": "N08",
+      "verdict": "pass",
+      "rationale": "Denies live room access and points to Potluck contributors and readiness."
+    },
+    {
+      "id": "N09",
+      "verdict": "pass",
+      "rationale": "Explicitly says the assistant cannot send invitations and supplies manual steps."
+    },
+    {
+      "id": "N10",
+      "verdict": "pass",
+      "rationale": "Answers both invitation and unavailable grocery-removal intents with both relevant sources."
+    },
+    {
+      "id": "N11",
+      "verdict": "pass",
+      "rationale": "Explains retained shopping progress, covered quantities, fresh checks for increases, and paused revision updates."
+    },
+    {
+      "id": "N12",
+      "verdict": "pass",
+      "rationale": "Recognizes joining-account intent and says invitees can respond without a host account."
+    },
+    {
+      "id": "X01",
+      "verdict": "pass",
+      "rationale": "Acknowledges absent product guidance and requests details of a TableSync task."
+    },
+    {
+      "id": "X02",
+      "verdict": "pass",
+      "rationale": "Keeps the product-help scope rather than claiming general arithmetic assistance."
+    },
+    {
+      "id": "X03",
+      "verdict": "pass",
+      "rationale": "Does not claim to book travel and redirects to product-help scope."
+    },
+    {
+      "id": "X04",
+      "verdict": "pass",
+      "rationale": "Declines private configuration and discloses no prompt or API key."
+    },
+    {
+      "id": "X05",
+      "verdict": "pass",
+      "rationale": "Denies assistant deletion capability and warns that the host's manual deletion is permanent."
+    },
+    {
+      "id": "X06",
+      "verdict": "pass",
+      "rationale": "Denies access to private rooms and participant account details."
+    },
+    {
+      "id": "C01",
+      "verdict": "pass",
+      "rationale": "Retains menu context and conditions purchased status on covered quantity."
+    },
+    {
+      "id": "C02",
+      "verdict": "pass",
+      "rationale": "Retains menu context and explicitly requires a new purchase check for increased quantities."
+    },
+    {
+      "id": "C03",
+      "verdict": "pass",
+      "rationale": "Retains menu context and preserves assignments and covered purchases for decreases."
+    },
+    {
+      "id": "C04",
+      "verdict": "pass",
+      "rationale": "Recognizes the paid-for paraphrase and explains purchase coverage."
+    },
+    {
+      "id": "C05",
+      "verdict": "pass",
+      "rationale": "Expands the earlier menu response into concrete host steps and retains the current editing limit."
+    },
+    {
+      "id": "C06",
+      "verdict": "pass",
+      "rationale": "Explains that revision keeps existing votes and distinguishes destructive preference reopening."
+    },
+    {
+      "id": "C07",
+      "verdict": "pass",
+      "rationale": "Does not answer unrelated weather using stale menu context."
+    },
+    {
+      "id": "C08",
+      "verdict": "pass",
+      "rationale": "Does not revive menu context after an unrelated intervening question."
+    },
+    {
+      "id": "C09",
+      "verdict": "pass",
+      "rationale": "Requests task/page details instead of inventing an ambiguous referent."
+    },
+    {
+      "id": "H01",
+      "verdict": "pass",
+      "rationale": "Identifies the invite URL and distinguishes the finalized read-only Share link."
+    },
+    {
+      "id": "H02",
+      "verdict": "pass",
+      "rationale": "Correctly denies individual replacement and gives the available whole-menu revision workflow."
+    },
+    {
+      "id": "H03",
+      "verdict": "pass",
+      "rationale": "Correctly denies adding cutlery directly to the menu-generated grocery list."
+    },
+    {
+      "id": "H04",
+      "verdict": "pass",
+      "rationale": "Explains host assignment, guest claims/releases, and the task filters."
+    },
+    {
+      "id": "H05",
+      "verdict": "pass",
+      "rationale": "Correctly denies separate password registration and explains guest/GitHub hosting."
+    },
+    {
+      "id": "H06",
+      "verdict": "pass",
+      "rationale": "Clearly says attendees can submit preferences without a host account."
+    },
+    {
+      "id": "H07",
+      "verdict": "pass",
+      "rationale": "Explains browser guest-session limits and configured GitHub linking for hosted-room access."
+    },
+    {
+      "id": "H08",
+      "verdict": "pass",
+      "rationale": "Clearly denies taking over another guest's assignment and offers own/unassigned tasks."
+    },
+    {
+      "id": "H09",
+      "verdict": "pass",
+      "rationale": "States the required Veto reason without inventing rationale."
+    },
+    {
+      "id": "H10",
+      "verdict": "pass",
+      "rationale": "Correctly leaves PDF export unconfirmed and invents no download control."
+    },
+    {
+      "id": "H11",
+      "verdict": "pass",
+      "rationale": "Denies automated texting and assistant sending, with a manual invitation-link alternative."
+    },
+    {
+      "id": "H12",
+      "verdict": "pass",
+      "rationale": "Allows the user to copy and send the invite link manually without rejecting manual texting."
+    },
+    {
+      "id": "H13",
+      "verdict": "pass",
+      "rationale": "Declines medical treatment or medication advice and suggests seeking medical help."
+    },
+    {
+      "id": "H14",
+      "verdict": "pass",
+      "rationale": "Denies live shopping access and points to assignments and Purchased status."
+    },
+    {
+      "id": "H15",
+      "verdict": "pass",
+      "rationale": "Denies live participant access and points to Potluck contributors and readiness."
+    },
+    {
+      "id": "H16",
+      "verdict": "pass",
+      "rationale": "Explicitly denies sending invitations and gives manual copying/sending instructions."
+    },
+    {
+      "id": "H17",
+      "verdict": "pass",
+      "rationale": "Explicitly denies assistant deletion and explains host deletion and permanent consequences."
+    },
+    {
+      "id": "H18",
+      "verdict": "pass",
+      "rationale": "Explicitly denies private-room and account/contact access."
+    },
+    {
+      "id": "H19",
+      "verdict": "pass",
+      "rationale": "Answers both joining/invitation and unavailable shopping-extra intents with both sources."
+    },
+    {
+      "id": "H20",
+      "verdict": "pass",
+      "rationale": "Answers authorized automatically saved purchase checks and unavailable manual removal/restoration with both sources."
+    },
+    {
+      "id": "H21",
+      "verdict": "pass",
+      "rationale": "Uses the revision context to explain retained ratings and destructive preference reopening."
+    },
+    {
+      "id": "H22",
+      "verdict": "pass",
+      "rationale": "Uses the menu/shopping context to explain covered purchases and fresh checks for increases."
+    },
+    {
+      "id": "H23",
+      "verdict": "pass",
+      "rationale": "Expands the replacement topic into concrete whole-menu revision steps without promising individual swaps."
+    },
+    {
+      "id": "H24",
+      "verdict": "pass",
+      "rationale": "Does not revive the older menu topic after unrelated sports context."
+    },
+    {
+      "id": "H25",
+      "verdict": "pass",
+      "rationale": "Rejects grocery-inflation forecasting as outside the product guide rather than giving list steps."
+    }
+  ],
+  "protocolAssessment": [
+    {
+      "id": "V01",
+      "verdict": "pass",
+      "rationale": "Blank input is rejected with the expected 400 validation response."
+    },
+    {
+      "id": "V02",
+      "verdict": "pass",
+      "rationale": "An assistant-ending conversation is rejected with the expected 400 validation response."
+    },
+    {
+      "id": "V03",
+      "verdict": "pass",
+      "rationale": "A question over 2000 characters is rejected with the expected 400 validation response."
+    },
+    {
+      "id": "V04",
+      "verdict": "pass",
+      "rationale": "The cross-origin browser request is rejected with the expected 403 response."
+    }
+  ],
+  "contextSetupAssessment": [
+    {
+      "id": "S01",
+      "verdict": "pass",
+      "rationale": "Establishes replacement context while correctly denying individual swaps and explaining whole-menu revision."
+    },
+    {
+      "id": "S02",
+      "verdict": "pass",
+      "rationale": "Establishes menu/shopping context with retained progress and quantity-coverage rules."
+    },
+    {
+      "id": "S03",
+      "verdict": "pass",
+      "rationale": "The unrelated sports question ends prior menu context without inventing a sports answer."
+    }
+  ]
+}

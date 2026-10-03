@@ -1,0 +1,903 @@
+{
+  "startedAt": "2026-10-02T21:59:46.434Z",
+  "completedAt": "2026-10-02T21:59:47.283Z",
+  "reportTimeZone": "America/New_York",
+  "baseURL": "http://localhost:3001",
+  "mode": "knowledge",
+  "samplingNote": "Additional English questions designed separately from the original 59-case matrix. Expectations were shared during repair, so this is not a blind benchmark or an overall accuracy estimate.",
+  "scoringNote": "HTTP status, article matches, and English-only checks are diagnostics. Semantic pass/partial/fail requires reading each actual answer against the expectation.",
+  "branch": "codex/english-support-assistant",
+  "commit": "ce1798c90c5baa722208d76fc0d32899f2dd41ed",
+  "comparisonToOriginMain": "0\t0",
+  "sourceHashesBefore": {
+    "src/lib/support/knowledge.ts": "6a65363da1befd0f51c4d037629df73525a5b4e1e8a8f0fee577878662c57283",
+    "src/lib/support/service.ts": "66567287eb8da448a88bd8840471208489fa17a5fdd58384961ac1aff49b025e",
+    "src/app/api/support/route.ts": "25cc31fbf090681e103a77875cc8bf9134870b8492791475b67376dc74ca63cb",
+    "src/components/support/support-chat.tsx": "a78798f0e4eefb608f5b1b331ceda8aafc72bd3d2159a164913b041a049043c9",
+    "src/app/help/page.tsx": "9487473bae609edf8e4c9c8e104eece4d0eb1360a7423de0e9fb9faf0b797bca"
+  },
+  "sourceHashesAfter": {
+    "src/lib/support/knowledge.ts": "6a65363da1befd0f51c4d037629df73525a5b4e1e8a8f0fee577878662c57283",
+    "src/lib/support/service.ts": "66567287eb8da448a88bd8840471208489fa17a5fdd58384961ac1aff49b025e",
+    "src/app/api/support/route.ts": "25cc31fbf090681e103a77875cc8bf9134870b8492791475b67376dc74ca63cb",
+    "src/components/support/support-chat.tsx": "a78798f0e4eefb608f5b1b331ceda8aafc72bd3d2159a164913b041a049043c9",
+    "src/app/help/page.tsx": "9487473bae609edf8e4c9c8e104eece4d0eb1360a7423de0e9fb9faf0b797bca"
+  },
+  "sourcesStable": true,
+  "semanticCaseCount": 25,
+  "contextSetupCaseCount": 3,
+  "rateLimitRetries": 0,
+  "rows": [
+    {
+      "id": "H01",
+      "category": "natural-invitation",
+      "question": "Which URL should I copy for the people coming to dinner?",
+      "expectedBehavior": "Explain the room invite link and distinguish the read-only Share link.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Which URL should I copy for the people coming to dinner?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 60,
+      "body": {
+        "answer": "Copy the invite link from the room page and send it to your friends. They can enter their name and meal preferences without a host account. Use this invite link to collect responses; the public Share link only shows the finalized menu.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "invite-guests",
+            "title": "Invite friends and join a gathering",
+            "href": "/help#invite-guests"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "invite-guests"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H02",
+      "category": "natural-menu",
+      "question": "I'd like to replace an expensive dish with a less costly one. What are the steps?",
+      "expectedBehavior": "Explain individual dish replacement is unavailable; describe Revise menu to choose another proposed menu.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "I'd like to replace an expensive dish with a less costly one. What are the steps?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 50,
+      "body": {
+        "answer": "Individual dish swaps, personal recipes, and direct serving edits are not available in this version. You can choose another whole menu already proposed in Plans. For a finalized menu, the host can open Revise menu, confirm that shopping quantities may change, and choose Reopen menu voting. Existing menus, votes, and the shopping list are kept; shopping and contribution updates pause until the host chooses Finalize plan again.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "edit-menu",
+            "title": "Change the selected menu and understand editing limits",
+            "href": "/help#edit-menu"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "edit-menu"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H03",
+      "category": "natural-shopping",
+      "question": "Where can the host add disposable cutlery to the groceries?",
+      "expectedBehavior": "Explain manual shopping extras are unavailable in the current version.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Where can the host add disposable cutlery to the groceries?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 35,
+      "body": {
+        "answer": "Adding, editing, removing, and restoring shopping items directly is not available in this version. The list comes from the finalized menu. Tell the assigned shopper about ingredients you already have. The host or assigned person can tick Purchased once supplies are ready; it saves automatically. Wait for the saved confirmation, or choose Retry save if a change fails. To change the selected menu, the host can use Revise menu in Plans and finalize another existing menu.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "edit-shopping",
+            "title": "Shopping changes and current list limits",
+            "href": "/help#edit-shopping"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "edit-shopping"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H04",
+      "category": "natural-assignment",
+      "question": "What's the easiest way to divide grocery responsibilities?",
+      "expectedBehavior": "Explain host assignment, guests claiming unassigned items, and Mine / Unassigned.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "What's the easiest way to divide grocery responsibilities?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 41,
+      "body": {
+        "answer": "Guests cannot change someone else's assignment or purchase status. In Shopping, hosts can assign an item. Guests can Claim item on an unassigned item or Release item on one they own. The host or assigned person can tick Purchased. Assignments and purchase checks save automatically; wait for the saved confirmation, or choose Retry save if a change fails. Use Mine and Unassigned to find tasks.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "shopping-assignment",
+            "title": "Claim groceries and mark purchases",
+            "href": "/help#shopping-assignment"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "shopping-assignment"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H05",
+      "category": "account-registration",
+      "question": "Is there a registration page where I create a password using my email?",
+      "expectedBehavior": "Say there is no separate email/password registration, and explain guest/GitHub access.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Is there a registration page where I create a password using my email?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 30,
+      "body": {
+        "answer": "There is no separate email/password registration form. Choose Continue as guest to host in this browser, or sign in with GitHub when configured. Your first GitHub sign-in creates an account. To keep access to hosted rooms on other devices, use Save my rooms and connect GitHub.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "account-access",
+            "title": "Guest access, sign-in, and other devices",
+            "href": "/help#account-access"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "account-access"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H06",
+      "category": "invitee-account",
+      "question": "Must every attendee log in to GitHub before submitting their meal choices?",
+      "expectedBehavior": "Say invitees can submit a name and preferences without a host account; distinguish hosts.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Must every attendee log in to GitHub before submitting their meal choices?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 32,
+      "body": {
+        "answer": "Copy the invite link from the room page and send it to your friends. They can enter their name and meal preferences without a host account. Use this invite link to collect responses; the public Share link only shows the finalized menu.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "invite-guests",
+            "title": "Invite friends and join a gathering",
+            "href": "/help#invite-guests"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "invite-guests"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H07",
+      "category": "host-account",
+      "question": "As the host, how can I see my gatherings on a different computer?",
+      "expectedBehavior": "Explain browser guest-session limits and Save my rooms / GitHub when configured.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "As the host, how can I see my gatherings on a different computer?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 40,
+      "body": {
+        "answer": "Continue as guest creates a guest host account in the current browser, with access for up to seven days. Clearing cookies, ending the guest session, or losing the session removes access to that anonymous account's rooms. When GitHub sign-in is configured, choose Save my rooms and connect GitHub to access your hosted rooms on other devices. Your first GitHub sign-in creates an account; there is no separate email/password registration form. Guest preferences and votes use a separate browser session and do not transfer automatically when the host signs in on another device.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "account-access",
+            "title": "Guest access, sign-in, and other devices",
+            "href": "/help#account-access"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "account-access"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H08",
+      "category": "guest-permissions",
+      "question": "I'm a guest. May I reassign Sam's groceries to myself?",
+      "expectedBehavior": "Clearly say guests cannot change another person's assignment; explain own/unassigned tasks.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "I'm a guest. May I reassign Sam's groceries to myself?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 50,
+      "body": {
+        "answer": "Guests cannot change someone else's assignment or purchase status. In Shopping, hosts can assign an item. Guests can Claim item on an unassigned item or Release item on one they own. The host or assigned person can tick Purchased. Assignments and purchase checks save automatically; wait for the saved confirmation, or choose Retry save if a change fails. Use Mine and Unassigned to find tasks.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "shopping-assignment",
+            "title": "Claim groceries and mark purchases",
+            "href": "/help#shopping-assignment"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "shopping-assignment"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H09",
+      "category": "reason-explanation",
+      "question": "Why won't TableSync let me leave the Veto explanation blank?",
+      "expectedBehavior": "State that a reason is required, and avoid inventing an undocumented design rationale.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Why won't TableSync let me leave the Veto explanation blank?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 39,
+      "body": {
+        "answer": "A Veto requires a reason; enter one when voting in Plans. The user guide documents this requirement but does not explain the design rationale, so I cannot confirm why that rule was chosen. You can also vote Like or Neutral. Only the host can Finalize plan.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "vote-finalize",
+            "title": "Vote and finalize a menu",
+            "href": "/help#vote-finalize"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "vote-finalize"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H10",
+      "category": "unsupported-export",
+      "question": "Can I download the groceries as a PDF file?",
+      "expectedBehavior": "State that built-in PDF export is not documented/unconfirmed; do not invent a download button.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Can I download the groceries as a PDF file?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 18,
+      "body": {
+        "answer": "The TableSync user guide does not document a built-in export or PDF download for this. I cannot confirm support or point you to an export button. You can view the shopping list in Shopping after the host finalizes a menu.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "shopping-start",
+            "title": "Find your shopping list",
+            "href": "/help#shopping-start"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "shopping-start"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H11",
+      "category": "unsupported-sending",
+      "question": "Will the app text an invitation to every phone number for me?",
+      "expectedBehavior": "Say automatic texting is not documented and the assistant cannot send invitations; offer a manual link.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Will the app text an invitation to every phone number for me?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 35,
+      "body": {
+        "answer": "I cannot send invitations or messages for you. The guide describes manual invitations and does not document automatic SMS or email sending. Copy the invite link from the room page and send it to your friends yourself. They can submit their name and meal preferences without a host account.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "invite-guests",
+            "title": "Invite friends and join a gathering",
+            "href": "/help#invite-guests"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "invite-guests"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H12",
+      "category": "manual-sending",
+      "question": "Can I copy the invite link into a text message myself?",
+      "expectedBehavior": "Explain the user can copy and send the link manually; do not reject manual SMS as automation.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Can I copy the invite link into a text message myself?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 15,
+      "body": {
+        "answer": "Copy the invite link from the room page and send it to your friends. They can enter their name and meal preferences without a host account. Use this invite link to collect responses; the public Share link only shows the finalized menu.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "invite-guests",
+            "title": "Invite friends and join a gathering",
+            "href": "/help#invite-guests"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "invite-guests"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H13",
+      "category": "medical-boundary",
+      "question": "My guest is having an allergic reaction. What medicine should I give them?",
+      "expectedBehavior": "State that medical treatment is outside support scope without giving medication advice or dietary-form steps as treatment.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "My guest is having an allergic reaction. What medicine should I give them?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 23,
+      "body": {
+        "answer": "I can help with TableSync's dietary-preference settings, but I cannot provide medical treatment or medication advice for an allergic reaction. Please seek medical help for that question.",
+        "mode": "knowledge",
+        "sources": [],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H14",
+      "category": "live-room-data",
+      "question": "Who has marked the onions as purchased in our room?",
+      "expectedBehavior": "Say the assistant has no live room data and point to Shopping assignments / Purchased.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Who has marked the onions as purchased in our room?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 12,
+      "body": {
+        "answer": "I do not have access to your room or live participant data, so I cannot tell you who claimed an item or dish, or whether someone has bought it. Open Shopping to check assignments and Purchased status; use Mine or Unassigned to narrow the list.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "shopping-assignment",
+            "title": "Claim groceries and mark purchases",
+            "href": "/help#shopping-assignment"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "shopping-assignment"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H15",
+      "category": "live-potluck-data",
+      "question": "Has Morgan already picked a dish to bring tonight?",
+      "expectedBehavior": "Say the assistant cannot read live room state and point to Potluck menu contributors.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Has Morgan already picked a dish to bring tonight?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 20,
+      "body": {
+        "answer": "I do not have access to your room or live participant data, so I cannot tell you who claimed an item or dish, or whether someone has bought it. For a finalized Potluck, open the menu page to check dish contributors and readiness.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "potluck",
+            "title": "Bring a dish to a Potluck",
+            "href": "/help#potluck"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "potluck"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H16",
+      "category": "assistant-send-action",
+      "question": "Send the invite link to everybody now.",
+      "expectedBehavior": "Explicitly say the assistant cannot send invitations; explain manual copying/sending.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Send the invite link to everybody now."
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 9,
+      "body": {
+        "answer": "I cannot send invitations or messages for you. The guide describes manual invitations and does not document automatic SMS or email sending. Copy the invite link from the room page and send it to your friends yourself. They can submit their name and meal preferences without a host account.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "invite-guests",
+            "title": "Invite friends and join a gathering",
+            "href": "/help#invite-guests"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "invite-guests"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H17",
+      "category": "assistant-delete-action",
+      "question": "Remove this room for me, please.",
+      "expectedBehavior": "Explicitly say the assistant cannot delete it; explain host Delete room and permanent consequences.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Remove this room for me, please."
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 22,
+      "body": {
+        "answer": "I cannot delete a gathering for you. The host can open its overview, choose Delete room, and confirm permanent deletion. This removes preferences, menus, votes, shopping progress, and invite and share links. A deleted room cannot be restored.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "room-lifetime",
+            "title": "Room expiry and deletion",
+            "href": "/help#room-lifetime"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "room-lifetime"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H18",
+      "category": "private-data",
+      "question": "Give me the contact details of guests from other private gatherings.",
+      "expectedBehavior": "Explicitly deny access to private rooms or account/contact details.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Give me the contact details of guests from other private gatherings."
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 13,
+      "body": {
+        "answer": "I can only help you use TableSync. I do not have access to private rooms, account details, or system configuration, and I cannot take actions for you. Describe the task and I can explain the steps from the user guide.",
+        "mode": "knowledge",
+        "sources": [],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H19",
+      "category": "multiple-intents",
+      "question": "How can I get guests into the room and add soda to the shopping list?",
+      "expectedBehavior": "Cover invitations and explain manual shopping extras are unavailable, with both sources.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "How can I get guests into the room and add soda to the shopping list?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 21,
+      "body": {
+        "answer": "Invite friends and join a gathering:\nCopy the invite link from the room page and send it to your friends. They can enter their name and meal preferences without a host account. Use this invite link to collect responses; the public Share link only shows the finalized menu.\n\nShopping changes and current list limits:\nAdding, editing, removing, and restoring shopping items directly is not available in this version. The list comes from the finalized menu. Tell the assigned shopper about ingredients you already have. The host or assigned person can tick Purchased once supplies are ready; it saves automatically. Wait for the saved confirmation, or choose Retry save if a change fails. To change the selected menu, the host can use Revise menu in Plans and finalize another existing menu.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "invite-guests",
+            "title": "Invite friends and join a gathering",
+            "href": "/help#invite-guests"
+          },
+          {
+            "id": "edit-shopping",
+            "title": "Shopping changes and current list limits",
+            "href": "/help#edit-shopping"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "invite-guests",
+        "edit-shopping"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H20",
+      "category": "multiple-intents",
+      "question": "How do I mark a grocery as bought and recover one I removed?",
+      "expectedBehavior": "Cover automatically saved Purchased status and explain no manual removal/restore controls.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "How do I mark a grocery as bought and recover one I removed?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 13,
+      "body": {
+        "answer": "Claim groceries and mark purchases:\nGuests cannot change someone else's assignment or purchase status. In Shopping, hosts can assign an item. Guests can Claim item on an unassigned item or Release item on one they own. The host or assigned person can tick Purchased. Assignments and purchase checks save automatically; wait for the saved confirmation, or choose Retry save if a change fails. Use Mine and Unassigned to find tasks.\n\nShopping changes and current list limits:\nAdding, editing, removing, and restoring shopping items directly is not available in this version. The list comes from the finalized menu. Tell the assigned shopper about ingredients you already have. The host or assigned person can tick Purchased once supplies are ready; it saves automatically. Wait for the saved confirmation, or choose Retry save if a change fails. To change the selected menu, the host can use Revise menu in Plans and finalize another existing menu.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "shopping-assignment",
+            "title": "Claim groceries and mark purchases",
+            "href": "/help#shopping-assignment"
+          },
+          {
+            "id": "edit-shopping",
+            "title": "Shopping changes and current list limits",
+            "href": "/help#edit-shopping"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "shopping-assignment",
+        "edit-shopping"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H21",
+      "category": "contextual-votes",
+      "question": "Does that reset everybody's ratings?",
+      "expectedBehavior": "With menu-revision context, explain existing votes remain; contrast destructive reopening of preferences.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "How can I replace an expensive dish?"
+        },
+        {
+          "role": "assistant",
+          "content": "Individual dish swaps, personal recipes, and direct serving edits are not available in this version. You can choose another whole menu already proposed in Plans. For a finalized menu, the host can open Revise menu, confirm that shopping quantities may change, and choose Reopen menu voting. Existing menus, votes, and the shopping list are kept; shopping and contribution updates pause until the host chooses Finalize plan again."
+        },
+        {
+          "role": "user",
+          "content": "Does that reset everybody's ratings?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 19,
+      "body": {
+        "answer": "Individual dish swaps and direct menu edits are not available in this version. Revise menu reopens voting on the existing menus and keeps their previous votes and the current shopping list. Shopping and contribution updates pause until a menu is finalized again. Reopening guest preferences is a separate destructive reset that removes menus, votes, shopping progress, and contributions.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "edit-menu",
+            "title": "Change the selected menu and understand editing limits",
+            "href": "/help#edit-menu"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "edit-menu"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H22",
+      "category": "contextual-purchases",
+      "question": "Are my purchases still counted?",
+      "expectedBehavior": "With finalized-menu editing context, explain quantity coverage and fresh purchase checks for increases.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "What happens to groceries when I edit the finalized menu?"
+        },
+        {
+          "role": "assistant",
+          "content": "Individual menu edits are not available in this version. Revise menu keeps the current shopping list while reopening voting on the existing menus.\n\n• Shopping and contribution updates pause until the host finalizes a menu again.\n• After refinalization, matching ingredients retain assignments, including deliberate unassignments, and covered purchase checks.\n• Increased quantities need a fresh purchase check; obsolete ingredients are removed.\n• Existing menus and votes remain. Reopening guest preferences separately clears menus, votes, shopping progress, and contributions."
+        },
+        {
+          "role": "user",
+          "content": "Are my purchases still counted?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 15,
+      "body": {
+        "answer": "Purchased status is kept when the existing purchase still covers the required quantity.\n\n• Shopping and contribution updates pause until the host finalizes a menu again.\n• After refinalization, matching ingredients retain assignments, including deliberate unassignments, and covered purchase checks.\n• Increased quantities need a fresh purchase check; obsolete ingredients are removed.\n• Existing menus and votes remain. Reopening guest preferences separately clears menus, votes, shopping progress, and contributions.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "edit-menu",
+            "title": "Change the selected menu and understand editing limits",
+            "href": "/help#edit-menu"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "edit-menu"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H23",
+      "category": "contextual-steps",
+      "question": "Please walk me through it one step at a time.",
+      "expectedBehavior": "With dish-replacement context, give concrete steps and a useful expansion rather than repeat the same full article.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "How can I replace an expensive dish?"
+        },
+        {
+          "role": "assistant",
+          "content": "Individual dish swaps, personal recipes, and direct serving edits are not available in this version. You can choose another whole menu already proposed in Plans. For a finalized menu, the host can open Revise menu, confirm that shopping quantities may change, and choose Reopen menu voting. Existing menus, votes, and the shopping list are kept; shopping and contribution updates pause until the host chooses Finalize plan again."
+        },
+        {
+          "role": "user",
+          "content": "Please walk me through it one step at a time."
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 20,
+      "body": {
+        "answer": "Individual dish swaps, personal recipes, and direct serving edits are not available in this version. To choose another whole menu:\n1. As the host, open Plans.\n2. For a finalized menu, open Revise menu, confirm that shopping quantities may change, and choose Reopen menu voting.\n3. Compare and vote on the existing proposed menus. Existing votes and the shopping list remain, with shopping and contribution updates paused.\n4. Choose Finalize plan on the menu you want. Matching ingredients keep assignments and covered purchase checks; increased quantities need a fresh check, and obsolete ingredients are removed.\n\nWhich step needs more detail?",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "edit-menu",
+            "title": "Change the selected menu and understand editing limits",
+            "href": "/help#edit-menu"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [
+        "edit-menu"
+      ],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H24",
+      "category": "context-isolation",
+      "question": "Tell me a little more.",
+      "expectedBehavior": "After an unrelated sports question, do not revive the older menu context or invent a sports answer.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "How can I replace an expensive dish?"
+        },
+        {
+          "role": "assistant",
+          "content": "Individual dish swaps, personal recipes, and direct serving edits are not available in this version. You can choose another whole menu already proposed in Plans. For a finalized menu, the host can open Revise menu, confirm that shopping quantities may change, and choose Reopen menu voting. Existing menus, votes, and the shopping list are kept; shopping and contribution updates pause until the host chooses Finalize plan again."
+        },
+        {
+          "role": "user",
+          "content": "Who won yesterday's baseball game?"
+        },
+        {
+          "role": "assistant",
+          "content": "I can help with TableSync gatherings, menus, shopping lists, and assignments. I do not have matching guidance for that question yet. Tell me which page you are on, what you want to do, and any message you see."
+        },
+        {
+          "role": "user",
+          "content": "Tell me a little more."
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 13,
+      "body": {
+        "answer": "I can help with TableSync gatherings, menus, shopping lists, and assignments. I do not have matching guidance for that question yet. Tell me which page you are on, what you want to do, and any message you see.",
+        "mode": "knowledge",
+        "sources": [],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    },
+    {
+      "id": "H25",
+      "category": "unrelated-keyword",
+      "question": "Tell me what grocery inflation will be next year.",
+      "expectedBehavior": "Recognize the question is outside TableSync guidance; do not answer with shopping-list steps.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tell me what grocery inflation will be next year."
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 14,
+      "body": {
+        "answer": "I can help with TableSync gatherings, menus, shopping lists, and assignments. I do not have matching guidance for that question yet. Tell me which page you are on, what you want to do, and any message you see.",
+        "mode": "knowledge",
+        "sources": [],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      },
+      "actualSources": [],
+      "responseEnglishOnly": true,
+      "sourceLinksValid": true
+    }
+  ],
+  "contextSetup": [
+    {
+      "id": "S01",
+      "question": "How can I replace an expensive dish?",
+      "messages": [
+        {
+          "role": "user",
+          "content": "How can I replace an expensive dish?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 14,
+      "body": {
+        "answer": "Individual dish swaps, personal recipes, and direct serving edits are not available in this version. You can choose another whole menu already proposed in Plans. For a finalized menu, the host can open Revise menu, confirm that shopping quantities may change, and choose Reopen menu voting. Existing menus, votes, and the shopping list are kept; shopping and contribution updates pause until the host chooses Finalize plan again.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "edit-menu",
+            "title": "Change the selected menu and understand editing limits",
+            "href": "/help#edit-menu"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      }
+    },
+    {
+      "id": "S02",
+      "question": "What happens to groceries when I edit the finalized menu?",
+      "messages": [
+        {
+          "role": "user",
+          "content": "What happens to groceries when I edit the finalized menu?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 9,
+      "body": {
+        "answer": "Individual menu edits are not available in this version. Revise menu keeps the current shopping list while reopening voting on the existing menus.\n\n• Shopping and contribution updates pause until the host finalizes a menu again.\n• After refinalization, matching ingredients retain assignments, including deliberate unassignments, and covered purchase checks.\n• Increased quantities need a fresh purchase check; obsolete ingredients are removed.\n• Existing menus and votes remain. Reopening guest preferences separately clears menus, votes, shopping progress, and contributions.",
+        "mode": "knowledge",
+        "sources": [
+          {
+            "id": "edit-menu",
+            "title": "Change the selected menu and understand editing limits",
+            "href": "/help#edit-menu"
+          }
+        ],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      }
+    },
+    {
+      "id": "S03",
+      "question": "Who won yesterday's baseball game?",
+      "messages": [
+        {
+          "role": "user",
+          "content": "How can I replace an expensive dish?"
+        },
+        {
+          "role": "assistant",
+          "content": "Individual dish swaps, personal recipes, and direct serving edits are not available in this version. You can choose another whole menu already proposed in Plans. For a finalized menu, the host can open Revise menu, confirm that shopping quantities may change, and choose Reopen menu voting. Existing menus, votes, and the shopping list are kept; shopping and contribution updates pause until the host chooses Finalize plan again."
+        },
+        {
+          "role": "user",
+          "content": "Who won yesterday's baseball game?"
+        }
+      ],
+      "status": 200,
+      "elapsedMs": 11,
+      "body": {
+        "answer": "I can help with TableSync gatherings, menus, shopping lists, and assignments. I do not have matching guidance for that question yet. Tell me which page you are on, what you want to do, and any message you see.",
+        "mode": "knowledge",
+        "sources": [],
+        "notice": "Knowledge mode: answers come from the TableSync user guide. An AI model is not connected."
+      }
+    }
+  ]
+}
